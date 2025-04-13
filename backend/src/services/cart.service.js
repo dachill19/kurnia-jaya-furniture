@@ -49,3 +49,5 @@ export const removeFromCart = async (cartId) => {
     where: { id: cartId },
   });
 };
+
+// test

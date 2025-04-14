@@ -70,33 +70,6 @@ const enTranslations = {
     previous: "Previous",
     next: "Next",
 
-    // Product Details
-    description: "Description",
-    specifications: "Specifications",
-    reviews: "Reviews",
-    dimensions: "Dimensions",
-    weight: "Weight",
-    color: "Color",
-    relatedProducts: "Related Products",
-    writeReview: "Write a Review",
-
-    // Auth Pages
-    createAccount: "Create Account",
-    email: "Email Address",
-    phone: "Phone Number",
-    password: "Password",
-    confirmPassword: "Confirm Password",
-    rememberMe: "Remember Me",
-    forgotPassword: "Forgot Password?",
-    orContinueWith: "Or continue with",
-    agreeToTerms: "I agree to the",
-    termsAndConditions: "Terms and Conditions",
-    alreadyHaveAccount: "Already have an account?",
-    dontHaveAccount: "Don't have an account?",
-    usePhoneInstead: "Use phone number instead",
-    useEmailInstead: "Use email instead",
-    fullName: "Full Name",
-
     // Cart
     cart: "Shopping Cart",
     emptyCart: "Your cart is empty",
@@ -108,14 +81,17 @@ const enTranslations = {
     total: "Total",
     removeItem: "Remove Item",
 
-    // Checkout
-    checkout: "Checkout",
-    shippingAddress: "Shipping Address",
-    billingAddress: "Billing Address",
-    sameAsShipping: "Same as shipping address",
-    paymentMethod: "Payment Method",
-    orderSummary: "Order Summary",
-    placeOrder: "Place Order",
+    // About Page
+    aboutTitle: "About Us",
+    aboutDescription:
+        "Kurnia Jaya Furniture - Providing quality furniture with modern design and affordable prices since 2005.",
+    aboutStoryTitle: "Our Story",
+    aboutStoryParagraph1:
+        "Kurnia Jaya Furniture was established in 2005 with a simple vision: to provide high-quality furniture at affordable prices for everyone. We started from a small shop in Jakarta and have now grown to become one of the leading furniture companies in Indonesia.",
+    aboutStoryParagraph2:
+        "Our products are designed with the perfect blend of functionality, aesthetics, and comfort. We understand that furniture is not just about appearance, but also about lasting quality and comfort.",
+    aboutStoryParagraph3:
+        "At Kurnia Jaya, we are committed to providing the best products and exceptional customer service. We believe that customer satisfaction is the key to our success.",
 
     // Footer
     customerService: "Customer Service",
@@ -123,18 +99,6 @@ const enTranslations = {
     trackOrder: "Track Order",
     payment: "Payment",
     contactUs: "Contact Us",
-
-    // Benefits Section
-    whyChooseUs: "Why Choose Us",
-    qualityProducts: "Quality Products",
-    qualityProductsDesc:
-        "Our furniture is made from the highest quality materials",
-    fastDelivery: "Fast Delivery",
-    fastDeliveryDesc: "We deliver your orders within 3-7 business days",
-    warranty: "Warranty",
-    warrantyDesc: "All our products come with a 1-year warranty",
-    support: "24/7 Support",
-    supportDesc: "Our customer support team is always ready to help",
 };
 
 // Indonesian translations
@@ -204,33 +168,6 @@ const idTranslations = {
     previous: "Sebelumnya",
     next: "Selanjutnya",
 
-    // Product Details
-    description: "Deskripsi",
-    specifications: "Spesifikasi",
-    reviews: "Ulasan",
-    dimensions: "Dimensi",
-    weight: "Berat",
-    color: "Warna",
-    relatedProducts: "Produk Terkait",
-    writeReview: "Tulis Ulasan",
-
-    // Auth Pages
-    createAccount: "Buat Akun",
-    email: "Alamat Email",
-    phone: "Nomor Telepon",
-    password: "Kata Sandi",
-    confirmPassword: "Konfirmasi Kata Sandi",
-    rememberMe: "Ingat Saya",
-    forgotPassword: "Lupa Kata Sandi?",
-    orContinueWith: "Atau lanjutkan dengan",
-    agreeToTerms: "Saya menyetujui",
-    termsAndConditions: "Syarat dan Ketentuan",
-    alreadyHaveAccount: "Sudah punya akun?",
-    dontHaveAccount: "Belum punya akun?",
-    usePhoneInstead: "Gunakan nomor telepon",
-    useEmailInstead: "Gunakan email",
-    fullName: "Nama Lengkap",
-
     // Cart
     cart: "Keranjang Belanja",
     emptyCart: "Keranjang Anda kosong",
@@ -242,14 +179,17 @@ const idTranslations = {
     total: "Total",
     removeItem: "Hapus Item",
 
-    // Checkout
-    checkout: "Pembayaran",
-    shippingAddress: "Alamat Pengiriman",
-    billingAddress: "Alamat Penagihan",
-    sameAsShipping: "Sama dengan alamat pengiriman",
-    paymentMethod: "Metode Pembayaran",
-    orderSummary: "Ringkasan Pesanan",
-    placeOrder: "Buat Pesanan",
+    // About Page
+    aboutTitle: "Tentang Kami",
+    aboutDescription:
+        "Kurnia Jaya Furniture - Menyediakan furnitur berkualitas dengan desain modern dan harga terjangkau sejak 2005.",
+    aboutStoryTitle: "Kisah Kami",
+    aboutStoryParagraph1:
+        "Kurnia Jaya Furniture didirikan pada tahun 2005 dengan visi sederhana: menyediakan furnitur berkualitas tinggi dengan harga terjangkau untuk semua orang. Kami memulai dari toko kecil di Jakarta dan kini telah berkembang menjadi salah satu perusahaan furnitur terkemuka di Indonesia.",
+    aboutStoryParagraph2:
+        "Produk kami dirancang dengan perpaduan sempurna antara fungsionalitas, estetika, dan kenyamanan. Kami memahami bahwa furnitur bukan hanya tentang tampilan, tetapi juga tentang kualitas dan kenyamanan yang bertahan lama.",
+    aboutStoryParagraph3:
+        "Di Kurnia Jaya, kami berkomitmen untuk menyediakan produk terbaik dan layanan pelanggan yang luar biasa. Kami percaya bahwa kepuasan pelanggan adalah kunci keberhasilan kami.",
 
     // Footer
     customerService: "Layanan Pelanggan",
@@ -257,17 +197,6 @@ const idTranslations = {
     trackOrder: "Lacak Pesanan",
     payment: "Pembayaran",
     contactUs: "Hubungi Kami",
-
-    // Benefits Section
-    whyChooseUs: "Mengapa Memilih Kami",
-    qualityProducts: "Produk Berkualitas",
-    qualityProductsDesc: "Furnitur kami terbuat dari bahan berkualitas tinggi",
-    fastDelivery: "Pengiriman Cepat",
-    fastDeliveryDesc: "Kami mengirimkan pesanan Anda dalam 3-7 hari kerja",
-    warranty: "Garansi",
-    warrantyDesc: "Semua produk kami memiliki garansi 1 tahun",
-    support: "Dukungan 24/7",
-    supportDesc: "Tim dukungan pelanggan kami selalu siap membantu",
 };
 
 // Translations type

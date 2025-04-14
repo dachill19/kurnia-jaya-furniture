@@ -21,21 +21,6 @@ export const getProductById = async (id) => {
   });
 };
 
-// Get products by category
-export const getProductsByCategory = async (categoryName) => {
-  return await prisma.product.findMany({
-    where: {
-      category: {
-        name: categoryName
-      }
-    },
-    include: {
-      category: true,
-      images: true
-    }
-  });
-};
-
 // Get hot products
 export const getHotProducts = async () => {
   return await prisma.product.findMany({

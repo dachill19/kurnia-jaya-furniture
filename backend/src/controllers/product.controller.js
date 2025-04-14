@@ -1,4 +1,4 @@
-import { getAllProducts, getSortedProducts, getProductById, getProductsByCategory, getHotProducts, getLatestProducts, getDiscountedProducts, createProduct, updateProduct, deleteProduct } from '../services/product.service.js';
+import { getAllProducts, getSortedProducts, getProductById, getHotProducts, getLatestProducts, getDiscountedProducts, createProduct, updateProduct, deleteProduct } from '../services/product.service.js';
 
 // Get all products
 export const getAllProductsController = async (req, res) => {
@@ -25,22 +25,6 @@ export const getProductByIdController = async (req, res) => {
     res.json(product);
   } catch (err) {
     res.status(400).json({ error: err.message });
-  }
-};
-
-export const getProductsByCategoryController = async (req, res) => {
-  try {
-    const { categoryName } = req.params;
-
-    const products = await getProductsByCategory(categoryName);
-
-    if (products.length === 0) {
-      return res.status(404).json({ error: 'Tidak ada produk di kategori ini' });
-    }
-
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ error: 'Gagal mengambil produk berdasarkan kategori' });
   }
 };
 

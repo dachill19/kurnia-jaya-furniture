@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import { startCase } from 'lodash';
+import { startCase, kebabCase } from 'lodash';
 import axios from 'axios';
 import { useLanguage } from "@/context/LanguageContext";
 import { 
@@ -70,7 +70,7 @@ const Footer = () => {
               {categories.map((category) => (
                   <li key={category.id} className="transform hover:translate-x-1 transition-transform">
                     <Link
-                      to={`/categories/${category.name.toLowerCase()}`}
+                      to={`/categories/${kebabCase(category.name)}`}
                       className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
                     >
                       <span className="mr-2">›</span>{startCase(category.name)}
@@ -78,7 +78,7 @@ const Footer = () => {
                   </li>
                 ))}
               </ul>
-          </div>
+          </div>          
 
           {/* Column 3: Links */}
           <div>

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 import logo from '@/assets/logo.png';
@@ -27,6 +28,7 @@ const Header = () => {
   const { totalItems } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [categories, setCategories] = useState([]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -41,6 +43,19 @@ const Header = () => {
     // Search logic goes here
     console.log("Searching for:", searchQuery);
   };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/categories");
+        setCategories(response.data);
+      } catch (error) {
+        console.error("Gagal ambil kategori:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <header className="bg-white shadow-md">
@@ -158,36 +173,13 @@ const Header = () => {
                   {t('navCategories')}
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-white">
-                  <DropdownMenuItem asChild>
-                    <Link to="/categories/sofa" className="cursor-pointer">
-                      {t('sofa')}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/categories/bed" className="cursor-pointer">
-                      {t('bed')}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/categories/wardrobe" className="cursor-pointer">
-                      {t('wardrobe')}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/categories/dining-table" className="cursor-pointer">
-                      {t('diningTable')}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/categories/display-cabinet" className="cursor-pointer">
-                      {t('displayCabinet')}
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/categories/buffet" className="cursor-pointer">
-                      {t('buffet')}
-                    </Link>
-                  </DropdownMenuItem>
+                  {categories.map((category) => (
+                    <DropdownMenuItem asChild key={category.id}>
+                      <Link to={`/categories/${category.name.toLowerCase()}`} className="cursor-pointer">
+                        {category.name}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
             </li>

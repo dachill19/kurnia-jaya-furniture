@@ -4,22 +4,22 @@ import Header from "./Header";
 import Footer from "./Footer";
 
 const Layout = () => {
-  const location = useLocation();
+    const location = useLocation();
 
-  // Scroll to top when route changes
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
+    // Scroll to top when route changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
 
-  return (
-    <div className="flex flex-col min-h-screen bg-gray-50 transition-colors duration-300">
-      <Header />
-      <main className="flex-grow">
-        <Outlet />
-      </main>
-      <Footer />
-    </div>
-  );
+    return (
+        <div className="flex flex-col min-h-screen bg-gray-50 transition-colors duration-300">
+            <Header />
+            <main className="flex-grow">
+                <Outlet />
+            </main>
+            <Footer />
+        </div>
+    );
 };
 
 export default Layout;

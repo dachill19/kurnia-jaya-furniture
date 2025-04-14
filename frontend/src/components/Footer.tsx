@@ -1,4 +1,7 @@
+import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
+import { startCase } from 'lodash';
+import axios from 'axios';
 import { useLanguage } from "@/context/LanguageContext";
 import { 
   Facebook, 
@@ -13,7 +16,21 @@ import {
 import { Button } from "@/components/ui/button";
 
 const Footer = () => {
+  const [categories, setCategories] = useState([]);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/categories');
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Gagal mengambil kategori:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <footer className="bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 pt-16 pb-8">
@@ -50,32 +67,17 @@ const Footer = () => {
               {t('categories')}
             </h3>
             <ul className="space-y-4">
-              <li className="transform hover:translate-x-1 transition-transform">
-                <Link to="/categories/bedroom" className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center">
-                  <span className="mr-2">›</span>{t('sofa')}
-                </Link>
-              </li>
-              <li className="transform hover:translate-x-1 transition-transform">
-                <Link to="/categories/living-room" className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center">
-                  <span className="mr-2">›</span>{t('bed')}
-                </Link>
-              </li>
-              <li className="transform hover:translate-x-1 transition-transform">
-                <Link to="/categories/dining-room" className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center">
-                  <span className="mr-2">›</span>{t('wardrobe')}
-                </Link>
-              </li>
-              <li className="transform hover:translate-x-1 transition-transform">
-                <Link to="/categories/office" className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center">
-                  <span className="mr-2">›</span>{t('chair')}
-                </Link>
-              </li>
-              <li className="transform hover:translate-x-1 transition-transform">
-                <Link to="/categories/kitchen" className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center">
-                  <span className="mr-2">›</span>{t('bookshelf')}
-                </Link>
-              </li>
-            </ul>
+              {categories.map((category) => (
+                  <li key={category.id} className="transform hover:translate-x-1 transition-transform">
+                    <Link
+                      to={`/categories/${category.name.toLowerCase()}`}
+                      className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
+                    >
+                      <span className="mr-2">›</span>{startCase(category.name)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
           </div>
 
           {/* Column 3: Links */}

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { startCase } from "lodash";
 import axios from "axios";
 import { useLanguage } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
@@ -176,7 +177,7 @@ const Header = () => {
                   {categories.map((category) => (
                     <DropdownMenuItem asChild key={category.id}>
                       <Link to={`/categories/${category.name.toLowerCase()}`} className="cursor-pointer">
-                        {category.name}
+                        {startCase(category.name)}
                       </Link>
                     </DropdownMenuItem>
                   ))}

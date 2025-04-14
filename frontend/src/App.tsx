@@ -9,12 +9,11 @@ const App = () => (
         <CartProvider>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<Layout />}>
-                    </Route>
+                    <Route path="/" element={<Layout />}></Route>
                 </Routes>
             </BrowserRouter>
         </CartProvider>
     </LanguageProvider>
 );
 
-export default App
+export default App;

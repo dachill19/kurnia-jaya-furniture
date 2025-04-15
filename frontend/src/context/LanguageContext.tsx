@@ -81,6 +81,17 @@ const enTranslations = {
     total: "Total",
     removeItem: "Remove Item",
 
+    // Hero
+    heroTitle1: "New Furniture Collection",
+    heroSubtitle1: "Modern Design & High Quality",
+    heroCta1: "Shop Now",
+    heroTitle2: "Up to 30% Off",
+    heroSubtitle2: "For All Living Room Furniture",
+    heroCta2: "View Offers",
+    heroTitle3: "Kurnia Jaya Furniture",
+    heroSubtitle3: "#1 Best Furniture in Town",
+    heroCta3: "About Us",
+
     // About Page
     aboutTitle: "About Us",
     aboutDescription:
@@ -178,6 +189,17 @@ const idTranslations = {
     shipping: "Pengiriman",
     total: "Total",
     removeItem: "Hapus Item",
+
+    // Hero
+    heroTitle1: "Koleksi Furniture Terbaru",
+    heroSubtitle1: "Desain Modern & Berkualitas Tinggi",
+    heroCta1: "Belanja Sekarang",
+    heroTitle2: "Diskon Hingga 30%",
+    heroSubtitle2: "Untuk Semua Furnitur Ruang Tamu",
+    heroCta2: "Lihat Penawaran",
+    heroTitle3: "Kurnia Jaya Furniture",
+    heroSubtitle3: "#1 Furniture Terbaik di Kota#1 Furniture Terbaik di Kota",
+    heroCta3: "Tentang Kami",
 
     // About Page
     aboutTitle: "Tentang Kami",

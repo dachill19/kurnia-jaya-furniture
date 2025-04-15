@@ -188,7 +188,7 @@ const Footer = () => {
                                     rel="noopener noreferrer"
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red"
                                 >
-                                    kurniajaya.furniture1688@gmail.com
+                                    kurniajaya.furniture1688
                                 </a>
                             </li>
                         </ul>

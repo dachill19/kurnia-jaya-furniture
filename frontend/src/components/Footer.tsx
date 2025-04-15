@@ -158,10 +158,15 @@ const Footer = () => {
                                     size={20}
                                     className="text-kj-red mt-1 mr-3 flex-shrink-0"
                                 />
-                                <span className="text-gray-600 dark:text-gray-300">
+                                <a
+                                    href="https://maps.app.goo.gl/vq1j9ZcE7HLffR8u9"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red"
+                                >
                                     JI. Raya Serang KM.15 No. 42-45, Talagasari,
                                     Kec. Cikupa, Kab. Tangerang, Banten, 15710
-                                </span>
+                                </a>
                             </li>
                             <li className="flex items-center">
                                 <Phone

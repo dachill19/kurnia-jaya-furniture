@@ -67,18 +67,22 @@ const Header = () => {
                 <div className="container-custom flex justify-between items-center">
                     <div className="hidden md:flex items-center space-x-6 text-sm">
                         <a
-                            href="tel:+6212345678"
+                            href="https://wa.me/6282298528428"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center hover:text-white/80 transition-colors"
                         >
                             <Phone className="h-4 w-4 mr-2" />
-                            <span>+62 123 4567 890</span>
+                            <span>+62 822-9852-8428</span>
                         </a>
                         <a
-                            href="mailto:info@kurniajaya.com"
+                            href="mailto:kurniajaya.furniture1688@gmail.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="flex items-center hover:text-white/80 transition-colors"
                         >
                             <Mail className="h-4 w-4 mr-2" />
-                            <span>info@kurniajaya.com</span>
+                            <span>kurniajaya.furniture1688@gmail.com</span>
                         </a>
                     </div>
                     <div className="flex items-center space-x-4">

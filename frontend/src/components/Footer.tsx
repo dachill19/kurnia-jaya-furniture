@@ -156,35 +156,52 @@ const Footer = () => {
                             <li className="flex items-start">
                                 <MapPin
                                     size={20}
-                                    className="text-kj-red mt-1 mr-3"
+                                    className="text-kj-red mt-1 mr-3 flex-shrink-0"
                                 />
                                 <span className="text-gray-600 dark:text-gray-300">
-                                    Jl. Furniture No. 123
+                                    JI. Raya Serang KM.15 No. 42-45, Talagasari,
+                                    Kec. Cikupa, Kab. Tangerang, Banten, 15710
                                 </span>
                             </li>
                             <li className="flex items-center">
-                                <Phone size={20} className="text-kj-red mr-3" />
+                                <Phone
+                                    size={20}
+                                    className="text-kj-red mr-3 flex-shrink-0"
+                                />
                                 <a
-                                    href="tel:+6212345678"
+                                    href="https://wa.me/6282298528428"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red"
                                 >
-                                    +62 123 4567 890
+                                    +62 822-9852-8428
                                 </a>
                             </li>
                             <li className="flex items-center">
-                                <Mail size={20} className="text-kj-red mr-3" />
+                                <Mail
+                                    size={20}
+                                    className="text-kj-red mr-3 flex-shrink-0"
+                                />
                                 <a
-                                    href="mailto:info@kurniajaya.com"
+                                    href="mailto:kurniajaya.furniture1688@gmail.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red"
                                 >
-                                    info@kurniajaya.com
+                                    kurniajaya.furniture1688@gmail.com
                                 </a>
                             </li>
                         </ul>
-                        <Button className="mt-6 bg-kj-red hover:bg-kj-darkred flex items-center gap-2">
-                            <span>Chat on WhatsApp</span>
-                            <ExternalLink size={16} />
-                        </Button>
+                        <a
+                            href="https://wa.me/6282298528428"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <Button className="mt-6 bg-kj-red hover:bg-kj-darkred flex items-center gap-2">
+                                <span>Chat on WhatsApp</span>
+                                <ExternalLink size={16} />
+                            </Button>
+                        </a>
                     </div>
                 </div>
 

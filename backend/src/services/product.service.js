@@ -66,6 +66,7 @@ export const getSortedProducts = async (sort) => {
 // Create product
 export const createProduct = async (data) => {
     const {
+        id,
         name,
         description,
         price,
@@ -91,6 +92,7 @@ export const createProduct = async (data) => {
     // Buat produk
     return await prisma.product.create({
         data: {
+            ...(id && { id }),
             name,
             description,
             price,

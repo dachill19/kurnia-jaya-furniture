@@ -6,6 +6,7 @@ import React, {
     ReactNode,
 } from "react";
 
+// Interface CartItem
 export interface CartItem {
     id: string;
     name: string;
@@ -29,59 +30,113 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: ReactNode }> = ({
     children,
 }) => {
-    const [cart, setCart] = useState<CartItem[]>(() => {
-        // Load cart from localStorage on initial render
-        const savedCart = localStorage.getItem("cart");
-        return savedCart ? JSON.parse(savedCart) : [];
-    });
+    const [cart, setCart] = useState<CartItem[]>([]);
+    const token =
+        typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-    // Save cart to localStorage whenever it changes
+    // Fetch cart data from backend when component mounts
     useEffect(() => {
-        localStorage.setItem("cart", JSON.stringify(cart));
-    }, [cart]);
+        const fetchCart = async () => {
+            if (!token) return; // Skip if not logged in
 
-    const addToCart = (item: Omit<CartItem, "quantity">) => {
-        setCart((prevCart) => {
-            // Check if item already exists in cart
-            const existingItemIndex = prevCart.findIndex(
-                (cartItem) => cartItem.id === item.id
-            );
+            try {
+                const res = await fetch("http://localhost:5000/api/cart", {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
 
-            if (existingItemIndex >= 0) {
-                // Item exists, update quantity
-                const updatedCart = [...prevCart];
-                updatedCart[existingItemIndex].quantity += 1;
-                return updatedCart;
-            } else {
-                // Item doesn't exist, add it with quantity 1
-                return [...prevCart, { ...item, quantity: 1 }];
+                if (res.ok) {
+                    const data = await res.json();
+                    setCart(data.cartItems || []);
+                } else {
+                    console.warn("Gagal fetch cart:", res.status);
+                }
+            } catch (err) {
+                console.error("Error saat fetch cart:", err);
             }
+        };
+
+        fetchCart();
+    }, [token]);
+
+    const fetchUpdatedCart = async () => {
+        if (!token) return;
+
+        const res = await fetch("http://localhost:5000/api/cart", {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         });
+
+        if (res.ok) {
+            const data = await res.json();
+            setCart(data.cartItems || []);
+        }
     };
 
-    const removeFromCart = (itemId: string) => {
-        setCart((prevCart) => prevCart.filter((item) => item.id !== itemId));
+    const addToCart = async (item: Omit<CartItem, "quantity">) => {
+        if (!token) return;
+
+        await fetch("http://localhost:5000/api/cart", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ ...item, quantity: 1 }),
+        });
+
+        await fetchUpdatedCart();
     };
 
-    const updateQuantity = (itemId: string, quantity: number) => {
+    const removeFromCart = async (itemId: string) => {
+        if (!token) return;
+
+        await fetch(`http://localhost:5000/api/cart/${itemId}`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        await fetchUpdatedCart();
+    };
+
+    const updateQuantity = async (itemId: string, quantity: number) => {
+        if (!token) return;
+
         if (quantity <= 0) {
-            removeFromCart(itemId);
+            await removeFromCart(itemId);
             return;
         }
 
-        setCart((prevCart) =>
-            prevCart.map((item) =>
-                item.id === itemId ? { ...item, quantity } : item
-            )
-        );
+        await fetch(`http://localhost:5000/api/cart/${itemId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ quantity }),
+        });
+
+        await fetchUpdatedCart();
     };
 
-    const clearCart = () => {
+    const clearCart = async () => {
+        if (!token) return;
+
+        await fetch(`http://localhost:5000/api/cart/clear`, {
+            method: "DELETE",
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
         setCart([]);
     };
 
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
-
     const totalPrice = cart.reduce(
         (total, item) => total + item.price * item.quantity,
         0
@@ -106,7 +161,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
 
 export const useCart = (): CartContextType => {
     const context = useContext(CartContext);
-    if (context === undefined) {
+    if (!context) {
         throw new Error("useCart must be used within a CartProvider");
     }
     return context;

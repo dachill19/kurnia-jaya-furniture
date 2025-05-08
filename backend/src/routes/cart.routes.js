@@ -4,6 +4,7 @@ import {
     getCartController,
     updateCartController,
     removeCartController,
+    clearCartController,
 } from "../controllers/cart.controller.js";
 import { authenticate } from "../middlewares/auth.js";
 
@@ -11,6 +12,7 @@ const router = express.Router();
 
 router.use(authenticate);
 
+router.delete("/clear", clearCartController);
 router.post("/", addCartController);
 router.get("/", getCartController);
 router.put("/:cartId", updateCartController);

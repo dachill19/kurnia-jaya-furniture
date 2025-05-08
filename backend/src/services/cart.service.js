@@ -50,6 +50,8 @@ export const removeFromCart = async (cartId) => {
     });
 };
 
-// test
-// testing 2
-//testing 3
+export const clearCart = async (userId) => {
+    return await prisma.cart.deleteMany({
+        where: { userId },
+    });
+};

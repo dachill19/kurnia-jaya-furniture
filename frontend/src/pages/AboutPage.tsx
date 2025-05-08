@@ -46,37 +46,31 @@ const AboutPage = () => {
             {/* Our Values Section */}
             <section className="mb-16 bg-gray-50 p-8 rounded-lg">
                 <h2 className="text-2xl font-serif font-bold text-kj-brown mb-6 text-center">
-                    {language === "id" ? "Nilai-Nilai Kami" : "Our Values"}
+                    {t("ourValueTitle")}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white p-6 rounded-lg shadow-sm">
                         <h3 className="font-serif font-bold text-xl mb-3 text-kj-red">
-                            {language === "id" ? "Kualitas" : "Quality"}
+                            {t("value1")}
                         </h3>
                         <p className="text-gray-600">
-                            {language === "id"
-                                ? "Kami menggunakan material terbaik dan teknik pembuatan yang cermat untuk memastikan produk kami tahan lama dan memuaskan."
-                                : "We use the best materials and careful manufacturing techniques to ensure our products are durable and satisfying."}
+                            {t("valueDescription1")}
                         </p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-sm">
                         <h3 className="font-serif font-bold text-xl mb-3 text-kj-red">
-                            {language === "id" ? "Inovasi" : "Innovation"}
+                            {t("value2")}
                         </h3>
                         <p className="text-gray-600">
-                            {language === "id"
-                                ? "Kami terus mengembangkan desain baru dan mengadopsi teknologi terbaru untuk menciptakan furnitur yang modern dan fungsional."
-                                : "We continuously develop new designs and adopt the latest technologies to create modern and functional furniture."}
+                            {t("valueDescription2")}
                         </p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-sm">
                         <h3 className="font-serif font-bold text-xl mb-3 text-kj-red">
-                            {language === "id" ? "Pelayanan" : "Service"}
+                            {t("value3")}
                         </h3>
                         <p className="text-gray-600">
-                            {language === "id"
-                                ? "Kepuasan pelanggan adalah prioritas utama kami, dan kami selalu berusaha memberikan pengalaman belanja yang terbaik."
-                                : "Customer satisfaction is our top priority, and we always strive to provide the best shopping experience."}
+                            {t("valueDescription3")}
                         </p>
                     </div>
                 </div>
@@ -85,15 +79,13 @@ const AboutPage = () => {
             {/* Contact Information */}
             <section className="mb-16">
                 <h2 className="text-2xl font-serif font-bold text-kj-brown mb-6 text-center">
-                    {language === "id" ? "Hubungi Kami" : "Contact Us"}
+                    {t("contactUs")}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                             <h3 className="font-serif font-bold text-xl mb-4 text-kj-brown">
-                                {language === "id"
-                                    ? "Informasi Kontak"
-                                    : "Contact Information"}
+                                {t("contactInformation")}
                             </h3>
                             <ul className="space-y-4">
                                 <li className="flex items-start">
@@ -102,11 +94,7 @@ const AboutPage = () => {
                                         size={20}
                                     />
                                     <span>
-                                        <strong>
-                                            {language === "id"
-                                                ? "Alamat:"
-                                                : "Address:"}
-                                        </strong>
+                                        <strong>{t("address")}</strong>
                                         <br />
                                         Jl. Furniture No. 123, Jakarta Selatan,
                                         Indonesia
@@ -118,11 +106,7 @@ const AboutPage = () => {
                                         size={20}
                                     />
                                     <span>
-                                        <strong>
-                                            {language === "id"
-                                                ? "Telepon:"
-                                                : "Phone:"}
-                                        </strong>
+                                        <strong>{t("phone")}</strong>
                                         <br />
                                         +62 123 4567 890
                                     </span>
@@ -167,14 +151,14 @@ const AboutPage = () => {
                             </h3>
                             <div className="w-full h-64 bg-gray-200 rounded-md mb-4">
                                 <a
-                                    href="https://maps.app.goo.gl/vq1j9ZcE7HLffR8u9"
+                                    href="https://maps.app.goo.gl/8LF9Kmn8rjAU8R8Y8"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="block w-full h-full"
                                 >
                                     <iframe
                                         title="Location Map"
-                                        src="https://www.google.com/maps/embed?pb=!1m13!1m8!1m3!1d1667.6075974079063!2d106.51787811180743!3d-6.229196467839362!3m2!1i1024!2i768!4f13.1!3m2!1m1!2s!5e0!3m2!1sen!2sid!4v1746668883552!5m2!1sen!2sid"
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3954.9810683847013!2d110.81299617592964!3d-7.577039074851862!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a167b9908bfe9%3A0x370194d43090d68d!2sEL&#39;S%20Computer%20Solo!5e0!3m2!1sen!2sid!4v1746669351916!5m2!1sen!2sid"
                                         className="w-full h-full rounded-md"
                                         allowFullScreen
                                         loading="lazy"

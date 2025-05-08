@@ -78,7 +78,7 @@ model Category {
 model Product {
   id              String    @id @default(uuid())
   name            String
-  description     String
+  description     String    @db.LongText
   price           Float
   discountPrice   Float?
   stock           Int       @default(0)

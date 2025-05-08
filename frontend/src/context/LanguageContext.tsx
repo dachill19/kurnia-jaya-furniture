@@ -103,6 +103,21 @@ const enTranslations = {
         "Our products are designed with the perfect blend of functionality, aesthetics, and comfort. We understand that furniture is not just about appearance, but also about lasting quality and comfort.",
     aboutStoryParagraph3:
         "At Kurnia Jaya, we are committed to providing the best products and exceptional customer service. We believe that customer satisfaction is the key to our success.",
+    ourValueTitle: "Our Values",
+    value1: "Quality",
+    valueDescription1:
+        "We use the best materials and careful manufacturing techniques to ensure our products are durable and satisfying.",
+    value2: "Innovation",
+    valueDescription2:
+        "We continuously develop new designs and adopt the latest technologies to create modern and functional furniture.",
+    value3: "Service",
+    valueDescription3:
+        "Customer satisfaction is our top priority, and we always strive to provide the best shopping experience.",
+
+    // Contact Information
+    contactInformation: "Contact Information",
+    address: "Address",
+    phone: "Phone",
 
     // Footer
     customerService: "Customer Service",
@@ -212,6 +227,21 @@ const idTranslations = {
         "Produk kami dirancang dengan perpaduan sempurna antara fungsionalitas, estetika, dan kenyamanan. Kami memahami bahwa furnitur bukan hanya tentang tampilan, tetapi juga tentang kualitas dan kenyamanan yang bertahan lama.",
     aboutStoryParagraph3:
         "Di Kurnia Jaya, kami berkomitmen untuk menyediakan produk terbaik dan layanan pelanggan yang luar biasa. Kami percaya bahwa kepuasan pelanggan adalah kunci keberhasilan kami.",
+    ourValueTitle: "Nilai-Nilai Kami",
+    value1: "Kualitas",
+    valueDescription1:
+        "Kami menggunakan material terbaik dan teknik pembuatan yang cermat untuk memastikan produk kami tahan lama dan memuaskan.",
+    value2: "Inovasi",
+    valueDescription2:
+        "Kami terus mengembangkan desain baru dan mengadopsi teknologi terbaru untuk menciptakan furnitur yang modern dan fungsional.",
+    value3: "Pelayanan",
+    valueDescription3:
+        "Kepuasan pelanggan adalah prioritas utama kami, dan kami selalu berusaha memberikan pengalaman belanja yang terbaik.",
+
+    // Contact Information
+    contactInformation: "Informasi Kontak",
+    address: "Alamat",
+    phone: "Telepon",
 
     // Footer
     customerService: "Layanan Pelanggan",

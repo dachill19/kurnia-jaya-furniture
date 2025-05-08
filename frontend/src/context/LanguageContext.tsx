@@ -17,6 +17,23 @@ const enTranslations = {
     register: "Register",
     logOut: "Log Out",
 
+    // Auth Pages
+    createAccount: "Create Account",
+    email: "Email Address",
+    phone: "Phone Number",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+    rememberMe: "Remember Me",
+    forgotPassword: "Forgot Password?",
+    orContinueWith: "Or continue with",
+    agreeToTerms: "I agree to the",
+    termsAndConditions: "Terms and Conditions",
+    alreadyHaveAccount: "Already have an account?",
+    dontHaveAccount: "Don't have an account?",
+    usePhoneInstead: "Use phone number instead",
+    useEmailInstead: "Use email instead",
+    fullName: "Full Name",
+
     // Search
     searchPlaceholder: "Search for furniture...",
     search: "Search",
@@ -117,7 +134,6 @@ const enTranslations = {
     // Contact Information
     contactInformation: "Contact Information",
     address: "Address",
-    phone: "Phone",
 
     // Footer
     customerService: "Customer Service",
@@ -140,6 +156,23 @@ const idTranslations = {
     signIn: "Masuk",
     register: "Daftar",
     logOut: "Keluar",
+
+    // Auth Pages
+    createAccount: "Buat Akun",
+    email: "Alamat Email",
+    phone: "Nomor Telepon",
+    password: "Kata Sandi",
+    confirmPassword: "Konfirmasi Kata Sandi",
+    rememberMe: "Ingat Saya",
+    forgotPassword: "Lupa Kata Sandi?",
+    orContinueWith: "Atau lanjutkan dengan",
+    agreeToTerms: "Saya menyetujui",
+    termsAndConditions: "Syarat dan Ketentuan",
+    alreadyHaveAccount: "Sudah punya akun?",
+    dontHaveAccount: "Belum punya akun?",
+    usePhoneInstead: "Gunakan nomor telepon",
+    useEmailInstead: "Gunakan email",
+    fullName: "Nama Lengkap",
 
     // Search
     searchPlaceholder: "Cari furnitur...",
@@ -241,7 +274,6 @@ const idTranslations = {
     // Contact Information
     contactInformation: "Informasi Kontak",
     address: "Alamat",
-    phone: "Telepon",
 
     // Footer
     customerService: "Layanan Pelanggan",

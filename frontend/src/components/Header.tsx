@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { startCase, kebabCase } from "lodash";
 import axios from "axios";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import logo from "@/assets/logo.png";
 import {
@@ -27,6 +28,7 @@ const Header = () => {
     console.log("Rendering Header");
     const { t, language, setLanguage } = useLanguage();
     const { totalItems } = useCart();
+    const { user } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [categories, setCategories] = useState([]);
@@ -133,13 +135,6 @@ const Header = () => {
                     {/* Nav Actions (desktop) */}
                     <div className="hidden md:flex items-center space-x-6">
                         <Link
-                            to="/signin"
-                            className="flex items-center hover:text-kj-red"
-                        >
-                            <User size={22} className="mr-2" />
-                            <span className="font-medium">{t("signIn")}</span>
-                        </Link>
-                        <Link
                             to="/cart"
                             className="flex items-center hover:text-kj-red relative"
                         >
@@ -151,6 +146,26 @@ const Header = () => {
                                 </span>
                             )}
                         </Link>
+
+                        {user ? (
+                            <Link
+                                to="/profile"
+                                className="flex items-center hover:text-kj-red"
+                            >
+                                <User size={22} className="mr-2" />
+                                <span className="font-medium">{user.name}</span>
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/signin"
+                                className="flex items-center hover:text-kj-red"
+                            >
+                                <User size={22} className="mr-2" />
+                                <span className="font-medium">
+                                    {t("signIn")}
+                                </span>
+                            </Link>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -289,15 +304,27 @@ const Header = () => {
                                         {t("navAbout")}
                                     </Link>
                                 </li>
-                                <li>
-                                    <Link
-                                        to="/signin"
-                                        className="block py-2 px-3 hover:bg-gray-100 rounded-md"
-                                        onClick={() => setIsMenuOpen(false)}
-                                    >
-                                        {t("signIn")}
-                                    </Link>
-                                </li>
+                                {user ? (
+                                    <li>
+                                        <Link
+                                            to="/profile"
+                                            className="block py-2 px-3 hover:bg-gray-100 rounded-md"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            {user.name}
+                                        </Link>
+                                    </li>
+                                ) : (
+                                    <li>
+                                        <Link
+                                            to="/signin"
+                                            className="block py-2 px-3 hover:bg-gray-100 rounded-md"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            {t("signIn")}
+                                        </Link>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     </div>

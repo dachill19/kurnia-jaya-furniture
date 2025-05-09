@@ -8,6 +8,7 @@ import HomePage from "./pages/HomePage";
 import AboutPage from "./pages/AboutPage";
 import SignInPage from "./pages/SignInPage";
 import ProfilePage from "./pages/ProfilePage";
+import CategoriesPage from "./pages/CategoriesPage";
 
 const App = () => (
     <LanguageProvider>
@@ -20,6 +21,10 @@ const App = () => (
                             <Route path="about" element={<AboutPage />} />
                             <Route path="signin" element={<SignInPage />} />
                             <Route path="/profile" element={<ProfilePage />} />
+                            <Route
+                                path="categories"
+                                element={<CategoriesPage />}
+                            />
                         </Route>
                     </Routes>
                 </BrowserRouter>

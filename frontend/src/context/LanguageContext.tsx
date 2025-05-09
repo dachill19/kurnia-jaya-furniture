@@ -34,6 +34,11 @@ const enTranslations = {
     useEmailInstead: "Use email instead",
     fullName: "Full Name",
 
+    // Error Messages
+    emailNotFound: "Email not found.",
+    invalidPassword: "Incorrect password.",
+    loginFailed: "Login failed. Please try again later.",
+
     // Search
     searchPlaceholder: "Search for furniture...",
     search: "Search",
@@ -173,6 +178,11 @@ const idTranslations = {
     usePhoneInstead: "Gunakan nomor telepon",
     useEmailInstead: "Gunakan email",
     fullName: "Nama Lengkap",
+
+    // Error Messages
+    emailNotFound: "Email tidak ditemukan.",
+    invalidPassword: "Password salah.",
+    loginFailed: "Login gagal. Coba lagi nanti.",
 
     // Search
     searchPlaceholder: "Cari furnitur...",

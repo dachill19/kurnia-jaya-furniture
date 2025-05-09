@@ -7,8 +7,17 @@ import {
 export const getAllCategoriesController = async (req, res) => {
     try {
         const categories = await getAllCategories();
-        res.json(categories);
+
+        const formattedCategories = categories.map((category) => ({
+            id: category.id,
+            name: category.name,
+            imageUrl: category.imageUrl,
+            productCount: category._count.products, // ambil jumlah produk
+        }));
+
+        res.json(formattedCategories);
     } catch (err) {
+        console.error("Error saat mengambil kategori:", err.message);
         res.status(500).json({ error: "Gagal mengambil data kategori" });
     }
 };

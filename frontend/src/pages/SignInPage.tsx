@@ -43,10 +43,18 @@ const SignInPage = () => {
             navigate("/");
         } catch (error) {
             if (error.response?.data?.error) {
-                // Error umum dari loginUser (e.g. email tidak ditemukan, password salah)
-                setErrorMsg(error.response.data.error);
+                // Pemetaan pesan error backend ke dalam bahasa yang dipilih
+                const errorKey = error.response.data.error;
+
+                if (errorKey === "Email tidak ditemukan.") {
+                    setErrorMsg(t("emailNotFound"));
+                } else if (errorKey === "Password salah.") {
+                    setErrorMsg(t("invalidPassword"));
+                } else {
+                    setErrorMsg(t("loginFailed"));
+                }
             } else {
-                setErrorMsg("Login gagal. Coba lagi nanti.");
+                setErrorMsg(t("loginFailed"));
             }
         }
     };

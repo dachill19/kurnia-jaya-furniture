@@ -39,7 +39,7 @@ export const getHotProducts = async () => {
 export const getLatestProducts = async () => {
     return await prisma.product.findMany({
         orderBy: { createdAt: "desc" },
-        take: 10,
+        take: 4,
         include: {
             category: true,
             images: true,

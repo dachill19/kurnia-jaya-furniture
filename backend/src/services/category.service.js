@@ -23,6 +23,7 @@ export const getProductsByCategory = async (categoryName) => {
         include: {
             category: true,
             images: true,
+            reviews: true,
         },
     });
 };

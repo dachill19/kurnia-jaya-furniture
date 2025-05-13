@@ -1,7 +1,11 @@
-import { registerUser, loginUser } from "../services/auth.service.js";
-import prisma from "../lib/prisma.js";
+import {
+    registerUser,
+    loginUser,
+    getUserProfile,
+    updateUserProfile,
+} from "../services/auth.service.js";
 
-export const register = async (req, res) => {
+export const registerController = async (req, res) => {
     try {
         const { name, email, phoneNumber, password } = req.body;
         const user = await registerUser(name, email, phoneNumber, password);
@@ -11,7 +15,7 @@ export const register = async (req, res) => {
     }
 };
 
-export const login = async (req, res) => {
+export const loginController = async (req, res) => {
     try {
         const { email, password } = req.body;
         const token = await loginUser(email, password);
@@ -21,25 +25,30 @@ export const login = async (req, res) => {
     }
 };
 
-export const getProfile = async (req, res) => {
+export const getUserProfileController = async (req, res) => {
     try {
-        console.log("req.user:", req.user); // Tambahkan ini untuk debug
-        const userId = req.user.id;
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phoneNumber: true,
-                role: true,
-                createdAt: true,
-            },
-        });
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
 
+        const user = await getUserProfile(userId);
         res.json(user);
     } catch (err) {
-        console.error("Error getProfile:", err); // debug tambahan
-        res.status(500).json({ error: "Gagal mengambil data profil" });
+        res.status(500).json({
+            error: err.message || "Gagal mengambil data profil",
+        });
+    }
+};
+
+export const updateUserProfileController = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ error: "Unauthorized" });
+
+        const updatedUser = await updateUserProfile(userId, req.body);
+        res.json(updatedUser);
+    } catch (err) {
+        res.status(400).json({
+            error: err.message || "Gagal memperbarui profil",
+        });
     }
 };

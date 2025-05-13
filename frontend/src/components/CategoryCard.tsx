@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { kebabCase } from "lodash";
 
 interface CategoryCardProps {
     id: string;
@@ -16,7 +15,10 @@ const CategoryCard = ({
     productCount,
 }: CategoryCardProps) => {
     return (
-        <Link to={`/categories/${kebabCase(name)}`} className="block group">
+        <Link
+            to={`/categories/${encodeURIComponent(name)}`}
+            className="block group"
+        >
             <motion.div
                 className="relative h-80 rounded-xl overflow-hidden shadow-lg"
                 whileHover={{ y: -5 }}

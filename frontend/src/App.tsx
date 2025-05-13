@@ -10,17 +10,32 @@ import AccountPage from "./pages/AccountPage";
 import CategoriesPage from "./pages/CategoriesPage";
 import NotFound from "./pages/NotFound";
 import CategoryPage from "./pages/CategoryPage";
+import AdminLogin from "./pages/admin/AdminLogin";
+import { SidebarProvider } from "./components/ui/sidebar";
+import AdminLayout from "./components/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
 
 const App = () => (
     <AuthProvider>
         <CartProvider>
             <BrowserRouter>
                 <Routes>
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route
+                        path="/admin/*"
+                        element={
+                            <SidebarProvider>
+                                <AdminLayout />
+                            </SidebarProvider>
+                        }
+                    >
+                        <Route index element={<Dashboard />} />
+                    </Route>
                     <Route path="/" element={<Layout />}>
                         <Route index element={<HomePage />} />
                         <Route path="about" element={<AboutPage />} />
                         <Route path="signin" element={<SignInPage />} />
-                        <Route path="/account" element={<AccountPage />} />
+                        <Route path="account" element={<AccountPage />} />
                         <Route path="categories" element={<CategoriesPage />} />
                         <Route
                             path="categories/:categoryName"

@@ -1,6 +1,7 @@
 import {
     registerUser,
     loginUser,
+    loginAdmin,
     getUserProfile,
     updateUserProfile,
 } from "../services/auth.service.js";
@@ -19,6 +20,16 @@ export const loginController = async (req, res) => {
     try {
         const { email, password } = req.body;
         const token = await loginUser(email, password);
+        res.json({ token });
+    } catch (err) {
+        res.status(401).json({ error: err.message });
+    }
+};
+
+export const loginAdminController = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const token = await loginAdmin(email, password);
         res.json({ token });
     } catch (err) {
         res.status(401).json({ error: err.message });

@@ -4,12 +4,10 @@ import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useLanguage } from "@/context/LanguageContext";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 
 const SignInPage = () => {
-    const { t } = useLanguage();
     const { login } = useAuth();
     const navigate = useNavigate();
 
@@ -19,6 +17,9 @@ const SignInPage = () => {
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
+    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>(
+        {}
+    );
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -27,6 +28,7 @@ const SignInPage = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrorMsg("");
+        setFieldErrors({});
 
         try {
             const response = await axios.post(
@@ -42,19 +44,18 @@ const SignInPage = () => {
             await login(token, rememberMe);
             navigate("/");
         } catch (error) {
-            if (error.response?.data?.error) {
-                // Pemetaan pesan error backend ke dalam bahasa yang dipilih
-                const errorKey = error.response.data.error;
-
-                if (errorKey === "Email tidak ditemukan.") {
-                    setErrorMsg(t("emailNotFound"));
-                } else if (errorKey === "Password salah.") {
-                    setErrorMsg(t("invalidPassword"));
-                } else {
-                    setErrorMsg(t("loginFailed"));
-                }
+            const res = error.response?.data;
+            if (res?.validationErrors) {
+                // Buat objek error berdasarkan field
+                const fieldErrs: { [key: string]: string } = {};
+                res.validationErrors.forEach((err: any) => {
+                    fieldErrs[err.path] = err.msg;
+                });
+                setFieldErrors(fieldErrs);
+            } else if (res?.error) {
+                setErrorMsg(res.error); // error umum
             } else {
-                setErrorMsg(t("loginFailed"));
+                setErrorMsg("Login gagal. Coba lagi nanti.");
             }
         }
     };
@@ -64,7 +65,7 @@ const SignInPage = () => {
             <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden">
                 <div className="p-8">
                     <h1 className="text-2xl font-serif font-bold text-center mb-6">
-                        {isRegistering ? t("createAccount") : t("signIn")}
+                        {isRegistering ? "Buat Akun" : "Masuk"}
                     </h1>
 
                     <Tabs defaultValue="login" className="w-full">
@@ -74,19 +75,19 @@ const SignInPage = () => {
                                 onClick={() => setIsRegistering(false)}
                                 className="data-[state=active]:bg-kj-red data-[state=active]:text-white"
                             >
-                                {t("signIn")}
+                                Masuk
                             </TabsTrigger>
                             <TabsTrigger
                                 value="register"
                                 onClick={() => setIsRegistering(true)}
                                 className="data-[state=active]:bg-kj-red data-[state=active]:text-white"
                             >
-                                {t("register")}
+                                Daftar
                             </TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="login">
-                            <form onSubmit={handleSubmit}>
+                            <form onSubmit={handleSubmit} noValidate>
                                 <div className="mb-4">
                                     <div className="flex border border-gray-300 rounded-md mb-2">
                                         <div className="flex items-center px-3 border-r border-gray-300">
@@ -97,7 +98,7 @@ const SignInPage = () => {
                                         </div>
                                         <input
                                             type="email"
-                                            placeholder={t("email")}
+                                            placeholder="Alamat Email"
                                             value={email}
                                             onChange={(e) =>
                                                 setEmail(e.target.value)
@@ -106,6 +107,11 @@ const SignInPage = () => {
                                             className="flex-1 p-2 focus:outline-none"
                                         />
                                     </div>
+                                    {fieldErrors.email && (
+                                        <p className="text-sm text-red-600 mt-1">
+                                            {fieldErrors.email}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="mb-4">
@@ -122,7 +128,7 @@ const SignInPage = () => {
                                                     ? "text"
                                                     : "password"
                                             }
-                                            placeholder={t("password")}
+                                            placeholder="Kata Sandi"
                                             value={password}
                                             onChange={(e) =>
                                                 setPassword(e.target.value)
@@ -142,6 +148,11 @@ const SignInPage = () => {
                                             )}
                                         </button>
                                     </div>
+                                    {fieldErrors.password && (
+                                        <p className="text-sm text-red-600 mt-1">
+                                            {fieldErrors.password}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="flex justify-between items-center mb-6">
@@ -159,14 +170,14 @@ const SignInPage = () => {
                                             htmlFor="remember"
                                             className="ml-2 text-sm text-gray-600"
                                         >
-                                            {t("rememberMe")}
+                                            Ingat Saya
                                         </label>
                                     </div>
                                     <Link
                                         to="/forgot-password"
                                         className="text-sm text-kj-red hover:underline"
                                     >
-                                        {t("forgotPassword")}
+                                        Lupa Kata Sandi?
                                     </Link>
                                 </div>
 
@@ -180,23 +191,20 @@ const SignInPage = () => {
                                     type="submit"
                                     className="w-full bg-kj-red hover:bg-kj-darkred mb-4"
                                 >
-                                    {t("signIn")}
+                                    Masuk
                                 </Button>
                             </form>
 
                             <div className="relative flex items-center justify-center my-6">
                                 <Separator className="absolute w-full" />
                                 <span className="relative px-2 bg-white text-sm text-gray-500">
-                                    {t("orContinueWith")}
+                                    Atau lanjutkan dengan
                                 </span>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 mb-6">
+                            <div className="flex mb-6">
                                 <Button variant="outline" className="w-full">
                                     Google
-                                </Button>
-                                <Button variant="outline" className="w-full">
-                                    Facebook
                                 </Button>
                             </div>
                         </TabsContent>

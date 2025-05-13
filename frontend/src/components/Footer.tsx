@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { startCase, kebabCase } from "lodash";
 import axios from "axios";
-import { useLanguage } from "@/context/LanguageContext";
 import {
     Facebook,
     Instagram,
@@ -17,7 +15,6 @@ import { Button } from "@/components/ui/button";
 
 const Footer = () => {
     const [categories, setCategories] = useState([]);
-    const { t } = useLanguage();
 
     useEffect(() => {
         const fetchCategories = async () => {
@@ -80,7 +77,7 @@ const Footer = () => {
                     {/* Column 2: Categories */}
                     <div>
                         <h3 className="text-xl font-serif font-bold text-kj-brown dark:text-white mb-6 relative after:absolute after:bottom-0 after:left-0 after:w-16 after:h-0.5 after:bg-kj-red after:-mb-2">
-                            {t("categories")}
+                            Kategori
                         </h3>
                         <ul className="space-y-4">
                             {categories.map((category) => (
@@ -89,13 +86,13 @@ const Footer = () => {
                                     className="transform hover:translate-x-1 transition-transform"
                                 >
                                     <Link
-                                        to={`/categories/${kebabCase(
+                                        to={`/categories/${encodeURIComponent(
                                             category.name
                                         )}`}
                                         className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
                                     >
                                         <span className="mr-2">›</span>
-                                        {startCase(category.name)}
+                                        {category.name}
                                     </Link>
                                 </li>
                             ))}
@@ -105,7 +102,7 @@ const Footer = () => {
                     {/* Column 3: Links */}
                     <div>
                         <h3 className="text-xl font-serif font-bold text-kj-brown dark:text-white mb-6 relative after:absolute after:bottom-0 after:left-0 after:w-16 after:h-0.5 after:bg-kj-red after:-mb-2">
-                            {t("customerService")}
+                            Layanan Pelanggan
                         </h3>
                         <ul className="space-y-4">
                             <li className="transform hover:translate-x-1 transition-transform">
@@ -114,7 +111,7 @@ const Footer = () => {
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
                                 >
                                     <span className="mr-2">›</span>
-                                    {t("aboutUs")}
+                                    Tentang Kami
                                 </Link>
                             </li>
                             <li className="transform hover:translate-x-1 transition-transform">
@@ -123,7 +120,7 @@ const Footer = () => {
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
                                 >
                                     <span className="mr-2">›</span>
-                                    {t("trackOrder")}
+                                    Lacak Pesanan
                                 </Link>
                             </li>
                             <li className="transform hover:translate-x-1 transition-transform">
@@ -132,7 +129,7 @@ const Footer = () => {
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
                                 >
                                     <span className="mr-2">›</span>
-                                    {t("payment")}
+                                    Pembayaran
                                 </Link>
                             </li>
                             <li className="transform hover:translate-x-1 transition-transform">
@@ -141,7 +138,7 @@ const Footer = () => {
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
                                 >
                                     <span className="mr-2">›</span>
-                                    {t("shipping")}
+                                    Pengiriman
                                 </Link>
                             </li>
                         </ul>
@@ -150,7 +147,7 @@ const Footer = () => {
                     {/* Column 4: Contact */}
                     <div>
                         <h3 className="text-xl font-serif font-bold text-kj-brown dark:text-white mb-6 relative after:absolute after:bottom-0 after:left-0 after:w-16 after:h-0.5 after:bg-kj-red after:-mb-2">
-                            {t("contactUs")}
+                            Hubungi Kami
                         </h3>
                         <ul className="space-y-5">
                             <li className="flex items-start">

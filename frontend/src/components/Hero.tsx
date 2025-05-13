@@ -1,35 +1,33 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Hero = () => {
-    const { t } = useLanguage();
-
     const slidesData = [
         {
             id: 1,
             image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop",
-            title: t("heroTitle1"),
-            subtitle: t("heroSubtitle1"),
-            cta: t("heroCta1"),
+            title: "Koleksi Furniture Terbaru",
+            subtitle: "Desain Modern & Berkualitas Tinggi",
+            cta: "Belanja Sekarang",
             link: "/products",
         },
         {
             id: 2,
             image: "https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=2070&auto=format&fit=crop",
-            title: t("heroTitle2"),
-            subtitle: t("heroSubtitle2"),
-            cta: t("heroCta2"),
+            title: "Diskon Hingga 30%",
+            subtitle: "Untuk Semua Furnitur Ruang Tamu",
+            cta: "Lihat Penawaran",
             link: "/categories/living-room",
         },
         {
             id: 3,
             image: "https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=2070&auto=format&fit=crop",
-            title: t("heroTitle3"),
-            subtitle: t("heroSubtitle3"),
-            cta: t("heroCta3"),
+            title: "Kurnia Jaya Furniture",
+            subtitle:
+                "#1 Furniture Terbaik di Kota#1 Furniture Terbaik di Kota",
+            cta: "Tentang Kami",
             link: "/about",
         },
     ];

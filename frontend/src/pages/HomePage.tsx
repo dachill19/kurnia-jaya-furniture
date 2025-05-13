@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useLanguage } from "@/context/LanguageContext";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import ProductCard from "@/components/ProductCard";
@@ -10,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
 const HomePage = () => {
-    const { t } = useLanguage();
     const [hotProducts, setHotProducts] = useState([]);
     const [latestProducts, setLatestProducts] = useState([]);
     const [categories, setCategories] = useState([]);
@@ -77,13 +75,13 @@ const HomePage = () => {
                 <div className="container-custom">
                     <div className="flex justify-between items-center mb-8">
                         <h2 className="section-title text-3xl">
-                            {t("hotProducts")}
+                            Produk Populer
                         </h2>
                         <Link
                             to="/products"
                             className="text-kj-red hover:text-kj-darkred flex items-center text-lg"
                         >
-                            {t("viewAll")}{" "}
+                            Lihat Semua
                             <ArrowRight size={18} className="ml-1" />
                         </Link>
                     </div>
@@ -110,13 +108,13 @@ const HomePage = () => {
                 <div className="container-custom">
                     <div className="flex justify-between items-center mb-8">
                         <h2 className="section-title text-3xl">
-                            {t("shopByCategory")}
+                            Belanja berdasarkan Kategori
                         </h2>
                         <Link
                             to="/categories"
                             className="text-kj-red hover:text-kj-darkred flex items-center text-lg"
                         >
-                            {t("viewAll")}{" "}
+                            Lihat Semua
                             <ArrowRight size={18} className="ml-1" />
                         </Link>
                     </div>
@@ -139,13 +137,13 @@ const HomePage = () => {
                 <div className="container-custom">
                     <div className="flex justify-between items-center mb-8">
                         <h2 className="section-title text-3xl">
-                            {t("newArrivals")}
+                            Produk Terbaru
                         </h2>
                         <Link
                             to="/products"
                             className="text-kj-red hover:text-kj-darkred flex items-center text-lg"
                         >
-                            {t("viewAll")}{" "}
+                            Lihat Semua
                             <ArrowRight size={18} className="ml-1" />
                         </Link>
                     </div>

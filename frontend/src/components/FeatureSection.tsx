@@ -1,60 +1,33 @@
 import { Truck, CreditCard, RotateCcw, Phone } from "lucide-react";
-import { useLanguage } from "@/context/LanguageContext";
 
 const features = [
     {
         id: 1,
         icon: Truck,
-        title: {
-            id: "Pengiriman Cepat",
-            en: "Fast Delivery",
-        },
-        description: {
-            id: "Pengiriman ke seluruh Indonesia",
-            en: "Delivery across Indonesia",
-        },
+        title: "Pengiriman Cepat",
+        description: "Pengiriman ke seluruh Indonesia",
     },
     {
         id: 2,
         icon: CreditCard,
-        title: {
-            id: "Pembayaran Aman",
-            en: "Secure Payment",
-        },
-        description: {
-            id: "Berbagai metode pembayaran",
-            en: "Multiple payment methods",
-        },
+        title: "Pembayaran Aman",
+        description: "Berbagai metode pembayaran",
     },
     {
         id: 3,
         icon: RotateCcw,
-        title: {
-            id: "Garansi 30 Hari",
-            en: "30-Day Warranty",
-        },
-        description: {
-            id: "Jaminan kepuasan pelanggan",
-            en: "Customer satisfaction guarantee",
-        },
+        title: "Garansi 30 Hari",
+        description: "Jaminan kepuasan pelanggan",
     },
     {
         id: 4,
         icon: Phone,
-        title: {
-            id: "Layanan 24/7",
-            en: "24/7 Support",
-        },
-        description: {
-            id: "Dukungan pelanggan kapan saja",
-            en: "Customer support anytime",
-        },
+        title: "Layanan 24/7",
+        description: "Dukungan pelanggan kapan saja",
     },
 ];
 
 const FeatureSection = () => {
-    const { language } = useLanguage();
-
     return (
         <section className="bg-gray-50 py-12">
             <div className="container-custom">
@@ -70,10 +43,10 @@ const FeatureSection = () => {
                                     <Icon size={24} className="text-kj-red" />
                                 </div>
                                 <h3 className="font-serif font-bold text-lg mb-2">
-                                    {feature.title[language]}
+                                    {feature.title}
                                 </h3>
                                 <p className="text-gray-600">
-                                    {feature.description[language]}
+                                    {feature.description}
                                 </p>
                             </div>
                         );

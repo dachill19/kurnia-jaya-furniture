@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { useLanguage } from "@/context/LanguageContext";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Star } from "lucide-react";
@@ -38,7 +37,6 @@ const ProductCard = ({
     category,
     isHot = false,
 }: ProductCardProps) => {
-    const { t } = useLanguage();
     const { addToCart } = useCart();
 
     // Ambil gambar utama

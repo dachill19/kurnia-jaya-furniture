@@ -1,18 +1,16 @@
-import { useLanguage } from "@/context/LanguageContext";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 const AboutPage = () => {
-    const { t, language } = useLanguage();
-
     return (
         <div className="container-custom py-12">
             {/* Page Header */}
             <div className="text-center mb-12">
                 <h1 className="text-3xl md:text-4xl font-serif font-bold text-kj-brown mb-4">
-                    {t("aboutTitle")}
+                    Tentang Kami
                 </h1>
                 <p className="text-gray-600 max-w-2xl mx-auto">
-                    {t("aboutDescription")}
+                    Kurnia Jaya Furniture - Menyediakan furnitur berkualitas
+                    dengan desain modern dan harga terjangkau sejak 2005.
                 </p>
             </div>
 
@@ -21,16 +19,28 @@ const AboutPage = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                     <div>
                         <h2 className="text-2xl font-serif font-bold text-kj-brown mb-4">
-                            {t("aboutStoryTitle")}
+                            Kisah Kami
                         </h2>
                         <p className="text-gray-600 mb-4">
-                            {t("aboutStoryParagraph1")}
+                            Kurnia Jaya Furniture didirikan pada tahun 2005
+                            dengan visi sederhana: menyediakan furnitur
+                            berkualitas tinggi dengan harga terjangkau untuk
+                            semua orang. Kami memulai dari toko kecil di Jakarta
+                            dan kini telah berkembang menjadi salah satu
+                            perusahaan furnitur terkemuka di Indonesia.
                         </p>
                         <p className="text-gray-600 mb-4">
-                            {t("aboutStoryParagraph2")}
+                            Produk kami dirancang dengan perpaduan sempurna
+                            antara fungsionalitas, estetika, dan kenyamanan.
+                            Kami memahami bahwa furnitur bukan hanya tentang
+                            tampilan, tetapi juga tentang kualitas dan
+                            kenyamanan yang bertahan lama.
                         </p>
                         <p className="text-gray-600">
-                            {t("aboutStoryParagraph3")}
+                            Di Kurnia Jaya, kami berkomitmen untuk menyediakan
+                            produk terbaik dan layanan pelanggan yang luar
+                            biasa. Kami percaya bahwa kepuasan pelanggan adalah
+                            kunci keberhasilan kami.
                         </p>
                     </div>
                     <div>
@@ -46,31 +56,37 @@ const AboutPage = () => {
             {/* Our Values Section */}
             <section className="mb-16 bg-gray-50 p-8 rounded-lg">
                 <h2 className="text-2xl font-serif font-bold text-kj-brown mb-6 text-center">
-                    {t("ourValueTitle")}
+                    Nilai-Nilai Kami
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="bg-white p-6 rounded-lg shadow-sm">
                         <h3 className="font-serif font-bold text-xl mb-3 text-kj-red">
-                            {t("value1")}
+                            Kualitas
                         </h3>
                         <p className="text-gray-600">
-                            {t("valueDescription1")}
+                            Kami menggunakan material terbaik dan teknik
+                            pembuatan yang cermat untuk memastikan produk kami
+                            tahan lama dan memuaskan.
                         </p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-sm">
                         <h3 className="font-serif font-bold text-xl mb-3 text-kj-red">
-                            {t("value2")}
+                            Inovasi
                         </h3>
                         <p className="text-gray-600">
-                            {t("valueDescription2")}
+                            Kami terus mengembangkan desain baru dan mengadopsi
+                            teknologi terbaru untuk menciptakan furnitur yang
+                            modern dan fungsional.
                         </p>
                     </div>
                     <div className="bg-white p-6 rounded-lg shadow-sm">
                         <h3 className="font-serif font-bold text-xl mb-3 text-kj-red">
-                            {t("value3")}
+                            Pelayanan
                         </h3>
                         <p className="text-gray-600">
-                            {t("valueDescription3")}
+                            Kepuasan pelanggan adalah prioritas utama kami, dan
+                            kami selalu berusaha memberikan pengalaman belanja
+                            yang terbaik.
                         </p>
                     </div>
                 </div>
@@ -79,13 +95,13 @@ const AboutPage = () => {
             {/* Contact Information */}
             <section className="mb-16">
                 <h2 className="text-2xl font-serif font-bold text-kj-brown mb-6 text-center">
-                    {t("contactUs")}
+                    Hubungi Kami
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <div className="bg-white p-6 rounded-lg shadow-md mb-6">
                             <h3 className="font-serif font-bold text-xl mb-4 text-kj-brown">
-                                {t("contactInformation")}
+                                Informasi Kontak
                             </h3>
                             <ul className="space-y-4">
                                 <li className="flex items-start">
@@ -94,7 +110,7 @@ const AboutPage = () => {
                                         size={20}
                                     />
                                     <span>
-                                        <strong>{t("address")}</strong>
+                                        <strong>Alamat</strong>
                                         <br />
                                         Jl. Furniture No. 123, Jakarta Selatan,
                                         Indonesia
@@ -106,7 +122,7 @@ const AboutPage = () => {
                                         size={20}
                                     />
                                     <span>
-                                        <strong>{t("phone")}</strong>
+                                        <strong>Phone Number</strong>
                                         <br />
                                         +62 123 4567 890
                                     </span>
@@ -128,15 +144,10 @@ const AboutPage = () => {
                                         size={20}
                                     />
                                     <span>
-                                        <strong>
-                                            {language === "id"
-                                                ? "Jam Operasional:"
-                                                : "Operating Hours:"}
-                                        </strong>
+                                        <strong>Jam Operasional:</strong>
                                         <br />
-                                        {language === "id"
-                                            ? "Senin - Sabtu: 09:00 - 21:00, Minggu: 10:00 - 20:00"
-                                            : "Monday - Saturday: 09:00 - 21:00, Sunday: 10:00 - 20:00"}
+                                        Senin - Sabtu: 09:00 - 21:00, Minggu:
+                                        10:00 - 20:00
                                     </span>
                                 </li>
                             </ul>
@@ -145,9 +156,7 @@ const AboutPage = () => {
                     <div>
                         <div className="bg-white p-6 rounded-lg shadow-md h-full">
                             <h3 className="font-serif font-bold text-xl mb-4 text-kj-brown">
-                                {language === "id"
-                                    ? "Lokasi Kami"
-                                    : "Our Location"}
+                                Lokasi Kami
                             </h3>
                             <div className="w-full h-64 bg-gray-200 rounded-md mb-4">
                                 <a
@@ -168,9 +177,9 @@ const AboutPage = () => {
                                 </a>
                             </div>
                             <p className="text-gray-600">
-                                {language === "id"
-                                    ? "Kami terletak di pusat Jakarta Selatan, mudah diakses dengan transportasi umum dan tersedia area parkir yang luas."
-                                    : "We are located in the center of South Jakarta, easily accessible by public transportation, and ample parking is available."}
+                                Kami terletak di pusat Jakarta Selatan, mudah
+                                diakses dengan transportasi umum dan tersedia
+                                area parkir yang luas.
                             </p>
                         </div>
                     </div>
@@ -181,19 +190,17 @@ const AboutPage = () => {
             <section className="text-center bg-gray-50 p-8 rounded-lg">
                 <div className="max-w-3xl mx-auto">
                     <h2 className="text-2xl font-serif font-bold text-kj-brown mb-4">
-                        {language === "id"
-                            ? "Pesan dari CEO"
-                            : "Message from the CEO"}
+                        Pesan dari CEO
                     </h2>
                     <blockquote className="text-gray-600 italic mb-6">
-                        {language === "id"
-                            ? '"Di Kurnia Jaya Furniture, kami percaya bahwa rumah yang indah dimulai dari furnitur yang berkualitas. Komitmen kami adalah menyediakan produk terbaik dengan harga yang terjangkau untuk semua pelanggan kami. Terima kasih telah menjadi bagian dari perjalanan kami."'
-                            : '"At Kurnia Jaya Furniture, we believe that a beautiful home starts with quality furniture. Our commitment is to provide the best products at affordable prices for all our customers. Thank you for being part of our journey."'}
+                        "Di Kurnia Jaya Furniture, kami percaya bahwa rumah yang
+                        indah dimulai dari furnitur yang berkualitas. Komitmen
+                        kami adalah menyediakan produk terbaik dengan harga yang
+                        terjangkau untuk semua pelanggan kami. Terima kasih
+                        telah menjadi bagian dari perjalanan kami."
                     </blockquote>
                     <p className="font-semibold text-kj-brown">
-                        {language === "id"
-                            ? "Ahmad Kurnia, Pendiri & CEO"
-                            : "Ahmad Kurnia, Founder & CEO"}
+                        Ahmad Kurnia, Pendiri & CEO
                     </p>
                 </div>
             </section>

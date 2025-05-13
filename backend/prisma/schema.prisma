@@ -70,6 +70,7 @@ model Address {
 model Category {
   id              String    @id @default(uuid())
   name            String    @unique 
+  imageUrl        String?
   products        Product[]
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
@@ -78,7 +79,7 @@ model Category {
 model Product {
   id              String    @id @default(uuid())
   name            String
-  description     String
+  description     String    @db.LongText
   price           Float
   discountPrice   Float?
   stock           Int       @default(0)

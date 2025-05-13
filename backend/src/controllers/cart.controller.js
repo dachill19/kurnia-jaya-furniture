@@ -3,6 +3,7 @@ import {
     getCartByUser,
     updateCartQuantity,
     removeFromCart,
+    clearCart,
 } from "../services/cart.service.js";
 
 export const addCartController = async (req, res) => {
@@ -51,5 +52,16 @@ export const removeCartController = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Gagal menghapus item dari cart" });
+    }
+};
+
+export const clearCartController = async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        await clearCart(userId);
+        res.status(200).json({ message: "Cart dihapus" });
+    } catch (error) {
+        res.status(500).json({ error: "Gagal menghapus cart" });
     }
 };

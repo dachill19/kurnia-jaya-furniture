@@ -15,3 +15,10 @@ export const loginValidation = [
     body("email").isEmail().withMessage("Email tidak valid"),
     body("password").notEmpty().withMessage("Password wajib diisi"),
 ];
+
+export const updateValidation = [
+    body("name").notEmpty().withMessage("Nama tidak boleh kosong"),
+    body("phoneNumber")
+        .isMobilePhone("id-ID")
+        .withMessage("Nomor telepon tidak valid"),
+];

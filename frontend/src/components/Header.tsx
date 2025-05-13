@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import { startCase, kebabCase } from "lodash";
 import axios from "axios";
-import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import logo from "@/assets/logo.png";
 import {
@@ -11,9 +11,9 @@ import {
     Menu,
     X,
     User,
-    Globe,
     Phone,
     Mail,
+    UserCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,18 +25,19 @@ import {
 
 const Header = () => {
     console.log("Rendering Header");
-    const { t, language, setLanguage } = useLanguage();
     const { totalItems } = useCart();
+    const { user } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [categories, setCategories] = useState([]);
+    const navigate = useNavigate();
+
+    const goToDashboard = () => {
+        navigate("/dashboard"); // sesuaikan dengan path dashboard kamu
+    };
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
-    };
-
-    const toggleLanguage = () => {
-        setLanguage(language === "id" ? "en" : "id");
     };
 
     const handleSearch = (e: React.FormEvent) => {
@@ -90,10 +91,10 @@ const Header = () => {
                             variant="ghost"
                             size="sm"
                             className="text-white text-sm hover:bg-white/10 flex items-center"
-                            onClick={toggleLanguage}
+                            onClick={goToDashboard}
                         >
-                            <Globe className="h-4 w-4 mr-1.5" />
-                            {language.toUpperCase()}
+                            <UserCog className="h-4 w-4 mr-1.5" />
+                            Dashboard
                         </Button>
                     </div>
                 </div>
@@ -116,7 +117,7 @@ const Header = () => {
                         <form onSubmit={handleSearch} className="relative">
                             <input
                                 type="text"
-                                placeholder={t("searchPlaceholder")}
+                                placeholder="Cari furnitur..."
                                 className="w-full py-3 px-4 pr-10 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-kj-red focus:border-transparent"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -133,24 +134,35 @@ const Header = () => {
                     {/* Nav Actions (desktop) */}
                     <div className="hidden md:flex items-center space-x-6">
                         <Link
-                            to="/signin"
-                            className="flex items-center hover:text-kj-red"
-                        >
-                            <User size={22} className="mr-2" />
-                            <span className="font-medium">{t("signIn")}</span>
-                        </Link>
-                        <Link
                             to="/cart"
                             className="flex items-center hover:text-kj-red relative"
                         >
                             <ShoppingCart size={22} className="mr-2" />
-                            <span className="font-medium">{t("navCart")}</span>
+                            <span className="font-medium">Keranjang</span>
                             {totalItems > 0 && (
                                 <span className="absolute -top-2 -right-2 bg-kj-red text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                                     {totalItems}
                                 </span>
                             )}
                         </Link>
+
+                        {user ? (
+                            <Link
+                                to="/account"
+                                className="flex items-center hover:text-kj-red"
+                            >
+                                <User size={22} className="mr-2" />
+                                <span className="font-medium">{user.name}</span>
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/signin"
+                                className="flex items-center hover:text-kj-red"
+                            >
+                                <User size={22} className="mr-2" />
+                                <span className="font-medium">Masuk</span>
+                            </Link>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -180,13 +192,13 @@ const Header = () => {
                                 to="/"
                                 className="text-gray-700 hover:text-kj-red font-medium text-lg"
                             >
-                                {t("navHome")}
+                                Beranda
                             </Link>
                         </li>
                         <li>
                             <DropdownMenu>
                                 <DropdownMenuTrigger className="text-gray-700 hover:text-kj-red font-medium text-lg">
-                                    {t("navCategories")}
+                                    Kategori
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="bg-white">
                                     {categories.map((category) => (
@@ -195,12 +207,12 @@ const Header = () => {
                                             key={category.id}
                                         >
                                             <Link
-                                                to={`/categories/${kebabCase(
+                                                to={`/categories/${encodeURIComponent(
                                                     category.name
                                                 )}`}
                                                 className="cursor-pointer"
                                             >
-                                                {startCase(category.name)}
+                                                {category.name}
                                             </Link>
                                         </DropdownMenuItem>
                                     ))}
@@ -212,7 +224,7 @@ const Header = () => {
                                 to="/products"
                                 className="text-gray-700 hover:text-kj-red font-medium text-lg"
                             >
-                                {t("navProducts")}
+                                Produk
                             </Link>
                         </li>
                         <li>
@@ -220,7 +232,7 @@ const Header = () => {
                                 to="/about"
                                 className="text-gray-700 hover:text-kj-red font-medium text-lg"
                             >
-                                {t("navAbout")}
+                                Tentang Kami
                             </Link>
                         </li>
                     </ul>
@@ -237,7 +249,7 @@ const Header = () => {
                             >
                                 <input
                                     type="text"
-                                    placeholder={t("searchPlaceholder")}
+                                    placeholder="Cari furnitur..."
                                     className="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-kj-red focus:border-transparent"
                                     value={searchQuery}
                                     onChange={(e) =>
@@ -259,7 +271,7 @@ const Header = () => {
                                         className="block py-2 px-3 hover:bg-gray-100 rounded-md"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        {t("navHome")}
+                                        Beranda
                                     </Link>
                                 </li>
                                 <li>
@@ -268,7 +280,7 @@ const Header = () => {
                                         className="block py-2 px-3 hover:bg-gray-100 rounded-md"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        {t("navCategories")}
+                                        Kategori
                                     </Link>
                                 </li>
                                 <li>
@@ -277,7 +289,7 @@ const Header = () => {
                                         className="block py-2 px-3 hover:bg-gray-100 rounded-md"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        {t("navProducts")}
+                                        Produk
                                     </Link>
                                 </li>
                                 <li>
@@ -286,18 +298,30 @@ const Header = () => {
                                         className="block py-2 px-3 hover:bg-gray-100 rounded-md"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
-                                        {t("navAbout")}
+                                        Tentang Kami
                                     </Link>
                                 </li>
-                                <li>
-                                    <Link
-                                        to="/signin"
-                                        className="block py-2 px-3 hover:bg-gray-100 rounded-md"
-                                        onClick={() => setIsMenuOpen(false)}
-                                    >
-                                        {t("signIn")}
-                                    </Link>
-                                </li>
+                                {user ? (
+                                    <li>
+                                        <Link
+                                            to="/profile"
+                                            className="block py-2 px-3 hover:bg-gray-100 rounded-md"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            {user.name}
+                                        </Link>
+                                    </li>
+                                ) : (
+                                    <li>
+                                        <Link
+                                            to="/signin"
+                                            className="block py-2 px-3 hover:bg-gray-100 rounded-md"
+                                            onClick={() => setIsMenuOpen(false)}
+                                        >
+                                            Masuk
+                                        </Link>
+                                    </li>
+                                )}
                             </ul>
                         </div>
                     </div>

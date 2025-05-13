@@ -3,8 +3,11 @@ import prisma from "../lib/prisma.js";
 // Get all categories
 export const getAllCategories = async () => {
     return await prisma.category.findMany({
-        orderBy: {
-            name: "asc",
+        orderBy: { name: "asc" },
+        include: {
+            _count: {
+                select: { products: true },
+            },
         },
     });
 };
@@ -20,6 +23,7 @@ export const getProductsByCategory = async (categoryName) => {
         include: {
             category: true,
             images: true,
+            reviews: true,
         },
     });
 };

@@ -6,6 +6,7 @@ export const getAllProducts = async () => {
         include: {
             category: true,
             images: true,
+            reviews: true,
         },
     });
 };
@@ -17,6 +18,7 @@ export const getProductById = async (id) => {
         include: {
             category: true,
             images: true,
+            reviews: true,
         },
     });
 };
@@ -25,7 +27,11 @@ export const getProductById = async (id) => {
 export const getHotProducts = async () => {
     return await prisma.product.findMany({
         where: { isHot: true },
-        include: { images: true },
+        include: {
+            category: true,
+            images: true,
+            reviews: true,
+        },
     });
 };
 
@@ -33,8 +39,12 @@ export const getHotProducts = async () => {
 export const getLatestProducts = async () => {
     return await prisma.product.findMany({
         orderBy: { createdAt: "desc" },
-        take: 10,
-        include: { images: true },
+        take: 4,
+        include: {
+            category: true,
+            images: true,
+            reviews: true,
+        },
     });
 };
 
@@ -44,7 +54,11 @@ export const getDiscountedProducts = async () => {
         where: {
             discountPrice: { not: null },
         },
-        include: { images: true },
+        include: {
+            category: true,
+            images: true,
+            reviews: true,
+        },
     });
 };
 
@@ -59,7 +73,11 @@ export const getSortedProducts = async (sort) => {
 
     return await prisma.product.findMany({
         orderBy,
-        include: { images: true },
+        include: {
+            category: true,
+            images: true,
+            reviews: true,
+        },
     });
 };
 

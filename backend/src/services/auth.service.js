@@ -38,10 +38,10 @@ export const registerUser = async (name, email, phoneNumber, password) => {
 
 export const loginUser = async (email, password) => {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new Error("Email tidak ditemukan.");
+    if (!user) throw new Error("Email atau password salah.");
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) throw new Error("Password salah.");
+    if (!match) throw new Error("Email atau password salah.");
 
     const token = jwt.sign(
         {

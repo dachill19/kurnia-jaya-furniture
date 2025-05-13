@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
-    console.log("Rendering Header");
     const { totalItems } = useCart();
     const { user } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);

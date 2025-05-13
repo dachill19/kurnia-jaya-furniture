@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
         fetchProfile();
     }, []);
 
-    const login = async (token, rememberMe) => {
+    const login = async (token: string, rememberMe: any) => {
         console.log("Remember Me:", rememberMe); // Log nilai rememberMe
         console.log("Token:", token); // Log token yang diterima
         if (rememberMe) {
@@ -43,6 +43,15 @@ export const AuthProvider = ({ children }) => {
         await fetchProfile(); // Setelah login, fetch profile user
     };
 
+    const updateProfile = async (userData) => {
+        const token =
+            localStorage.getItem("token") || sessionStorage.getItem("token");
+        await axios.patch("http://localhost:5000/api/auth/profile", userData, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        await fetchProfile(); // refresh data setelah update
+    };
+
     // Fungsi logout untuk menghapus token dan reset user
     const logout = () => {
         localStorage.removeItem("token"); // Hapus token dari localStorage
@@ -51,7 +60,9 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, fetchProfile }}>
+        <AuthContext.Provider
+            value={{ user, login, logout, fetchProfile, updateProfile }}
+        >
             {children}
         </AuthContext.Provider>
     );

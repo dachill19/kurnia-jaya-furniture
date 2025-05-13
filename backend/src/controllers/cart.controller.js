@@ -1,8 +1,8 @@
 import {
     addToCart,
     getCartByUser,
-    updateCartQuantity,
-    removeFromCart,
+    updateCartQuantityByProduct,
+    removeFromCartByProduct,
     clearCart,
 } from "../services/cart.service.js";
 
@@ -30,28 +30,40 @@ export const getCartController = async (req, res) => {
     }
 };
 
-export const updateCartController = async (req, res) => {
+export const updateCartByProductController = async (req, res) => {
     try {
-        const { cartId } = req.params;
+        const userId = req.user.id;
+        const { productId } = req.params;
         const { quantity } = req.body;
 
-        const updatedCart = await updateCartQuantity(cartId, quantity);
-        res.json(updatedCart);
+        const updated = await updateCartQuantityByProduct(
+            userId,
+            productId,
+            quantity
+        );
+        res.json(updated);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Gagal update quantity cart" });
+        res.status(500).json({
+            error: "Gagal update quantity cart berdasarkan productId",
+        });
     }
 };
 
-export const removeCartController = async (req, res) => {
+export const removeCartByProductController = async (req, res) => {
     try {
-        const { cartId } = req.params;
+        const userId = req.user.id;
+        const { productId } = req.params;
 
-        await removeFromCart(cartId);
-        res.json({ message: "Item berhasil dihapus dari cart" });
+        await removeFromCartByProduct(userId, productId);
+        res.json({
+            message: "Item berhasil dihapus dari cart berdasarkan productId",
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Gagal menghapus item dari cart" });
+        res.status(500).json({
+            error: "Gagal menghapus item dari cart berdasarkan productId",
+        });
     }
 };
 

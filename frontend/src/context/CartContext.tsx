@@ -5,6 +5,7 @@ import React, {
     useEffect,
     ReactNode,
 } from "react";
+import axios from "axios";
 
 // Interface CartItem
 export interface CartItem {
@@ -18,8 +19,8 @@ export interface CartItem {
 interface CartContextType {
     cart: CartItem[];
     addToCart: (item: Omit<CartItem, "quantity">) => void;
-    removeFromCart: (itemId: string) => void;
-    updateQuantity: (itemId: string, quantity: number) => void;
+    removeFromCart: (productId: string) => void;
+    updateQuantity: (productId: string, quantity: number) => void;
     clearCart: () => void;
     totalItems: number;
     totalPrice: number;
@@ -31,109 +32,141 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
     children,
 }) => {
     const [cart, setCart] = useState<CartItem[]>([]);
-    const token =
-        typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    const [token, setToken] = useState<string | null>(null);
 
-    // Fetch cart data from backend when component mounts
+    // Dapatkan token hanya sekali saat mount
     useEffect(() => {
-        const fetchCart = async () => {
-            if (!token) return; // Skip if not logged in
+        const savedToken =
+            typeof window !== "undefined"
+                ? localStorage.getItem("token") ||
+                  sessionStorage.getItem("token")
+                : null;
+        setToken(savedToken);
+    }, []);
 
-            try {
-                const res = await fetch("http://localhost:5000/api/cart", {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+    const axiosInstance = axios.create({
+        baseURL: "http://localhost:5000/api",
+    });
 
-                if (res.ok) {
-                    const data = await res.json();
-                    setCart(data.cartItems || []);
-                } else {
-                    console.warn("Gagal fetch cart:", res.status);
-                }
-            } catch (err) {
-                console.error("Error saat fetch cart:", err);
-            }
-        };
+    // Mapping data dari backend ke bentuk CartItem
+    const mapCartItems = (items: any[]): CartItem[] => {
+        return items.map((item: any) => ({
+            id: item.product.id,
+            name: item.product.name,
+            price: item.product.discountPrice ?? item.product.price,
+            image:
+                item.product.images.find((img: any) => img.isMain)?.imageUrl ??
+                item.product.images[0]?.imageUrl ??
+                "",
+            quantity: item.quantity,
+        }));
+    };
 
-        fetchCart();
+    const fetchCart = async (token: string) => {
+        try {
+            const res = await axiosInstance.get("/cart", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setCart(mapCartItems(res.data || []));
+        } catch (err) {
+            console.error("Error saat fetch cart:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (token) {
+            fetchCart(token);
+        }
     }, [token]);
 
     const fetchUpdatedCart = async () => {
         if (!token) return;
 
-        const res = await fetch("http://localhost:5000/api/cart", {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (res.ok) {
-            const data = await res.json();
-            setCart(data.cartItems || []);
+        try {
+            const res = await axiosInstance.get("/cart", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setCart(mapCartItems(res.data || []));
+        } catch (err) {
+            console.error("Gagal memperbarui cart:", err);
         }
     };
 
     const addToCart = async (item: Omit<CartItem, "quantity">) => {
         if (!token) return;
 
-        await fetch("http://localhost:5000/api/cart", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ ...item, quantity: 1 }),
-        });
-
-        await fetchUpdatedCart();
-    };
-
-    const removeFromCart = async (itemId: string) => {
-        if (!token) return;
-
-        await fetch(`http://localhost:5000/api/cart/${itemId}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        await fetchUpdatedCart();
-    };
-
-    const updateQuantity = async (itemId: string, quantity: number) => {
-        if (!token) return;
-
-        if (quantity <= 0) {
-            await removeFromCart(itemId);
-            return;
+        try {
+            await axiosInstance.post(
+                "/cart",
+                { productId: item.id, quantity: 1 },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            await fetchUpdatedCart();
+        } catch (err) {
+            console.error("Gagal menambahkan item:", err);
         }
+    };
 
-        await fetch(`http://localhost:5000/api/cart/${itemId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ quantity }),
-        });
+    const removeFromCart = async (productId: string) => {
+        if (!token) return;
 
-        await fetchUpdatedCart();
+        try {
+            await axiosInstance.delete(`/cart/product/${productId}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            await fetchUpdatedCart();
+        } catch (err) {
+            console.error("Gagal menghapus item:", err);
+        }
+    };
+
+    const updateQuantity = async (productId: string, quantity: number) => {
+        if (!token) return;
+
+        try {
+            if (quantity <= 0) {
+                await removeFromCart(productId);
+                return;
+            }
+
+            await axiosInstance.put(
+                `/cart/product/${productId}`,
+                { quantity },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            await fetchUpdatedCart();
+        } catch (err) {
+            console.error("Gagal mengupdate jumlah:", err);
+        }
     };
 
     const clearCart = async () => {
         if (!token) return;
 
-        await fetch(`http://localhost:5000/api/cart/clear`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        setCart([]);
+        try {
+            await axiosInstance.delete("/cart/clear", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setCart([]);
+        } catch (err) {
+            console.error("Gagal menghapus semua cart:", err);
+        }
     };
 
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);

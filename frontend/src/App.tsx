@@ -14,6 +14,7 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import { SidebarProvider } from "./components/ui/sidebar";
 import AdminLayout from "./components/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
+import CartPage from "./pages/CartPage";
 
 const App = () => (
     <AuthProvider>
@@ -41,6 +42,7 @@ const App = () => (
                             path="categories/:categoryName"
                             element={<CategoryPage />}
                         />
+                        <Route path="cart" element={<CartPage />} />
                         <Route path="*" element={<NotFound />} />
                     </Route>
                 </Routes>

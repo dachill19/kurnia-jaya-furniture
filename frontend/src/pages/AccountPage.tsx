@@ -19,6 +19,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/components/ui/use-toast";
 
 // Mock data - in a real app this would come from API
 const mockOrders = [
@@ -62,6 +64,8 @@ const mockOrders = [
 ];
 
 const AccountPage = () => {
+    const { addToCart } = useCart();
+    const { toast } = useToast();
     const [activeTab, setActiveTab] = useState("profile");
     const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState<{ [key: string]: string }>({});
@@ -162,6 +166,27 @@ const AccountPage = () => {
         } catch (error) {
             console.error("Gagal menghapus dari wishlist:", error);
         }
+    };
+
+    const handleAddToCart = (e: React.MouseEvent, item: any) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const product = item.product;
+        const mainImage =
+            product.images.find((img: any) => img.isMain) || product.images[0];
+
+        addToCart({
+            id: product.id,
+            name: product.name,
+            price: product.discountPrice ?? product.price,
+            image: mainImage, // sesuaikan jika hanya perlu imageUrl: mainImage.imageUrl
+        });
+
+        toast({
+            title: "Produk ditambahkan ke keranjang",
+            description: product.name,
+        });
     };
 
     const handleLogout = () => {
@@ -608,9 +633,27 @@ const AccountPage = () => {
                                                     </div>
 
                                                     <div className="flex space-x-2 mt-2">
-                                                        <Button size="sm">
-                                                            Tambah ke Keranjang
-                                                        </Button>
+                                                        {wishlist.map(
+                                                            (item) => (
+                                                                <Button
+                                                                    key={
+                                                                        item.id
+                                                                    }
+                                                                    size="sm"
+                                                                    onClick={(
+                                                                        e
+                                                                    ) =>
+                                                                        handleAddToCart(
+                                                                            e,
+                                                                            item
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Tambah ke
+                                                                    Keranjang
+                                                                </Button>
+                                                            )
+                                                        )}
                                                         <Button
                                                             variant="outline"
                                                             size="sm"

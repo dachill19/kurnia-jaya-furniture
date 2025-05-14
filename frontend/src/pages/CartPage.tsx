@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Trash2, ShoppingCart, ChevronLeft, RefreshCw } from "lucide-react";
+import { Trash2, ShoppingCart, ChevronLeft } from "lucide-react";
 
 const CartPage = () => {
     const {
@@ -65,7 +63,7 @@ const CartPage = () => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-gray-500 hover:text-kj-red"
+                                    className="text-gray-500 hover:text-white"
                                     onClick={clearCart}
                                 >
                                     <Trash2 size={16} className="mr-1" />

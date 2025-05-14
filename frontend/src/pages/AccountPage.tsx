@@ -969,8 +969,8 @@ const AccountPage = () => {
                                     )}
                                 </div>
 
-                                <div className="md:col-span-2 flex items-center space-x-2">
-                                    {isEditingAddress ? (
+                                {isEditingAddress ? (
+                                    <div className="md:col-span-2 flex items-center space-x-2">
                                         <label className="inline-flex items-center text-sm">
                                             <input
                                                 type="checkbox"
@@ -987,14 +987,16 @@ const AccountPage = () => {
                                             />
                                             Jadikan Alamat Utama
                                         </label>
-                                    ) : (
-                                        <p className="text-sm">
-                                            {addressData.isDefault
-                                                ? "Alamat ini adalah alamat utama"
-                                                : "Alamat biasa"}
-                                        </p>
-                                    )}
-                                </div>
+                                    </div>
+                                ) : (
+                                    addressData.isDefault && (
+                                        <div className="md:col-span-2 flex items-center space-x-2">
+                                            <p className="text-sm">
+                                                Alamat utama
+                                            </p>
+                                        </div>
+                                    )
+                                )}
                             </div>
                         </div>
                     )}

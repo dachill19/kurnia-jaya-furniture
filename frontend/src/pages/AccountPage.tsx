@@ -230,7 +230,7 @@ const AccountPage = () => {
         if (!validateAddress()) {
             toast({
                 title: "Gagal",
-                description: "Semua field alamat wajib diisi.",
+                description: "Semua field alamat wajib diisi",
                 variant: "destructive",
             });
             return;
@@ -252,6 +252,10 @@ const AccountPage = () => {
                 setIsEditingAddress(false);
                 setActiveTab("address");
                 await fetchAddresses();
+                toast({
+                    title: "Berhasil",
+                    description: "Alamat berhasil diubah",
+                });
             } else {
                 console.error(res.data.message);
             }

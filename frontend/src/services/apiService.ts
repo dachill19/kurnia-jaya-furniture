@@ -32,10 +32,14 @@ const getLatestProducts = async () => {
     return axios.get(`${API_URL}/products/latest`);
 };
 
-const addWishlist = async (token: string) => {
-    return axios.post(`${API_URL}/wishlist`, {
-        headers: { Authorization: `Bearer ${token}` },
-    });
+const addWishlist = async (productId: string, token: string) => {
+    return axios.post(
+        `${API_URL}/wishlist`,
+        { productId },
+        {
+            headers: { Authorization: `Bearer ${token}` },
+        }
+    );
 };
 
 const getWishlist = async (token: string) => {

@@ -142,7 +142,7 @@ const ProductDetailPage = () => {
 
                 setInWishlist(false);
             } else {
-                await apiService.addWishlist(token);
+                await apiService.addWishlist(product.id, token);
 
                 toast({
                     title: "Ditambahkan ke wishlist",

@@ -743,27 +743,17 @@ const AccountPage = () => {
                                                     </div>
 
                                                     <div className="flex space-x-2 mt-2">
-                                                        {wishlist.map(
-                                                            (item) => (
-                                                                <Button
-                                                                    key={
-                                                                        item.id
-                                                                    }
-                                                                    size="sm"
-                                                                    onClick={(
-                                                                        e
-                                                                    ) =>
-                                                                        handleAddToCart(
-                                                                            e,
-                                                                            item
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Tambah ke
-                                                                    Keranjang
-                                                                </Button>
-                                                            )
-                                                        )}
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={(e) =>
+                                                                handleAddToCart(
+                                                                    e,
+                                                                    item
+                                                                )
+                                                            }
+                                                        >
+                                                            Tambah ke Keranjang
+                                                        </Button>
                                                         <Button
                                                             variant="outline"
                                                             size="sm"

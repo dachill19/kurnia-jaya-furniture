@@ -24,7 +24,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const Header = () => {
-    console.log("Rendering Header");
     const { totalItems } = useCart();
     const { user } = useAuth();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,7 +32,7 @@ const Header = () => {
     const navigate = useNavigate();
 
     const goToDashboard = () => {
-        navigate("/dashboard"); // sesuaikan dengan path dashboard kamu
+        navigate("/admin/login"); // sesuaikan dengan path dashboard kamu
     };
 
     const toggleMenu = () => {

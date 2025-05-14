@@ -38,10 +38,11 @@ export const registerUser = async (name, email, phoneNumber, password) => {
 
 export const loginUser = async (email, password) => {
     const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) throw new Error("Email tidak ditemukan.");
+    if (!user || user.role !== "USER")
+        throw new Error("Email atau password salah.");
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) throw new Error("Password salah.");
+    if (!match) throw new Error("Email atau password salah.");
 
     const token = jwt.sign(
         {
@@ -51,6 +52,20 @@ export const loginUser = async (email, password) => {
         JWT_SECRET,
         { expiresIn: "1d" }
     );
+
+    return token;
+};
+
+export const loginAdmin = async (email, password) => {
+    const admin = await prisma.user.findUnique({ where: { email } });
+    if (!admin || admin.role !== "ADMIN") throw new Error("Akses ditolak.");
+
+    const match = await bcrypt.compare(password, admin.password);
+    if (!match) throw new Error("Akses ditolak.");
+
+    const token = jwt.sign({ id: admin.id, role: admin.role }, JWT_SECRET, {
+        expiresIn: "1d",
+    });
 
     return token;
 };

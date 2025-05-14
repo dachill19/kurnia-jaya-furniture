@@ -37,16 +37,42 @@ export const getCartByUser = async (userId) => {
     });
 };
 
-export const updateCartQuantity = async (cartId, quantity) => {
+export const updateCartQuantityByProduct = async (
+    userId,
+    productId,
+    quantity
+) => {
+    const existingCartItem = await prisma.cart.findFirst({
+        where: {
+            userId,
+            productId,
+        },
+    });
+
+    if (!existingCartItem) {
+        throw new Error("Item tidak ditemukan dalam cart");
+    }
+
     return await prisma.cart.update({
-        where: { id: cartId },
+        where: { id: existingCartItem.id },
         data: { quantity },
     });
 };
 
-export const removeFromCart = async (cartId) => {
+export const removeFromCartByProduct = async (userId, productId) => {
+    const existingCartItem = await prisma.cart.findFirst({
+        where: {
+            userId,
+            productId,
+        },
+    });
+
+    if (!existingCartItem) {
+        throw new Error("Item tidak ditemukan dalam cart");
+    }
+
     return await prisma.cart.delete({
-        where: { id: cartId },
+        where: { id: existingCartItem.id },
     });
 };
 

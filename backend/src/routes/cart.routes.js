@@ -2,8 +2,8 @@ import express from "express";
 import {
     addCartController,
     getCartController,
-    updateCartController,
-    removeCartController,
+    updateCartByProductController,
+    removeCartByProductController,
     clearCartController,
 } from "../controllers/cart.controller.js";
 import { authenticate } from "../middlewares/auth.js";
@@ -15,7 +15,7 @@ router.use(authenticate);
 router.delete("/clear", clearCartController);
 router.post("/", addCartController);
 router.get("/", getCartController);
-router.put("/:cartId", updateCartController);
-router.delete("/:cartId", removeCartController);
+router.put("/product/:productId", updateCartByProductController);
+router.delete("/product/:productId", removeCartByProductController);
 
 export default router;

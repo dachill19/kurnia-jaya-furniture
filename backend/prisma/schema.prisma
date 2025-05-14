@@ -10,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -79,7 +79,7 @@ model Category {
 model Product {
   id              String    @id @default(uuid())
   name            String
-  description     String    @db.LongText
+  description     String
   price           Float
   discountPrice   Float?
   stock           Int       @default(0)

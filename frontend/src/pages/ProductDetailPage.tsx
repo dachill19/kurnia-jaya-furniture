@@ -15,8 +15,9 @@ import {
     ChevronRight,
     HeartOff,
 } from "lucide-react";
-import axios from "axios";
 import { useToast } from "@/components/ui/use-toast";
+import apiService from "@/services/apiService";
+
 const ProductDetailPage = () => {
     const { productId } = useParams();
     const { addToCart } = useCart();
@@ -28,9 +29,7 @@ const ProductDetailPage = () => {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await axios.get(
-                    `http://localhost:5000/api/products/${productId}`
-                );
+                const response = await apiService.getProductById(productId);
                 setProduct(response.data);
             } catch (error) {
                 console.error("Gagal mengambil produk:", error);
@@ -48,14 +47,7 @@ const ProductDetailPage = () => {
             if (!token) return;
 
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/wishlist",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const response = await apiService.getWishlist(token);
                 const wishlist = response.data;
                 const isWishlisted = wishlist.some(
                     (item: { productId: string }) =>
@@ -141,14 +133,7 @@ const ProductDetailPage = () => {
             }
 
             if (inWishlist) {
-                await axios.delete(
-                    `http://localhost:5000/api/wishlist/${product.id}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                await apiService.removeWishlistItem(productId, token);
 
                 toast({
                     title: "Dihapus dari wishlist",
@@ -157,15 +142,7 @@ const ProductDetailPage = () => {
 
                 setInWishlist(false);
             } else {
-                await axios.post(
-                    "http://localhost:5000/api/wishlist",
-                    { productId: product.id },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                await apiService.addWishlist(token);
 
                 toast({
                     title: "Ditambahkan ke wishlist",

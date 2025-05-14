@@ -18,9 +18,9 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
 import { useCart } from "@/context/CartContext";
 import { useToast } from "@/components/ui/use-toast";
+import apiService from "@/services/apiService";
 
 // Mock data - in a real app this would come from API
 const mockOrders = [
@@ -138,14 +138,7 @@ const AccountPage = () => {
             if (!token) return;
 
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/wishlist",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const response = await apiService.getWishlist(token);
                 setWishlist(response.data);
             } catch (error) {
                 console.error("Gagal mengambil wishlist:", error);
@@ -161,14 +154,7 @@ const AccountPage = () => {
                 localStorage.getItem("token") ||
                 sessionStorage.getItem("token");
 
-            await axios.delete(
-                `http://localhost:5000/api/wishlist/${productId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            await apiService.removeWishlistItem(productId, token);
 
             setWishlist((prev) =>
                 prev.filter((item) => item.product.id !== productId)
@@ -203,11 +189,7 @@ const AccountPage = () => {
         const token =
             localStorage.getItem("token") || sessionStorage.getItem("token");
         try {
-            const res = await axios.get("http://localhost:5000/api/address", {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
+            const res = await apiService.getAddresses(token);
 
             if (res.data.success) {
                 setAddresses(res.data.addresses.filter((a) => a)); // Filter aman
@@ -258,15 +240,13 @@ const AccountPage = () => {
             const token =
                 localStorage.getItem("token") ||
                 sessionStorage.getItem("token");
-            const res = await axios.put(
-                `http://localhost:5000/api/address/${selectedAddress.id}`,
+            const res = await apiService.updateAddress(
+                selectedAddress.id,
                 addressData,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
+                token
             );
+
+            apiService.updateAddress(selectedAddress.id, addressData, token);
 
             if (res.data.success) {
                 setIsEditingAddress(false);
@@ -286,11 +266,7 @@ const AccountPage = () => {
                 localStorage.getItem("token") ||
                 sessionStorage.getItem("token");
             try {
-                await axios.delete(`http://localhost:5000/api/address/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
+                await apiService.deleteAddress(id, token);
 
                 await fetchAddresses();
             } catch (err) {

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import ProductCard from "@/components/ProductCard";
 import CategoryCard from "@/components/CategoryCard";
 import Hero from "@/components/Hero";
 import FeatureSection from "@/components/FeatureSection";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import apiService from "@/services/apiService";
 
 const HomePage = () => {
     const [hotProducts, setHotProducts] = useState([]);
@@ -16,9 +16,7 @@ const HomePage = () => {
     useEffect(() => {
         const fetchHotProducts = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/products/hot"
-                );
+                const response = await apiService.getHotProducts();
                 const data = response.data.slice(0, 4);
                 setHotProducts(data);
             } catch (error) {
@@ -32,9 +30,7 @@ const HomePage = () => {
     useEffect(() => {
         const fetchLatestProducts = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/products/latest"
-                );
+                const response = await apiService.getLatestProducts();
                 const data = response.data.slice(0, 4);
                 setLatestProducts(data);
             } catch (error) {
@@ -49,9 +45,7 @@ const HomePage = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/categories"
-                );
+                const response = await apiService.getCategories();
                 const data = response.data.slice(0, 6);
                 setCategories(data);
             } catch (error) {

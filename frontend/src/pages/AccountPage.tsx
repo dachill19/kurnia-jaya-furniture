@@ -75,6 +75,16 @@ const AccountPage = () => {
         {}
     );
     const [wishlist, setWishlist] = useState([]);
+    const [addresses, setAddresses] = useState([]);
+    const [selectedAddress, setSelectedAddress] = useState(null);
+    const [addressData, setAddressData] = useState({
+        provinsi: "",
+        kota: "",
+        kodePos: "",
+        alamatLengkap: "",
+        isDefault: false,
+    });
+    const [isEditingAddress, setIsEditingAddress] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -187,6 +197,106 @@ const AccountPage = () => {
             title: "Produk ditambahkan ke keranjang",
             description: product.name,
         });
+    };
+
+    const fetchAddresses = async () => {
+        const token =
+            localStorage.getItem("token") || sessionStorage.getItem("token");
+        try {
+            const res = await axios.get("http://localhost:5000/api/address", {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (res.data.success) {
+                setAddresses(res.data.addresses.filter((a) => a)); // Filter aman
+            }
+        } catch (error) {
+            console.error("Gagal ambil alamat:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAddresses();
+    }, []);
+
+    const validateAddress = () => {
+        const requiredFields = ["provinsi", "kota", "kodePos", "alamatLengkap"];
+        for (let field of requiredFields) {
+            if (!addressData[field]) return false;
+        }
+        return true;
+    };
+
+    const handleInputAddressChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const { name, value } = e.target;
+        setAddressData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleEditAddress = (address) => {
+        setSelectedAddress(address);
+        setAddressData(address); // isi state dengan data awal
+        setActiveTab("editAddress"); // pindah ke tab edit
+    };
+
+    const handleSaveAddress = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateAddress()) {
+            toast({
+                title: "Gagal",
+                description: "Semua field alamat wajib diisi.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const token =
+                localStorage.getItem("token") ||
+                sessionStorage.getItem("token");
+            const res = await axios.put(
+                `http://localhost:5000/api/address/${selectedAddress.id}`,
+                addressData,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (res.data.success) {
+                setIsEditingAddress(false);
+                setActiveTab("address");
+                await fetchAddresses();
+            } else {
+                console.error(res.data.message);
+            }
+        } catch (err) {
+            console.error("Gagal update alamat", err);
+        }
+    };
+
+    const handleDeleteAddress = async (id) => {
+        if (confirm("Yakin ingin menghapus alamat ini?")) {
+            const token =
+                localStorage.getItem("token") ||
+                sessionStorage.getItem("token");
+            try {
+                await axios.delete(`http://localhost:5000/api/address/${id}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                await fetchAddresses();
+            } catch (err) {
+                console.error("Gagal hapus alamat:", err);
+            }
+        }
     };
 
     const handleLogout = () => {
@@ -699,36 +809,201 @@ const AccountPage = () => {
                         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                             <div className="p-4 border-b flex justify-between items-center">
                                 <h2 className="font-medium">Alamat Saya</h2>
-                                <Button size="sm">Tambah Alamat Baru</Button>
+                                <Button
+                                    size="sm"
+                                    // onClick={handleAddNewAddress}
+                                >
+                                    Tambah Alamat Baru
+                                </Button>
                             </div>
 
-                            <div className="p-4">
-                                <div className="border rounded-md p-4 relative">
-                                    <div className="absolute top-4 right-4 bg-kj-red text-white text-xs px-2 py-1 rounded-full">
-                                        Utama
-                                    </div>
-                                    <h3 className="font-medium mb-2">
-                                        {user.name}
-                                    </h3>
-                                    <p className="text-gray-600">
-                                        {user.address}
+                            <div className="p-4 space-y-4">
+                                {addresses.length === 0 ? (
+                                    <p className="text-gray-500">
+                                        Belum ada alamat tersimpan.
                                     </p>
-                                    <p className="text-gray-600">
-                                        {user.phoneNumber}
-                                    </p>
+                                ) : (
+                                    addresses
+                                        .filter(
+                                            (address) =>
+                                                address !== undefined &&
+                                                address !== null
+                                        )
+                                        .map((address) => (
+                                            <div
+                                                key={address.id}
+                                                className="border rounded-md p-4 relative"
+                                            >
+                                                {address.isDefault && (
+                                                    <div className="absolute top-4 right-4 bg-kj-red text-white text-xs px-2 py-1 rounded-full">
+                                                        Utama
+                                                    </div>
+                                                )}
 
-                                    <div className="flex space-x-2 mt-4">
-                                        <Button variant="outline" size="sm">
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-red-500"
-                                        >
-                                            Hapus
-                                        </Button>
-                                    </div>
+                                                <h3 className="font-medium mb-2">
+                                                    {user.name}
+                                                </h3>
+                                                <p className="text-gray-600">
+                                                    {address.alamatLengkap}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    {address.kota},{" "}
+                                                    {address.provinsi}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    {address.kodePos}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    {user.phoneNumber}
+                                                </p>
+
+                                                <div className="flex space-x-2 mt-4">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleEditAddress(
+                                                                address
+                                                            )
+                                                        }
+                                                    >
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-red-500"
+                                                        onClick={() =>
+                                                            handleDeleteAddress(
+                                                                address.id
+                                                            )
+                                                        }
+                                                    >
+                                                        Hapus
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "editAddress" && selectedAddress && (
+                        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                            <div className="p-4 border-b flex justify-between items-center">
+                                <h2 className="font-medium">Edit Alamat</h2>
+                                <Button
+                                    variant={
+                                        isEditingAddress ? "outline" : "default"
+                                    }
+                                    size="sm"
+                                    onClick={(e) => {
+                                        if (isEditingAddress) {
+                                            handleSaveAddress(e);
+                                        } else {
+                                            setIsEditingAddress(true);
+                                        }
+                                    }}
+                                >
+                                    {isEditingAddress ? "Simpan" : "Edit"}
+                                </Button>
+                            </div>
+
+                            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Provinsi
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="provinsi"
+                                            value={addressData.provinsi}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.provinsi}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kota/Kabupaten
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="kota"
+                                            value={addressData.kota}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.kota}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kode Pos
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="kodePos"
+                                            value={addressData.kodePos}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.kodePos}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Alamat Lengkap
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="alamatLengkap"
+                                            value={addressData.alamatLengkap}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.alamatLengkap}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="md:col-span-2 flex items-center space-x-2">
+                                    {isEditingAddress ? (
+                                        <label className="inline-flex items-center text-sm">
+                                            <input
+                                                type="checkbox"
+                                                name="isDefault"
+                                                checked={addressData.isDefault}
+                                                onChange={(e) =>
+                                                    setAddressData((prev) => ({
+                                                        ...prev,
+                                                        isDefault:
+                                                            e.target.checked,
+                                                    }))
+                                                }
+                                                className="mr-2"
+                                            />
+                                            Jadikan Alamat Utama
+                                        </label>
+                                    ) : (
+                                        <p className="text-sm">
+                                            {addressData.isDefault
+                                                ? "Alamat ini adalah alamat utama"
+                                                : "Alamat biasa"}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

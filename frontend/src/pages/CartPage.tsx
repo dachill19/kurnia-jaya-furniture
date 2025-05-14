@@ -89,7 +89,7 @@ const CartPage = () => {
                                     </div>
 
                                     {/* Product Details */}
-                                    <div className="flex-grow sm:ml-4 text-center sm:text-left">
+                                    <div className="flex-grow sm:ml-4 sm:mr-4 text-center sm:text-left">
                                         <Link
                                             to={`/products/${item.id}`}
                                             className="font-medium text-gray-900 hover:text-kj-red"

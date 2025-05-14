@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Star } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ProductImage {
     imageUrl: string;
@@ -38,6 +39,7 @@ const ProductCard = ({
     isHot = false,
 }: ProductCardProps) => {
     const { addToCart } = useCart();
+    const { toast } = useToast();
 
     // Ambil gambar utama
     const imageUrl =
@@ -51,6 +53,11 @@ const ProductCard = ({
             name,
             price: discountPrice ?? price,
             image: imageUrl,
+        });
+
+        toast({
+            title: "Produk ditambahkan ke keranjang",
+            description: name,
         });
     };
 

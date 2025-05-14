@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/toaster";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
@@ -15,11 +16,13 @@ import { SidebarProvider } from "./components/ui/sidebar";
 import AdminLayout from "./components/AdminLayout";
 import Dashboard from "./pages/admin/Dashboard";
 import CartPage from "./pages/CartPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
 
 const App = () => (
     <AuthProvider>
         <CartProvider>
             <BrowserRouter>
+                <Toaster />
                 <Routes>
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route
@@ -37,6 +40,10 @@ const App = () => (
                         <Route path="about" element={<AboutPage />} />
                         <Route path="signin" element={<SignInPage />} />
                         <Route path="account" element={<AccountPage />} />
+                        <Route
+                            path="products/:productId"
+                            element={<ProductDetailPage />}
+                        />
                         <Route path="categories" element={<CategoriesPage />} />
                         <Route
                             path="categories/:categoryName"

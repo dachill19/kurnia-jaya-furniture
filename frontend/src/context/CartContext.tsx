@@ -18,7 +18,7 @@ export interface CartItem {
 
 interface CartContextType {
     cart: CartItem[];
-    addToCart: (item: Omit<CartItem, "quantity">) => void;
+    addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
     removeFromCart: (productId: string) => void;
     updateQuantity: (productId: string, quantity: number) => void;
     clearCart: () => void;
@@ -96,13 +96,16 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({
         }
     };
 
-    const addToCart = async (item: Omit<CartItem, "quantity">) => {
+    const addToCart = async (
+        item: Omit<CartItem, "quantity">,
+        quantity: number = 1
+    ) => {
         if (!token) return;
 
         try {
             await axiosInstance.post(
                 "/cart",
-                { productId: item.id, quantity: 1 },
+                { productId: item.id, quantity },
                 {
                     headers: {
                         Authorization: `Bearer ${token}`,

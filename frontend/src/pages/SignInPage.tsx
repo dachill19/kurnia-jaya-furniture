@@ -37,6 +37,7 @@ const SignInPage = () => {
 
             await login(token, rememberMe);
             navigate("/");
+            window.location.reload();
         } catch (error) {
             const res = error.response?.data;
             if (res?.validationErrors) {

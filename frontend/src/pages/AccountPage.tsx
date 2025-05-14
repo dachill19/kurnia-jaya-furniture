@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -282,6 +282,7 @@ const AccountPage = () => {
     const handleLogout = () => {
         logout();
         navigate("/signin");
+        window.location.reload();
     };
 
     const getStatusLabel = (status: string) => {

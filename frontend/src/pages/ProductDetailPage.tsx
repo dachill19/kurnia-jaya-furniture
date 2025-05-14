@@ -102,6 +102,18 @@ const ProductDetailPage = () => {
     };
 
     const handleAddToCart = () => {
+        const token =
+            localStorage.getItem("token") || sessionStorage.getItem("token");
+
+        if (!token) {
+            toast({
+                title: "Akses ditolak",
+                description: "Silakan login terlebih dahulu",
+                variant: "destructive",
+            });
+            return;
+        }
+
         addToCart(
             {
                 id: product.id,

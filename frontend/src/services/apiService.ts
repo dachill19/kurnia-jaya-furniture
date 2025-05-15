@@ -61,10 +61,14 @@ const getAddresses = async (token: string) => {
 };
 
 interface AddressData {
-    provinsi: string;
-    kota: string;
-    kodePos: string;
-    alamatLengkap: string;
+    recipient: string;
+    label: string;
+    province: string;
+    city: string;
+    subdistrict: string;
+    village: string;
+    zipCode: string;
+    fullAddress: string;
     isDefault: boolean;
 }
 

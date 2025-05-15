@@ -14,7 +14,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 enum Role {
   USER
   ADMIN
@@ -58,10 +57,14 @@ model Address {
   id              String    @id @default(uuid())
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId          String
-  kota            String
-  provinsi        String
-  kodePos         String
-  alamatLengkap   String 
+  recipient       String
+  label           String
+  province        String
+  city            String
+  subdistrict     String
+  village         String
+  zipCode         String
+  fullAddress     String
   isDefault       Boolean   @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

@@ -78,10 +78,14 @@ const AccountPage = () => {
     const [addresses, setAddresses] = useState([]);
     const [selectedAddress, setSelectedAddress] = useState(null);
     const [addressData, setAddressData] = useState({
-        provinsi: "",
-        kota: "",
-        kodePos: "",
-        alamatLengkap: "",
+        recipient: "",
+        label: "",
+        province: "",
+        city: "",
+        subdistrict: "",
+        village: "",
+        zipCode: "",
+        fullAddress: "",
         isDefault: false,
     });
     const [isEditingAddress, setIsEditingAddress] = useState(false);
@@ -204,7 +208,16 @@ const AccountPage = () => {
     }, []);
 
     const validateAddress = () => {
-        const requiredFields = ["provinsi", "kota", "kodePos", "alamatLengkap"];
+        const requiredFields = [
+            "recipient",
+            "label",
+            "province",
+            "city",
+            "subdistrict",
+            "village",
+            "zipCode",
+            "fullAddress",
+        ];
         for (let field of requiredFields) {
             if (!addressData[field]) return false;
         }
@@ -246,15 +259,13 @@ const AccountPage = () => {
                 token
             );
 
-            apiService.updateAddress(selectedAddress.id, addressData, token);
-
             if (res.data.success) {
                 setIsEditingAddress(false);
                 setActiveTab("address");
                 await fetchAddresses();
                 toast({
                     title: "Berhasil",
-                    description: "Alamat berhasil diubah",
+                    description: "Alamat berhasil disimpan",
                 });
             } else {
                 console.error(res.data.message);
@@ -812,20 +823,22 @@ const AccountPage = () => {
                                                 )}
 
                                                 <h3 className="font-medium mb-2">
-                                                    {user.name}
+                                                    {address.recipient}
                                                 </h3>
                                                 <p className="text-gray-600">
-                                                    {address.alamatLengkap}
+                                                    {address.fullAddress}
                                                 </p>
                                                 <p className="text-gray-600">
-                                                    {address.kota},{" "}
-                                                    {address.provinsi}
+                                                    {address.village},{" "}
+                                                    {address.subdistrict},{" "}
+                                                    {address.city},{" "}
+                                                    {address.province}
                                                 </p>
                                                 <p className="text-gray-600">
-                                                    {address.kodePos}
+                                                    {address.zipCode}
                                                 </p>
                                                 <p className="text-gray-600">
-                                                    {user.phoneNumber}
+                                                    {address.label}
                                                 </p>
 
                                                 <div className="flex space-x-2 mt-4">
@@ -882,19 +895,53 @@ const AccountPage = () => {
                             </div>
 
                             <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Nama Penerima
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="recipient"
+                                            value={addressData.recipient}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.recipient}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Label
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="label"
+                                            value={addressData.label}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.label}
+                                        </p>
+                                    )}
+                                </div>
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Provinsi
                                     </label>
                                     {isEditingAddress ? (
                                         <Input
-                                            name="provinsi"
-                                            value={addressData.provinsi}
+                                            name="province"
+                                            value={addressData.province}
                                             onChange={handleInputAddressChange}
                                         />
                                     ) : (
                                         <p className="text-gray-900">
-                                            {addressData.provinsi}
+                                            {addressData.province}
                                         </p>
                                     )}
                                 </div>
@@ -905,13 +952,47 @@ const AccountPage = () => {
                                     </label>
                                     {isEditingAddress ? (
                                         <Input
-                                            name="kota"
-                                            value={addressData.kota}
+                                            name="city"
+                                            value={addressData.city}
                                             onChange={handleInputAddressChange}
                                         />
                                     ) : (
                                         <p className="text-gray-900">
-                                            {addressData.kota}
+                                            {addressData.city}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kecamatan
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="subdistrict"
+                                            value={addressData.subdistrict}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.subdistrict}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kelurahan/Desa
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="village"
+                                            value={addressData.village}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.village}
                                         </p>
                                     )}
                                 </div>
@@ -922,13 +1003,13 @@ const AccountPage = () => {
                                     </label>
                                     {isEditingAddress ? (
                                         <Input
-                                            name="kodePos"
-                                            value={addressData.kodePos}
+                                            name="zipCode"
+                                            value={addressData.zipCode}
                                             onChange={handleInputAddressChange}
                                         />
                                     ) : (
                                         <p className="text-gray-900">
-                                            {addressData.kodePos}
+                                            {addressData.zipCode}
                                         </p>
                                     )}
                                 </div>
@@ -939,13 +1020,13 @@ const AccountPage = () => {
                                     </label>
                                     {isEditingAddress ? (
                                         <Input
-                                            name="alamatLengkap"
-                                            value={addressData.alamatLengkap}
+                                            name="fullAddress"
+                                            value={addressData.fullAddress}
                                             onChange={handleInputAddressChange}
                                         />
                                     ) : (
                                         <p className="text-gray-900">
-                                            {addressData.alamatLengkap}
+                                            {addressData.fullAddress}
                                         </p>
                                     )}
                                 </div>

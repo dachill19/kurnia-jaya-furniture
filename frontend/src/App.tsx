@@ -13,7 +13,7 @@ import CategoryPage from "./pages/CategoryPage";
 import AdminLogin from "./pages/admin/AdminLogin";
 import { SidebarProvider } from "./components/ui/sidebar";
 import AdminLayout from "./components/AdminLayout";
-import Dashboard from "./pages/admin/Dashboard";
+// import Dashboard from "./pages/admin/Dashboard";
 import CartPage from "./pages/CartPage";
 
 const App = () => (
@@ -30,7 +30,7 @@ const App = () => (
                             </SidebarProvider>
                         }
                     >
-                        <Route index element={<Dashboard />} />
+                        {/* <Route index element={<Dashboard />} /> */}
                     </Route>
                     <Route path="/" element={<Layout />}>
                         <Route index element={<HomePage />} />

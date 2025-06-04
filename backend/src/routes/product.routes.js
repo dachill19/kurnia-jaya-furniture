@@ -17,3 +17,14 @@ router.get("/", getAllProductsController); // contoh: ?sort=price_desc
 router.get("/:id", getProductByIdController);
 
 export default router;
+
+
+import upload from "../middlewares/upload.js";
+
+router.post(
+  "/",
+  authenticate,
+  authorizeAdmin,
+  upload.single("image"), // ← ini middleware upload
+  createProductController
+);

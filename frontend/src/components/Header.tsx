@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import logo from "@/assets/logo.png";
@@ -22,6 +21,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import apiService from "@/services/apiService";
 
 const Header = () => {
     const { totalItems } = useCart();
@@ -48,9 +48,7 @@ const Header = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/categories"
-                );
+                const response = await apiService.getCategories();
                 setCategories(response.data);
             } catch (error) {
                 console.error("Gagal ambil kategori:", error);

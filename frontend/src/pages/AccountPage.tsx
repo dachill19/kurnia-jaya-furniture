@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,7 +18,9 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import axios from "axios";
+import { useCart } from "@/context/CartContext";
+import { useToast } from "@/components/ui/use-toast";
+import apiService from "@/services/apiService";
 
 // Mock data - in a real app this would come from API
 const mockOrders = [
@@ -62,6 +64,8 @@ const mockOrders = [
 ];
 
 const AccountPage = () => {
+    const { addToCart } = useCart();
+    const { toast } = useToast();
     const [activeTab, setActiveTab] = useState("profile");
     const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState<{ [key: string]: string }>({});
@@ -71,6 +75,20 @@ const AccountPage = () => {
         {}
     );
     const [wishlist, setWishlist] = useState([]);
+    const [addresses, setAddresses] = useState([]);
+    const [selectedAddress, setSelectedAddress] = useState(null);
+    const [addressData, setAddressData] = useState({
+        recipient: "",
+        label: "",
+        province: "",
+        city: "",
+        subdistrict: "",
+        village: "",
+        zipCode: "",
+        fullAddress: "",
+        isDefault: false,
+    });
+    const [isEditingAddress, setIsEditingAddress] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -124,14 +142,7 @@ const AccountPage = () => {
             if (!token) return;
 
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/wishlist",
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                );
+                const response = await apiService.getWishlist(token);
                 setWishlist(response.data);
             } catch (error) {
                 console.error("Gagal mengambil wishlist:", error);
@@ -147,14 +158,7 @@ const AccountPage = () => {
                 localStorage.getItem("token") ||
                 sessionStorage.getItem("token");
 
-            await axios.delete(
-                `http://localhost:5000/api/wishlist/${productId}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                }
-            );
+            await apiService.removeWishlistItem(productId, token);
 
             setWishlist((prev) =>
                 prev.filter((item) => item.product.id !== productId)
@@ -164,9 +168,132 @@ const AccountPage = () => {
         }
     };
 
+    const handleAddToCart = (e: React.MouseEvent, item: any) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const product = item.product;
+        const mainImage =
+            product.images.find((img: any) => img.isMain) || product.images[0];
+
+        addToCart({
+            id: product.id,
+            name: product.name,
+            price: product.discountPrice ?? product.price,
+            image: mainImage, // sesuaikan jika hanya perlu imageUrl: mainImage.imageUrl
+        });
+
+        toast({
+            title: "Produk ditambahkan ke keranjang",
+            description: product.name,
+        });
+    };
+
+    const fetchAddresses = async () => {
+        const token =
+            localStorage.getItem("token") || sessionStorage.getItem("token");
+        try {
+            const res = await apiService.getAddresses(token);
+
+            if (res.data.success) {
+                setAddresses(res.data.addresses.filter((a) => a)); // Filter aman
+            }
+        } catch (error) {
+            console.error("Gagal ambil alamat:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAddresses();
+    }, []);
+
+    const validateAddress = () => {
+        const requiredFields = [
+            "recipient",
+            "label",
+            "province",
+            "city",
+            "subdistrict",
+            "village",
+            "zipCode",
+            "fullAddress",
+        ];
+        for (let field of requiredFields) {
+            if (!addressData[field]) return false;
+        }
+        return true;
+    };
+
+    const handleInputAddressChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const { name, value } = e.target;
+        setAddressData((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleEditAddress = (address) => {
+        setSelectedAddress(address);
+        setAddressData(address); // isi state dengan data awal
+        setActiveTab("editAddress"); // pindah ke tab edit
+    };
+
+    const handleSaveAddress = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateAddress()) {
+            toast({
+                title: "Gagal",
+                description: "Semua field alamat wajib diisi",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        try {
+            const token =
+                localStorage.getItem("token") ||
+                sessionStorage.getItem("token");
+            const res = await apiService.updateAddress(
+                selectedAddress.id,
+                addressData,
+                token
+            );
+
+            if (res.data.success) {
+                setIsEditingAddress(false);
+                setActiveTab("address");
+                await fetchAddresses();
+                toast({
+                    title: "Berhasil",
+                    description: "Alamat berhasil disimpan",
+                });
+            } else {
+                console.error(res.data.message);
+            }
+        } catch (err) {
+            console.error("Gagal update alamat", err);
+        }
+    };
+
+    const handleDeleteAddress = async (id) => {
+        if (confirm("Yakin ingin menghapus alamat ini?")) {
+            const token =
+                localStorage.getItem("token") ||
+                sessionStorage.getItem("token");
+            try {
+                await apiService.deleteAddress(id, token);
+
+                await fetchAddresses();
+            } catch (err) {
+                console.error("Gagal hapus alamat:", err);
+            }
+        }
+    };
+
     const handleLogout = () => {
         logout();
         navigate("/signin");
+        window.location.reload();
     };
 
     const getStatusLabel = (status: string) => {
@@ -608,7 +735,15 @@ const AccountPage = () => {
                                                     </div>
 
                                                     <div className="flex space-x-2 mt-2">
-                                                        <Button size="sm">
+                                                        <Button
+                                                            size="sm"
+                                                            onClick={(e) =>
+                                                                handleAddToCart(
+                                                                    e,
+                                                                    item
+                                                                )
+                                                            }
+                                                        >
                                                             Tambah ke Keranjang
                                                         </Button>
                                                         <Button
@@ -656,37 +791,274 @@ const AccountPage = () => {
                         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                             <div className="p-4 border-b flex justify-between items-center">
                                 <h2 className="font-medium">Alamat Saya</h2>
-                                <Button size="sm">Tambah Alamat Baru</Button>
+                                <Button
+                                    size="sm"
+                                    // onClick={handleAddNewAddress}
+                                >
+                                    Tambah Alamat Baru
+                                </Button>
                             </div>
 
-                            <div className="p-4">
-                                <div className="border rounded-md p-4 relative">
-                                    <div className="absolute top-4 right-4 bg-kj-red text-white text-xs px-2 py-1 rounded-full">
-                                        Utama
-                                    </div>
-                                    <h3 className="font-medium mb-2">
-                                        {user.name}
-                                    </h3>
-                                    <p className="text-gray-600">
-                                        {user.address}
+                            <div className="p-4 space-y-4">
+                                {addresses.length === 0 ? (
+                                    <p className="text-gray-500">
+                                        Belum ada alamat tersimpan.
                                     </p>
-                                    <p className="text-gray-600">
-                                        {user.phoneNumber}
-                                    </p>
+                                ) : (
+                                    addresses
+                                        .filter(
+                                            (address) =>
+                                                address !== undefined &&
+                                                address !== null
+                                        )
+                                        .map((address) => (
+                                            <div
+                                                key={address.id}
+                                                className="border rounded-md p-4 relative"
+                                            >
+                                                {address.isDefault && (
+                                                    <div className="absolute top-4 right-4 bg-kj-red text-white text-xs px-2 py-1 rounded-full">
+                                                        Utama
+                                                    </div>
+                                                )}
 
-                                    <div className="flex space-x-2 mt-4">
-                                        <Button variant="outline" size="sm">
-                                            Edit
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-red-500"
-                                        >
-                                            Hapus
-                                        </Button>
-                                    </div>
+                                                <h3 className="font-medium mb-2">
+                                                    {address.recipient}
+                                                </h3>
+                                                <p className="text-gray-600">
+                                                    {address.fullAddress}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    {address.village},{" "}
+                                                    {address.subdistrict},{" "}
+                                                    {address.city},{" "}
+                                                    {address.province}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    {address.zipCode}
+                                                </p>
+                                                <p className="text-gray-600">
+                                                    {address.label}
+                                                </p>
+
+                                                <div className="flex space-x-2 mt-4">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleEditAddress(
+                                                                address
+                                                            )
+                                                        }
+                                                    >
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-red-500"
+                                                        onClick={() =>
+                                                            handleDeleteAddress(
+                                                                address.id
+                                                            )
+                                                        }
+                                                    >
+                                                        Hapus
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === "editAddress" && selectedAddress && (
+                        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                            <div className="p-4 border-b flex justify-between items-center">
+                                <h2 className="font-medium">Edit Alamat</h2>
+                                <Button
+                                    variant={
+                                        isEditingAddress ? "outline" : "default"
+                                    }
+                                    size="sm"
+                                    onClick={(e) => {
+                                        if (isEditingAddress) {
+                                            handleSaveAddress(e);
+                                        } else {
+                                            setIsEditingAddress(true);
+                                        }
+                                    }}
+                                >
+                                    {isEditingAddress ? "Simpan" : "Edit"}
+                                </Button>
+                            </div>
+
+                            <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Nama Penerima
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="recipient"
+                                            value={addressData.recipient}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.recipient}
+                                        </p>
+                                    )}
                                 </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Label
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="label"
+                                            value={addressData.label}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.label}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Provinsi
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="province"
+                                            value={addressData.province}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.province}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kota/Kabupaten
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="city"
+                                            value={addressData.city}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.city}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kecamatan
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="subdistrict"
+                                            value={addressData.subdistrict}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.subdistrict}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kelurahan/Desa
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="village"
+                                            value={addressData.village}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.village}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Kode Pos
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="zipCode"
+                                            value={addressData.zipCode}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.zipCode}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Alamat Lengkap
+                                    </label>
+                                    {isEditingAddress ? (
+                                        <Input
+                                            name="fullAddress"
+                                            value={addressData.fullAddress}
+                                            onChange={handleInputAddressChange}
+                                        />
+                                    ) : (
+                                        <p className="text-gray-900">
+                                            {addressData.fullAddress}
+                                        </p>
+                                    )}
+                                </div>
+
+                                {isEditingAddress ? (
+                                    <div className="md:col-span-2 flex items-center space-x-2">
+                                        <label className="inline-flex items-center text-sm">
+                                            <input
+                                                type="checkbox"
+                                                name="isDefault"
+                                                checked={addressData.isDefault}
+                                                onChange={(e) =>
+                                                    setAddressData((prev) => ({
+                                                        ...prev,
+                                                        isDefault:
+                                                            e.target.checked,
+                                                    }))
+                                                }
+                                                className="mr-2"
+                                            />
+                                            Jadikan Alamat Utama
+                                        </label>
+                                    </div>
+                                ) : (
+                                    addressData.isDefault && (
+                                        <div className="md:col-span-2 flex items-center space-x-2">
+                                            <p className="text-sm">
+                                                Alamat utama
+                                            </p>
+                                        </div>
+                                    )
+                                )}
                             </div>
                         </div>
                     )}

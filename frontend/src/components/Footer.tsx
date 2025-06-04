@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import {
     Facebook,
     Instagram,
@@ -12,6 +11,7 @@ import {
     ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import apiService from "@/services/apiService";
 
 const Footer = () => {
     const [categories, setCategories] = useState([]);
@@ -19,9 +19,7 @@ const Footer = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/categories"
-                );
+                const response = await apiService.getCategories();
                 setCategories(response.data);
             } catch (error) {
                 console.error("Gagal mengambil kategori:", error);

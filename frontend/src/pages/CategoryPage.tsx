@@ -2,7 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import ProductCard from "@/components/ProductCard";
 import { ChevronRight, ChevronLeft } from "lucide-react";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import apiService from "@/services/apiService";
 
 const CategoryPage = () => {
     const { categoryName } = useParams();
@@ -11,10 +11,8 @@ const CategoryPage = () => {
     useEffect(() => {
         const fetchProductsByCategory = async () => {
             try {
-                const response = await axios.get(
-                    `http://localhost:5000/api/categories/${encodeURIComponent(
-                        categoryName
-                    )}`
+                const response = await apiService.getProductsByCategory(
+                    categoryName
                 );
                 setProducts(response.data);
             } catch (error) {

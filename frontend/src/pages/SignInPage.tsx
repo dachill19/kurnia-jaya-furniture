@@ -4,8 +4,8 @@ import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
+import apiService from "@/services/apiService";
 
 const SignInPage = () => {
     const { login } = useAuth();
@@ -31,18 +31,13 @@ const SignInPage = () => {
         setFieldErrors({});
 
         try {
-            const response = await axios.post(
-                "http://localhost:5000/api/auth/login",
-                {
-                    email,
-                    password,
-                }
-            );
+            const response = await apiService.loginUser(email, password);
 
             const token = response.data.token;
 
             await login(token, rememberMe);
             navigate("/");
+            window.location.reload();
         } catch (error) {
             const res = error.response?.data;
             if (res?.validationErrors) {

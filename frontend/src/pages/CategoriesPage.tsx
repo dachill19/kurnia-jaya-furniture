@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import CategoryCard from "@/components/CategoryCard";
 import { motion } from "framer-motion";
+import apiService from "@/services/apiService";
 
 const CategoriesPage = () => {
     const [categories, setCategories] = useState([]);
@@ -9,9 +9,7 @@ const CategoriesPage = () => {
     useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:5000/api/categories"
-                );
+                const response = await apiService.getCategories();
                 setCategories(response.data);
             } catch (error) {
                 console.error("Gagal mengambil kategori:", error);

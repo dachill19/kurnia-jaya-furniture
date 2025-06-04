@@ -70,20 +70,39 @@ export const getDiscountedProductsController = async (req, res) => {
 // Create product
 export const createProductController = async (req, res) => {
     try {
-        const { name, price, categoryName } = req.body;
-
-        // Validasi input wajib
+        const {
+            name,
+            price,
+            description,
+            stock,
+            discountPrice,
+            categoryName,
+            isHot,
+        } = req.body;
         if (!name || !price || !categoryName) {
             return res.status(400).json({ error: "Field wajib tidak lengkap" });
         }
 
-        const product = await createProduct(req.body);
+        const imageUrl = req.file?.path;
+
+        const product = await createProduct({
+            name,
+            price: parseFloat(price),
+            description,
+            stock: parseInt(stock),
+            discountPrice: discountPrice ? parseFloat(discountPrice) : null,
+            categoryName,
+            isHot: isHot === "true",
+            images: imageUrl ? [{ imageUrl, isMain: true }] : [],
+        });
+
         res.status(201).json(product);
     } catch (err) {
         console.error("Error create product:", err);
         res.status(400).json({ error: err.message });
     }
 };
+
 
 // Update product
 export const updateProductController = async (req, res) => {

@@ -4,26 +4,38 @@ import { supabase } from "../lib/supabase";
 import { useLoadingStore } from "./loadingStore";
 import { useAuthStore } from "./authStore";
 
-export interface WishlistItem {
+// Separated Types - Single Object Version
+type WishlistCategory = {
+    id: string;
+    name: string;
+};
+
+type WishlistProductImage = {
+    id: string;
+    product_id: string;
+    image_url: string;
+    is_main: boolean;
+    created_at: string;
+};
+
+type WishlistProduct = {
+    id: string;
+    name: string;
+    price: number;
+    discount_price: number | null;
+    category?: WishlistCategory;
+    product_image?: WishlistProductImage[];
+};
+
+type WishlistItem = {
     id: string;
     product_id: string;
     user_id: string;
     created_at: string;
-    product: {
-        id: string;
-        name: string;
-        price: number;
-        discount_price: number | null;
-        product_image: Array<{
-            image_url: string;
-            is_main: boolean;
-        }>;
-        category: {
-            name: string;
-        };
-    };
-}
+    product?: WishlistProduct | null;
+};
 
+// Store Interface
 interface WishlistState {
     wishlist: WishlistItem[];
     error: string | null;
@@ -72,10 +84,14 @@ export const useWishlistStore = create<WishlistState>()(
                                 price,
                                 discount_price,
                                 product_image (
+                                    id,
+                                    product_id,
                                     image_url,
-                                    is_main
+                                    is_main,
+                                    created_at
                                 ),
-                                category (
+                                category:category_id (
+                                    id,
                                     name
                                 )
                             )
@@ -86,7 +102,42 @@ export const useWishlistStore = create<WishlistState>()(
 
                     if (error) throw error;
 
-                    set({ wishlist: data || [] });
+                    // Transform data if needed
+                    const transformedData = (data || []).map((item: any) => {
+                        // Handle if product is array, take first item
+                        let product = null;
+                        if (item.product) {
+                            if (
+                                Array.isArray(item.product) &&
+                                item.product.length > 0
+                            ) {
+                                product = {
+                                    ...item.product[0],
+                                    category: Array.isArray(
+                                        item.product[0].category
+                                    )
+                                        ? item.product[0].category[0]
+                                        : item.product[0].category,
+                                };
+                            } else if (!Array.isArray(item.product)) {
+                                product = {
+                                    ...item.product,
+                                    category: Array.isArray(
+                                        item.product.category
+                                    )
+                                        ? item.product.category[0]
+                                        : item.product.category,
+                                };
+                            }
+                        }
+
+                        return {
+                            ...item,
+                            product,
+                        };
+                    });
+
+                    set({ wishlist: transformedData });
                 } catch (error: any) {
                     console.error("Error fetching wishlist:", error);
                     set({
@@ -130,7 +181,7 @@ export const useWishlistStore = create<WishlistState>()(
 
                     if (error) throw error;
 
-                    // Refresh wishlist
+                    // Refresh wishlist to get the complete data with relations
                     await get().fetchWishlist();
                 } catch (error: any) {
                     console.error("Error adding to wishlist:", error);

@@ -18,6 +18,13 @@ type ProductImage = {
     created_at: string;
 };
 
+type ReviewImage = {
+    id: string;
+    review_id: string;
+    image_url: string;
+    created_at: string;
+};
+
 type Review = {
     id: string;
     product_id: string;
@@ -25,6 +32,7 @@ type Review = {
     rating: number;
     comment: string;
     created_at: string;
+    review_image?: ReviewImage[]; // Fixed: proper relation name
 };
 
 type Product = {
@@ -40,7 +48,7 @@ type Product = {
     updated_at: string;
     category?: Category;
     product_image?: ProductImage[];
-    reviews?: Review[];
+    reviews?: Review[]; // Fixed: now includes review_image relation
 };
 
 type ProductStore = {
@@ -119,7 +127,9 @@ export const useProductStore = create<ProductStore>()(
                                 id,
                                 rating,
                                 comment,
-                                created_at
+                                created_at,
+                                user_id,
+                                review_image(*)
                             )
                         `
                         )
@@ -157,7 +167,12 @@ export const useProductStore = create<ProductStore>()(
                                 rating,
                                 comment,
                                 created_at,
-                                user_id
+                                user_id,
+                                review_image(
+                                    id,
+                                    image_url,
+                                    created_at
+                                )
                             )
                         `
                         )
@@ -192,7 +207,11 @@ export const useProductStore = create<ProductStore>()(
                             product_image(*),
                             reviews:review(
                                 id,
-                                rating
+                                rating,
+                                comment,
+                                created_at,
+                                user_id,
+                                review_image(*)
                             )
                         `
                         )
@@ -226,7 +245,11 @@ export const useProductStore = create<ProductStore>()(
                             product_image(*),
                             reviews:review(
                                 id,
-                                rating
+                                rating,
+                                comment,
+                                created_at,
+                                user_id,
+                                review_image(*)
                             )
                         `
                         )

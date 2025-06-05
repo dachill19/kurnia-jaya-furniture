@@ -22,19 +22,22 @@ const AboutPage = () => {
                             Kisah Kami
                         </h2>
                         <p className="text-gray-600 mb-4">
-                            Kurnia Jaya Furniture didirikan pada tahun 2005
-                            dengan visi sederhana: menyediakan furnitur
-                            berkualitas tinggi dengan harga terjangkau untuk
-                            semua orang. Kami memulai dari toko kecil di Jakarta
-                            dan kini telah berkembang menjadi salah satu
-                            perusahaan furnitur terkemuka di Indonesia.
+                            Kurnia Jaya Furniture didirikan pada tahun 2010
+                            dengan visi sederhana yaitu menyediakan furniture
+                            berkualitas tinggi dengan pelayanan terbaik untuk
+                            semua orang. Produk yang kami jual dirancang dengan
+                            perpaduan sempurna antara fungsionalitas, estetika,
+                            dan kenyamanan. Kami memahami bahwa furniture bukan
+                            sekedar tentang tampilan semata, tetapi juga
+                            kualitas, kenyamanan, dan kepuasan yang bertahan
+                            lama.
                         </p>
                         <p className="text-gray-600 mb-4">
-                            Produk kami dirancang dengan perpaduan sempurna
-                            antara fungsionalitas, estetika, dan kenyamanan.
-                            Kami memahami bahwa furnitur bukan hanya tentang
-                            tampilan, tetapi juga tentang kualitas dan
-                            kenyamanan yang bertahan lama.
+                            Kurnia Jaya Furniture selalu berkomitmen untuk
+                            menyediakan produk terbaik dan memberikan pelayanan
+                            pelanggan yang luar biasa. Kami percaya bahwa
+                            kepuasan pelanggan adalah kunci keberhasilan Utama
+                            dalam bisnis kami.
                         </p>
                         <p className="text-gray-600">
                             Di Kurnia Jaya, kami berkomitmen untuk menyediakan
@@ -194,10 +197,11 @@ const AboutPage = () => {
                     </h2>
                     <blockquote className="text-gray-600 italic mb-6">
                         "Di Kurnia Jaya Furniture, kami percaya bahwa rumah yang
-                        indah dimulai dari furnitur yang berkualitas. Komitmen
-                        kami adalah menyediakan produk terbaik dengan harga yang
-                        terjangkau untuk semua pelanggan kami. Terima kasih
-                        telah menjadi bagian dari perjalanan kami."
+                        indah dimulai dari furniture yang berkualitas. Komitmen
+                        kami adalah untuk selalu menyediakan produk terbaik
+                        dengan harga yang sesuai serta pelayanan terbaik untuk
+                        semua pelanggan kami tanpa terkecuali. Ayo jadilah
+                        bagian dari perjalanan kami"
                     </blockquote>
                     <p className="font-semibold text-kj-brown">
                         Ahmad Kurnia, Pendiri & CEO

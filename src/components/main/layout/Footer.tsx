@@ -31,9 +31,9 @@ const Footer = () => {
                             Kurnia Jaya Furniture
                         </h3>
                         <p className="text-gray-600 dark:text-gray-300 mb-6">
-                            #1 Best Furniture in Town - Menyediakan furnitur
-                            berkualitas dengan desain modern dan harga
-                            terjangkau.
+                            #1 best Furniture in Town - Menyediakan furniture
+                            berkualitas dengan desain modern dan pelayanan
+                            terbaik.
                         </p>
                         <div className="flex space-x-4">
                             <a

@@ -16,6 +16,8 @@ import {
     ChevronRight,
     HeartOff,
 } from "lucide-react";
+import { useLoadingStore } from "@/stores/loadingStore";
+import { ProductDetailPageSkeleton } from "@/components/main/skeleton/ProductDetailPageSkeleton";
 
 const ProductDetailPage = () => {
     const { productId } = useParams();
@@ -27,6 +29,7 @@ const ProductDetailPage = () => {
     const { addToWishlist, removeFromWishlist, isInWishlist } =
         useWishlistStore();
     const { user } = useAuthStore();
+    const { isLoadingKey } = useLoadingStore();
 
     // Local state
     const [quantity, setQuantity] = useState<number>(1);
@@ -47,6 +50,10 @@ const ProductDetailPage = () => {
             setSelectedImage(mainImageIndex >= 0 ? mainImageIndex : 0);
         }
     }, [productDetail]);
+
+    if (isLoadingKey("product-detail")) {
+        return <ProductDetailPageSkeleton />;
+    }
 
     if (error) {
         return (
@@ -294,29 +301,31 @@ const ProductDetailPage = () => {
                     </div>
 
                     {/* Price */}
-                    {product.discount_price ? (
-                        <div className="flex flex-col items-start">
-                            <span className="line-through text-xl text-gray-400 mb-1">
+                    <div className="mb-6">
+                        {product.discount_price ? (
+                            <div className="flex flex-col items-start">
+                                <span className="line-through text-xl text-gray-400 mb-1">
+                                    {new Intl.NumberFormat("id-ID", {
+                                        style: "currency",
+                                        currency: "IDR",
+                                    }).format(product.price)}
+                                </span>
+                                <span className="text-2xl font-bold text-kj-red">
+                                    {new Intl.NumberFormat("id-ID", {
+                                        style: "currency",
+                                        currency: "IDR",
+                                    }).format(product.discount_price)}
+                                </span>
+                            </div>
+                        ) : (
+                            <span className="text-2xl font-bold text-kj-red">
                                 {new Intl.NumberFormat("id-ID", {
                                     style: "currency",
                                     currency: "IDR",
                                 }).format(product.price)}
                             </span>
-                            <span className="text-2xl font-bold text-kj-red mb-6">
-                                {new Intl.NumberFormat("id-ID", {
-                                    style: "currency",
-                                    currency: "IDR",
-                                }).format(product.discount_price)}
-                            </span>
-                        </div>
-                    ) : (
-                        <span className="text-2xl font-bold text-kj-red mb-6">
-                            {new Intl.NumberFormat("id-ID", {
-                                style: "currency",
-                                currency: "IDR",
-                            }).format(product.price)}
-                        </span>
-                    )}
+                        )}
+                    </div>
 
                     <div className="mb-6">
                         <p className="text-gray-700 mb-4">
@@ -400,7 +409,9 @@ const ProductDetailPage = () => {
 
             {/* Reviews Section */}
             <div className="mb-6">
-                <div className="flex items-center mb-4">
+                <h2 className="text-2xl font-bold mb-6">Ulasan Produk</h2>
+
+                <div className="flex items-center mb-6">
                     <div className="flex items-center mr-4">
                         {[...Array(5)].map((_, i) => (
                             <Star
@@ -427,63 +438,89 @@ const ProductDetailPage = () => {
                     <div className="space-y-6">
                         {product.reviews.map((review) => (
                             <div key={review.id} className="border-b pb-6">
-                                <div className="flex justify-between mb-2">
-                                    <h4 className="font-semibold">
-                                        Pengguna {review.user_id.slice(0, 8)}...
-                                    </h4>
-                                    <span className="text-gray-500">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 className="font-semibold text-gray-900">
+                                            User {review.user_id.slice(0, 8)}...
+                                        </h4>
+                                        <div className="flex items-center mt-1">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star
+                                                    key={i}
+                                                    size={16}
+                                                    className={
+                                                        i < review.rating
+                                                            ? "text-yellow-500 fill-yellow-500"
+                                                            : "text-gray-300"
+                                                    }
+                                                />
+                                            ))}
+                                            <span className="ml-2 text-sm text-gray-600">
+                                                {review.rating}/5
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <span className="text-sm text-gray-500">
                                         {new Date(
                                             review.created_at
-                                        ).toLocaleDateString("id-ID")}
+                                        ).toLocaleDateString("id-ID", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}
                                     </span>
                                 </div>
-                                <div className="flex items-center mb-3">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star
-                                            key={i}
-                                            size={16}
-                                            className={
-                                                i < review.rating
-                                                    ? "text-yellow-500 fill-yellow-500"
-                                                    : "text-gray-300"
-                                            }
-                                        />
-                                    ))}
-                                </div>
-                                <p className="text-gray-700 mb-3">
+
+                                <p className="text-gray-700 mb-3 leading-relaxed">
                                     {review.comment}
                                 </p>
-                                {review.reviewImages && (
-                                    <div className="flex space-x-2">
-                                        {review.reviewImages.map(
-                                            (image, index) => (
-                                                <div
-                                                    key={index}
-                                                    className="w-20 h-20 rounded-md overflow-hidden"
-                                                >
-                                                    <img
-                                                        src={image}
-                                                        alt={`Review image ${
-                                                            index + 1
-                                                        }`}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                </div>
-                                            )
-                                        )}
-                                    </div>
-                                )}
+
+                                {/* Review Images */}
+                                {review.review_image &&
+                                    review.review_image.length > 0 && (
+                                        <div className="flex space-x-2 flex-wrap gap-2">
+                                            {review.review_image.map(
+                                                (image, index) => (
+                                                    <div
+                                                        key={image.id}
+                                                        className="w-20 h-20 rounded-md overflow-hidden border border-gray-200 hover:border-gray-300 transition-colors"
+                                                    >
+                                                        <img
+                                                            src={
+                                                                image.image_url
+                                                            }
+                                                            alt={`Review gambar ${
+                                                                index + 1
+                                                            }`}
+                                                            className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                                                            onClick={() => {
+                                                                // Optional: Add modal to view full image
+                                                                window.open(
+                                                                    image.image_url,
+                                                                    "_blank"
+                                                                );
+                                                            }}
+                                                        />
+                                                    </div>
+                                                )
+                                            )}
+                                        </div>
+                                    )}
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
                         <MessageSquare
                             size={48}
-                            className="mx-auto text-gray-300 mb-2"
+                            className="mx-auto text-gray-400 mb-4"
                         />
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">
+                            Belum ada ulasan
+                        </h3>
                         <p className="text-gray-500">
-                            Belum ada ulasan untuk produk ini.
+                            Jadilah yang pertama memberikan ulasan untuk produk
+                            ini.
                         </p>
                     </div>
                 )}

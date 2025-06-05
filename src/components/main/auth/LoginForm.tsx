@@ -8,7 +8,7 @@ import { useLoadingStore } from "@/stores/loadingStore";
 
 const LoginForm = () => {
     const navigate = useNavigate();
-    const login = useAuthStore((state) => state.login);
+    const { login, loginWithGoogle } = useAuthStore();
     const { isLoadingKey } = useLoadingStore();
 
     const [email, setEmail] = useState("");
@@ -16,7 +16,7 @@ const LoginForm = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
 
-    const isLoading = isLoadingKey("auth-login");
+    const isLoading = isLoadingKey("auth-login") || isLoadingKey("auth-google");
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -28,6 +28,17 @@ const LoginForm = () => {
 
         try {
             await login(email, password);
+            navigate("/");
+        } catch (error: any) {
+            const errorMessage = translateSupabaseError(error?.message);
+            setErrorMsg(errorMessage);
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        setErrorMsg("");
+        try {
+            await loginWithGoogle();
             navigate("/");
         } catch (error: any) {
             const errorMessage = translateSupabaseError(error?.message);
@@ -111,6 +122,7 @@ const LoginForm = () => {
                 <Button
                     variant="outline"
                     className="w-full"
+                    onClick={handleGoogleLogin}
                     disabled={isLoading}
                 >
                     Google

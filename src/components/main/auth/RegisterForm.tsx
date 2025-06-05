@@ -7,7 +7,7 @@ import { useLoadingStore } from "@/stores/loadingStore";
 import { translateSupabaseError } from "@/lib/utils";
 
 const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
-    const register = useAuthStore((state) => state.register);
+    const { register, loginWithGoogle } = useAuthStore();
     const { isLoadingKey } = useLoadingStore();
 
     const [name, setName] = useState("");
@@ -18,7 +18,7 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
 
-    const isLoading = isLoadingKey("auth-register");
+    const isLoading = isLoadingKey("auth-register") || isLoadingKey("auth-google");
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -42,10 +42,20 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
         }
     };
 
+    const handleGoogleRegister = async () => {
+        setErrorMsg("");
+        try {
+            await loginWithGoogle();
+            onRegistered?.();
+        } catch (error: any) {
+            const errorMessage = translateSupabaseError(error?.message);
+            setErrorMsg(errorMessage);
+        }
+    };
+
     return (
         <>
             <form onSubmit={handleSubmit} noValidate>
-                {/* Input Name */}
                 <div className="mb-4">
                     <div className="flex border border-gray-300 rounded-md">
                         <div className="flex items-center px-3 border-r border-gray-300">
@@ -63,7 +73,6 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
                     </div>
                 </div>
 
-                {/* Input Email */}
                 <div className="mb-4">
                     <div className="flex border border-gray-300 rounded-md">
                         <div className="flex items-center px-3 border-r border-gray-300">
@@ -81,7 +90,6 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
                     </div>
                 </div>
 
-                {/* Input Phone */}
                 <div className="mb-4">
                     <div className="flex border border-gray-300 rounded-md">
                         <div className="flex items-center px-3 border-r border-gray-300">
@@ -99,7 +107,6 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
                     </div>
                 </div>
 
-                {/* Input Password */}
                 <div className="mb-4">
                     <div className="flex border border-gray-300 rounded-md">
                         <div className="flex items-center px-3 border-r border-gray-300">
@@ -130,7 +137,6 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
                     </div>
                 </div>
 
-                {/* Checkbox Terms */}
                 <div className="mb-6">
                     <div className="flex items-center">
                         <input
@@ -156,14 +162,12 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
                     </div>
                 </div>
 
-                {/* Error Message */}
                 {errorMsg && (
                     <div className="mb-4 text-sm text-red-600 text-center">
                         {errorMsg}
                     </div>
                 )}
 
-                {/* Submit Button */}
                 <Button
                     type="submit"
                     className="w-full bg-kj-red hover:bg-kj-darkred"
@@ -184,6 +188,7 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
                 <Button
                     variant="outline"
                     className="w-full"
+                    onClick={handleGoogleRegister}
                     disabled={isLoading}
                 >
                     Google

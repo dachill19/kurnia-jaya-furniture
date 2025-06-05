@@ -1,12 +1,50 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/lib/supabase";
 import LoginForm from "@/components/main/auth/LoginForm";
 import RegisterForm from "@/components/main/auth/RegisterForm";
+import { useAuthStore } from "@/stores/authStore";
 
 const AuthPage = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const initialize = useAuthStore((state) => state.initialize);
     const [isRegistering, setIsRegistering] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
+
+    // Set initial tab based on URL query
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const tab = params.get("tab");
+        setIsRegistering(tab === "register");
+    }, [location.search]);
+
+    // Listen for auth state changes
+    useEffect(() => {
+        initialize(); // Initialize auth state on mount
+        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+            if (event === "SIGNED_IN" && session?.user) {
+                // Simpan URL saat ini sebelum redirect
+                sessionStorage.setItem("prevPath", location.pathname + location.search);
+                setIsRegistered(true); // Show verification message for new users
+                setTimeout(() => {
+                    // Redirect ke tab sebelumnya setelah delay
+                    const prevPath = sessionStorage.getItem("prevPath");
+                    if (prevPath) {
+                        navigate(prevPath);
+                    } else {
+                        navigate("/"); // Fallback ke homepage jika tidak ada tab sebelumnya
+                    }
+                    sessionStorage.removeItem("prevPath"); // Hapus setelah digunakan
+                }, 3000); // Adjust delay as needed
+            }
+        });
+
+        return () => {
+            authListener.subscription.unsubscribe();
+        };
+    }, [initialize, navigate, location.pathname, location.search]);
 
     if (isRegistered) {
         return (
@@ -35,7 +73,11 @@ const AuthPage = () => {
                         {isRegistering ? "Buat Akun" : "Masuk"}
                     </h1>
 
-                    <Tabs defaultValue="login" className="w-full">
+                    <Tabs
+                        defaultValue={isRegistering ? "register" : "login"}
+                        value={isRegistering ? "register" : "login"}
+                        className="w-full"
+                    >
                         <TabsList className="grid w-full grid-cols-2 mb-6">
                             <TabsTrigger
                                 value="login"

@@ -1,3 +1,4 @@
+// src/stores/authStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { supabase } from "../lib/supabase";
@@ -15,6 +16,7 @@ type AuthStore = {
     isInitialized: boolean;
     fetchProfile: () => Promise<void>;
     login: (email: string, password: string) => Promise<void>;
+    loginWithGoogle: () => Promise<void>;
     register: (
         email: string,
         password: string,
@@ -33,9 +35,12 @@ export const useAuthStore = create<AuthStore>()(
             isInitialized: false,
 
             initialize: async () => {
-                const { startLoading, stopLoading } =
-                    useLoadingStore.getState();
+                // Jangan jalankan initialize jika sudah di-initialize
+                if (get().isInitialized) return;
+                
+                const { startLoading, stopLoading } = useLoadingStore.getState();
                 startLoading("auth-initialize");
+                
                 try {
                     const {
                         data: { session },
@@ -64,9 +69,13 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             fetchProfile: async () => {
-                const { startLoading, stopLoading } =
-                    useLoadingStore.getState();
+                // Jangan fetch profile jika user sudah ada dan sudah di-initialize
+                const state = get();
+                if (state.user && state.isInitialized) return;
+                
+                const { startLoading, stopLoading } = useLoadingStore.getState();
                 startLoading("fetch-profile");
+                
                 try {
                     const {
                         data: { user },
@@ -95,15 +104,15 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             login: async (email, password) => {
-                const { startLoading, stopLoading } =
-                    useLoadingStore.getState();
+                const { startLoading, stopLoading } = useLoadingStore.getState();
                 startLoading("auth-login");
+                
                 try {
-                    const { data, error } =
-                        await supabase.auth.signInWithPassword({
-                            email,
-                            password,
-                        });
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email,
+                        password,
+                    });
+                    
                     if (error) throw error;
 
                     if (data.user) {
@@ -114,6 +123,7 @@ export const useAuthStore = create<AuthStore>()(
                                 name: data.user.user_metadata?.name || "",
                                 phone: data.user.phone || "",
                             },
+                            isInitialized: true,
                         });
                     }
                 } finally {
@@ -121,10 +131,27 @@ export const useAuthStore = create<AuthStore>()(
                 }
             },
 
+            loginWithGoogle: async () => {
+                const { startLoading, stopLoading } = useLoadingStore.getState();
+                startLoading("auth-google");
+                
+                try {
+                    const { error } = await supabase.auth.signInWithOAuth({
+                        provider: "google",
+                        options: {
+                            redirectTo: window.location.origin,
+                        },
+                    });
+                    if (error) throw error;
+                } finally {
+                    stopLoading("auth-google");
+                }
+            },
+
             register: async (email, password, name, phone) => {
-                const { startLoading, stopLoading } =
-                    useLoadingStore.getState();
+                const { startLoading, stopLoading } = useLoadingStore.getState();
                 startLoading("auth-register");
+                
                 try {
                     const { data, error } = await supabase.auth.signUp({
                         email,
@@ -136,6 +163,7 @@ export const useAuthStore = create<AuthStore>()(
                             },
                         },
                     });
+                    
                     if (error) throw error;
 
                     if (data.user) {
@@ -146,6 +174,7 @@ export const useAuthStore = create<AuthStore>()(
                                 name: data.user.user_metadata?.name || name,
                                 phone: data.user.phone || phone || "",
                             },
+                            isInitialized: true,
                         });
                     }
                 } finally {
@@ -154,9 +183,9 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             updateProfile: async (data) => {
-                const { startLoading, stopLoading } =
-                    useLoadingStore.getState();
+                const { startLoading, stopLoading } = useLoadingStore.getState();
                 startLoading("update-profile");
+                
                 try {
                     const { error } = await supabase.auth.updateUser({
                         data: {
@@ -164,6 +193,7 @@ export const useAuthStore = create<AuthStore>()(
                             phone: data.phone,
                         },
                     });
+                    
                     if (error) throw error;
 
                     const currentUser = get().user;
@@ -181,12 +211,12 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             logout: async () => {
-                const { startLoading, stopLoading } =
-                    useLoadingStore.getState();
+                const { startLoading, stopLoading } = useLoadingStore.getState();
                 startLoading("auth-logout");
+                
                 try {
                     await supabase.auth.signOut();
-                    set({ user: null });
+                    set({ user: null, isInitialized: true });
                 } finally {
                     stopLoading("auth-logout");
                 }
@@ -196,7 +226,7 @@ export const useAuthStore = create<AuthStore>()(
             name: "auth-store",
             partialize: (state) => ({
                 user: state.user,
-                // Don't persist isInitialized as it should reset on page load
+                isInitialized: state.isInitialized, // Simpan juga isInitialized
             }),
         }
     )

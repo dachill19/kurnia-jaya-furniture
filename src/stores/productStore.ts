@@ -32,7 +32,7 @@ type Review = {
     rating: number;
     comment: string;
     created_at: string;
-    review_image?: ReviewImage[]; // Fixed: proper relation name
+    review_image?: ReviewImage[];
 };
 
 type Product = {
@@ -48,7 +48,7 @@ type Product = {
     updated_at: string;
     category?: Category;
     product_image?: ProductImage[];
-    reviews?: Review[]; // Fixed: now includes review_image relation
+    reviews?: Review[];
 };
 
 type ProductStore = {
@@ -57,6 +57,7 @@ type ProductStore = {
     productDetail: Product | null;
     error: string | null;
     getCategories: () => Promise<void>;
+    getAllProducts: () => Promise<void>;
     getProductsByCategory: (categoryId: string) => Promise<void>;
     getProductById: (productId: string) => Promise<void>;
     getHotProducts: () => Promise<void>;
@@ -107,6 +108,43 @@ export const useProductStore = create<ProductStore>()(
                     });
                 } finally {
                     stopLoading("categories");
+                }
+            },
+
+            getAllProducts: async () => {
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
+                startLoading("all-products");
+                try {
+                    set({ error: null });
+                    const { data, error } = await supabase
+                        .from("product")
+                        .select(
+                            `
+                            *,
+                            category(*),
+                            product_image(*),
+                            reviews:review(
+                                id,
+                                rating,
+                                comment,
+                                created_at,
+                                user_id,
+                                review_image(*)
+                            )
+                        `
+                        )
+                        .order("name", { ascending: true });
+
+                    if (error) throw error;
+                    set({ products: data || [] });
+                } catch (error: any) {
+                    console.error("Error fetching all products:", error);
+                    set({
+                        error: error.message || "Failed to fetch products",
+                    });
+                } finally {
+                    stopLoading("all-products");
                 }
             },
 

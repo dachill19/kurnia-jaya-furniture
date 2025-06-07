@@ -18,7 +18,8 @@ const RegisterForm = ({ onRegistered }: { onRegistered?: () => void }) => {
     const [showPassword, setShowPassword] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
 
-    const isLoading = isLoadingKey("auth-register") || isLoadingKey("auth-google");
+    const isLoading =
+        isLoadingKey("auth-register") || isLoadingKey("auth-google");
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);

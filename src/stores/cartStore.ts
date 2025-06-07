@@ -8,6 +8,7 @@ export interface CartItem {
     id: string;
     name: string;
     price: number;
+    discount_price: number | null;
     image: string;
     quantity: number;
 }
@@ -25,6 +26,7 @@ interface CartState {
     updateQuantity: (productId: string, quantity: number) => Promise<void>;
     removeFromCart: (productId: string) => Promise<void>;
     clearCart: () => Promise<void>;
+    getDisplayPrice: (item: CartItem) => number;
 }
 
 export const useCartStore = create<CartState>()(
@@ -33,6 +35,13 @@ export const useCartStore = create<CartState>()(
             cart: [],
             totalItems: 0,
             totalPrice: 0,
+
+            // Helper function to get display price (discount_price if available, otherwise regular price)
+            getDisplayPrice: (item: CartItem) => {
+                return item.discount_price && item.discount_price > 0
+                    ? item.discount_price
+                    : item.price;
+            },
 
             fetchCart: async () => {
                 const { startLoading, stopLoading } =
@@ -51,7 +60,8 @@ export const useCartStore = create<CartState>()(
                             quantity, 
                             product:product_id(
                                 name, 
-                                price, 
+                                price,
+                                discount_price,
                                 product_image(
                                     image_url,
                                     is_main
@@ -71,6 +81,7 @@ export const useCartStore = create<CartState>()(
                         id: item.product_id,
                         name: item.product.name,
                         price: item.product.price,
+                        discount_price: item.product.discount_price,
                         image:
                             item.product.product_image?.find(
                                 (img: any) => img.is_main
@@ -80,16 +91,20 @@ export const useCartStore = create<CartState>()(
                         quantity: item.quantity,
                     }));
 
+                    // Calculate total using display prices (with discount consideration)
+                    const { getDisplayPrice } = get();
+                    const totalPrice = cart.reduce((acc, item) => {
+                        const displayPrice = getDisplayPrice(item);
+                        return acc + displayPrice * item.quantity;
+                    }, 0);
+
                     set({
                         cart,
                         totalItems: cart.reduce(
                             (acc, item) => acc + item.quantity,
                             0
                         ),
-                        totalPrice: cart.reduce(
-                            (acc, item) => acc + item.price * item.quantity,
-                            0
-                        ),
+                        totalPrice,
                     });
                 } catch (error) {
                     console.error("Fetch cart error:", error);

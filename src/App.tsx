@@ -13,6 +13,7 @@ import NotFound from "./pages/main/NotFound";
 import CategoriesPage from "./pages/main/CategoriesPage";
 import CategoryPage from "./pages/main/CategoryPage";
 import ProductDetailPage from "./pages/main/ProductDetailPage";
+import ProductsPage from "./pages/main/ProductsPage";
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -56,6 +57,7 @@ const App = () => {
                         path="categories/:categoryName"
                         element={<CategoryPage />}
                     />
+                    <Route path="products" element={<ProductsPage />} />
                     <Route
                         path="products/:productId"
                         element={<ProductDetailPage />}

@@ -23,23 +23,28 @@ const AuthPage = () => {
     // Listen for auth state changes
     useEffect(() => {
         initialize(); // Initialize auth state on mount
-        const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === "SIGNED_IN" && session?.user) {
-                // Simpan URL saat ini sebelum redirect
-                sessionStorage.setItem("prevPath", location.pathname + location.search);
-                setIsRegistered(true); // Show verification message for new users
-                setTimeout(() => {
-                    // Redirect ke tab sebelumnya setelah delay
-                    const prevPath = sessionStorage.getItem("prevPath");
-                    if (prevPath) {
-                        navigate(prevPath);
-                    } else {
-                        navigate("/"); // Fallback ke homepage jika tidak ada tab sebelumnya
-                    }
-                    sessionStorage.removeItem("prevPath"); // Hapus setelah digunakan
-                }, 3000); // Adjust delay as needed
+        const { data: authListener } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+                if (event === "SIGNED_IN" && session?.user) {
+                    // Simpan URL saat ini sebelum redirect
+                    sessionStorage.setItem(
+                        "prevPath",
+                        location.pathname + location.search
+                    );
+                    setIsRegistered(true); // Show verification message for new users
+                    setTimeout(() => {
+                        // Redirect ke tab sebelumnya setelah delay
+                        const prevPath = sessionStorage.getItem("prevPath");
+                        if (prevPath) {
+                            navigate(prevPath);
+                        } else {
+                            navigate("/"); // Fallback ke homepage jika tidak ada tab sebelumnya
+                        }
+                        sessionStorage.removeItem("prevPath"); // Hapus setelah digunakan
+                    }, 3000); // Adjust delay as needed
+                }
             }
-        });
+        );
 
         return () => {
             authListener.subscription.unsubscribe();

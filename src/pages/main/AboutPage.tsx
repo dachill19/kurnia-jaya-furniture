@@ -2,7 +2,7 @@ import { MapPin, Phone, Mail, Clock } from "lucide-react";
 
 const AboutPage = () => {
     return (
-        <div className="container-custom py-12">
+        <div className="container-custom py-8">
             {/* Page Header */}
             <div className="text-center mb-12">
                 <h1 className="text-3xl md:text-4xl font-serif font-bold text-kj-brown mb-4">

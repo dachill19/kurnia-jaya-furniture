@@ -10,16 +10,11 @@ import { useLoadingStore } from "@/stores/loadingStore";
 // Remove the addToCart prop since we'll use cartStore directly
 const WishlistTab: React.FC = () => {
     const { toast } = useToast();
-    
+
     // Zustand stores
-    const {
-        wishlist,
-        error,
-        fetchWishlist,
-        removeFromWishlist,
-        clearError
-    } = useWishlistStore();
-    
+    const { wishlist, error, fetchWishlist, removeFromWishlist, clearError } =
+        useWishlistStore();
+
     const { addToCart } = useCartStore();
     const { isLoadingKey } = useLoadingStore();
 
@@ -68,9 +63,9 @@ const WishlistTab: React.FC = () => {
 
         try {
             // Find main image or use first available image
-            const mainImage = product.product_image?.find(
-                (img: any) => img.is_main
-            ) || product.product_image?.[0];
+            const mainImage =
+                product.product_image?.find((img: any) => img.is_main) ||
+                product.product_image?.[0];
 
             // Create cart item object matching CartItem interface
             const cartItem = {
@@ -111,7 +106,10 @@ const WishlistTab: React.FC = () => {
                     <h2 className="font-medium">Wishlist Saya</h2>
                 </div>
                 <div className="p-8 text-center">
-                    <Loader2 size={48} className="mx-auto text-gray-300 mb-4 animate-spin" />
+                    <Loader2
+                        size={48}
+                        className="mx-auto text-gray-300 mb-4 animate-spin"
+                    />
                     <p className="text-gray-600">Memuat wishlist...</p>
                 </div>
             </div>
@@ -128,16 +126,18 @@ const WishlistTab: React.FC = () => {
                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
                     {wishlist.map((item) => {
                         const product = item.product;
-                        
+
                         if (!product) {
-                            return null; // Skip items without product data
+                            return null;
                         }
 
-                        const mainImage = product.product_image?.find(
-                            (img) => img.is_main
-                        ) || product.product_image?.[0];
+                        const mainImage =
+                            product.product_image?.find((img) => img.is_main) ||
+                            product.product_image?.[0];
 
-                        const isRemoving = isLoadingKey(`wishlist-remove-${product.id}`);
+                        const isRemoving = isLoadingKey(
+                            `wishlist-remove-${product.id}`
+                        );
 
                         return (
                             <div
@@ -153,11 +153,13 @@ const WishlistTab: React.FC = () => {
                                         />
                                     ) : (
                                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                            <span className="text-gray-400 text-xs">No Image</span>
+                                            <span className="text-gray-400 text-xs">
+                                                No Image
+                                            </span>
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 <div className="ml-3 flex-grow">
                                     <Link
                                         to={`/products/${product.id}`}
@@ -165,7 +167,7 @@ const WishlistTab: React.FC = () => {
                                     >
                                         {product.name}
                                     </Link>
-                                    
+
                                     <div className="mt-1 font-medium text-kj-red">
                                         {product.discount_price ? (
                                             <div className="flex flex-col items-start">
@@ -173,7 +175,9 @@ const WishlistTab: React.FC = () => {
                                                     {formatPrice(product.price)}
                                                 </span>
                                                 <span className="text-base">
-                                                    {formatPrice(product.discount_price)}
+                                                    {formatPrice(
+                                                        product.discount_price
+                                                    )}
                                                 </span>
                                             </div>
                                         ) : (
@@ -194,12 +198,19 @@ const WishlistTab: React.FC = () => {
                                     <div className="flex space-x-2 mt-2">
                                         <Button
                                             size="sm"
-                                            onClick={(e) => handleAddToCart(e, item)}
-                                            disabled={isRemoving || isAddingToCart}
+                                            onClick={(e) =>
+                                                handleAddToCart(e, item)
+                                            }
+                                            disabled={
+                                                isRemoving || isAddingToCart
+                                            }
                                         >
                                             {isAddingToCart ? (
                                                 <>
-                                                    <Loader2 size={16} className="mr-1 animate-spin" />
+                                                    <Loader2
+                                                        size={16}
+                                                        className="mr-1 animate-spin"
+                                                    />
                                                     Menambahkan...
                                                 </>
                                             ) : (
@@ -209,12 +220,19 @@ const WishlistTab: React.FC = () => {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() => handleRemoveWishlist(product.id)}
-                                            disabled={isRemoving || isAddingToCart}
+                                            onClick={() =>
+                                                handleRemoveWishlist(product.id)
+                                            }
+                                            disabled={
+                                                isRemoving || isAddingToCart
+                                            }
                                         >
                                             {isRemoving ? (
                                                 <>
-                                                    <Loader2 size={16} className="mr-1 animate-spin" />
+                                                    <Loader2
+                                                        size={16}
+                                                        className="mr-1 animate-spin"
+                                                    />
                                                     Menghapus...
                                                 </>
                                             ) : (

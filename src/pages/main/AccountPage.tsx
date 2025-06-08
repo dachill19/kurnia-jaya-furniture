@@ -7,6 +7,7 @@ import {
     Heart,
     Settings,
     ArrowLeft,
+    LogOut,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -25,7 +26,7 @@ interface AccountPageProps {
 }
 
 const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
-    const { user } = useAuthStore();
+    const { user, logout } = useAuthStore();
     const [activeTab, setActiveTab] = useState("profile");
     const [selectedAddress, setSelectedAddress] = useState<Address | null>(
         null
@@ -46,6 +47,17 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
     const handleBackToAddresses = () => {
         setSelectedAddress(null);
         setActiveTab("addresses");
+    };
+
+    // Handler untuk logout
+    const handleLogout = async () => {
+        try {
+            await logout();
+            // Redirect ke home page setelah logout berhasil
+            window.location.href = '/';
+        } catch (error) {
+            console.error('Error logging out:', error);
+        }
     };
 
     // Menu navigasi
@@ -146,6 +158,18 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
                                         </Button>
                                     );
                                 })}
+
+                                {/* Logout Button */}
+                                <div className="mt-4 pt-2 border-t">
+                                    <Button
+                                        variant="ghost"
+                                        className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                                        onClick={handleLogout}
+                                    >
+                                        <LogOut size={16} className="mr-3" />
+                                        Keluar
+                                    </Button>
+                                </div>
                             </nav>
                         </div>
                     </div>
@@ -168,10 +192,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
 
                         {/* Wishlist Tab */}
                         {activeTab === "wishlist" && (
-                            <WishlistTab
-                                addToCart={addToCart}
-                                apiService={apiService}
-                            />
+                            <WishlistTab />
                         )}
 
                         {/* Edit Address Tab */}

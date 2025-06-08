@@ -6,19 +6,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { useCartStore } from "@/stores/cartStore";
 import { useLoadingStore } from "@/stores/loadingStore";
+import { WishlistTabSkeleton } from "@/components/main/skeleton/AccountSkeletons";
 
-// Remove the addToCart prop since we'll use cartStore directly
 const WishlistTab: React.FC = () => {
     const { toast } = useToast();
-
-    // Zustand stores
     const { wishlist, error, fetchWishlist, removeFromWishlist, clearError } =
         useWishlistStore();
-
     const { addToCart } = useCartStore();
     const { isLoadingKey } = useLoadingStore();
 
-    // Loading states
     const isFetchingWishlist = isLoadingKey("wishlist-fetch");
     const isAddingToCart = isLoadingKey("cart-add");
 
@@ -26,7 +22,6 @@ const WishlistTab: React.FC = () => {
         fetchWishlist();
     }, [fetchWishlist]);
 
-    // Clear error when component unmounts or error changes
     useEffect(() => {
         if (error) {
             toast({
@@ -62,12 +57,10 @@ const WishlistTab: React.FC = () => {
         if (!product) return;
 
         try {
-            // Find main image or use first available image
             const mainImage =
                 product.product_image?.find((img: any) => img.is_main) ||
                 product.product_image?.[0];
 
-            // Create cart item object matching CartItem interface
             const cartItem = {
                 id: product.id,
                 name: product.name,
@@ -76,7 +69,6 @@ const WishlistTab: React.FC = () => {
                 image: mainImage?.image_url || "",
             };
 
-            // Add to cart using cartStore
             await addToCart(cartItem, 1);
 
             toast({
@@ -100,20 +92,7 @@ const WishlistTab: React.FC = () => {
     };
 
     if (isFetchingWishlist) {
-        return (
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="p-4 border-b">
-                    <h2 className="font-medium">Wishlist Saya</h2>
-                </div>
-                <div className="p-8 text-center">
-                    <Loader2
-                        size={48}
-                        className="mx-auto text-gray-300 mb-4 animate-spin"
-                    />
-                    <p className="text-gray-600">Memuat wishlist...</p>
-                </div>
-            </div>
-        );
+        return <WishlistTabSkeleton />;
     }
 
     return (
@@ -201,9 +180,7 @@ const WishlistTab: React.FC = () => {
                                             onClick={(e) =>
                                                 handleAddToCart(e, item)
                                             }
-                                            disabled={
-                                                isRemoving || isAddingToCart
-                                            }
+                                            disabled={isRemoving || isAddingToCart}
                                         >
                                             {isAddingToCart ? (
                                                 <>
@@ -223,9 +200,7 @@ const WishlistTab: React.FC = () => {
                                             onClick={() =>
                                                 handleRemoveWishlist(product.id)
                                             }
-                                            disabled={
-                                                isRemoving || isAddingToCart
-                                            }
+                                            disabled={isRemoving || isAddingToCart}
                                         >
                                             {isRemoving ? (
                                                 <>

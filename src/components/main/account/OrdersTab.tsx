@@ -1,6 +1,9 @@
+import { useState, useEffect } from "react"; // Added useState, useEffect
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Truck, CheckCircle, Clock, Star } from "lucide-react";
+import { useLoadingStore } from "@/stores/loadingStore"; // Added
+import { OrdersTabSkeleton } from "@/components/main/skeleton/AccountSkeletons";
 
 // Mock data - in a real app this would come from API
 const mockOrders = [
@@ -44,6 +47,17 @@ const mockOrders = [
 ];
 
 const OrdersTab = () => {
+    const { isLoadingKey } = useLoadingStore();
+    const [orders, setOrders] = useState(mockOrders); // Replace with API call in real app
+    const [isLoadingOrders, setIsLoadingOrders] = useState(true); // Simulate loading
+
+    useEffect(() => {
+        // Simulate API call
+        setTimeout(() => {
+            setIsLoadingOrders(false);
+        }, 1000); // Mock delay
+    }, []);
+
     const getStatusLabel = (status: string) => {
         switch (status) {
             case "processing":
@@ -70,15 +84,19 @@ const OrdersTab = () => {
         }
     };
 
+    if (isLoadingOrders) {
+        return <OrdersTabSkeleton />;
+    }
+
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="p-4 border-b">
                 <h2 className="font-medium">Pesanan Saya</h2>
             </div>
 
-            {mockOrders.length > 0 ? (
+            {orders.length > 0 ? (
                 <div className="divide-y">
-                    {mockOrders.map((order) => (
+                    {orders.map((order) => (
                         <div key={order.id} className="p-4">
                             <div className="flex flex-col md:flex-row justify-between mb-4">
                                 <div>

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAddressStore } from "@/stores/addressStore";
 import { useLoadingStore } from "@/stores/loadingStore";
+import { AddressTabSkeleton } from "@/components/main/skeleton/AccountSkeletons";
 
 interface AddressTabProps {
     onEditAddress: (address: any) => void;
@@ -40,6 +41,10 @@ const AddressTab: React.FC<AddressTabProps> = ({
 
     const isLoadingAddresses = isLoadingKey("address-fetch");
 
+    if (isLoadingAddresses) {
+        return <AddressTabSkeleton />;
+    }
+
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="p-4 border-b flex justify-between items-center">
@@ -55,12 +60,7 @@ const AddressTab: React.FC<AddressTabProps> = ({
             </div>
 
             <div className="p-4 space-y-4">
-                {isLoadingAddresses ? (
-                    <div className="text-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kj-red mx-auto mb-4"></div>
-                        <p className="text-gray-500">Memuat alamat...</p>
-                    </div>
-                ) : addresses.length === 0 ? (
+                {addresses.length === 0 ? (
                     <p className="text-gray-500">Belum ada alamat tersimpan.</p>
                 ) : (
                     addresses.map((address) => (

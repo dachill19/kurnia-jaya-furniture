@@ -1,72 +1,122 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { useWishlistStore } from "@/stores/wishlistStore";
+import { useCartStore } from "@/stores/cartStore";
+import { useLoadingStore } from "@/stores/loadingStore";
 
-interface WishlistTabProps {
-    addToCart: (item: any) => void;
-    apiService: any;
-}
-
-const WishlistTab: React.FC<WishlistTabProps> = ({ addToCart, apiService }) => {
+// Remove the addToCart prop since we'll use cartStore directly
+const WishlistTab: React.FC = () => {
     const { toast } = useToast();
-    const [wishlist, setWishlist] = useState([]);
+    
+    // Zustand stores
+    const {
+        wishlist,
+        error,
+        fetchWishlist,
+        removeFromWishlist,
+        clearError
+    } = useWishlistStore();
+    
+    const { addToCart } = useCartStore();
+    const { isLoadingKey } = useLoadingStore();
+
+    // Loading states
+    const isFetchingWishlist = isLoadingKey("wishlist-fetch");
+    const isAddingToCart = isLoadingKey("cart-add");
 
     useEffect(() => {
-        const fetchWishlist = async () => {
-            const token =
-                localStorage.getItem("token") ||
-                sessionStorage.getItem("token");
-            if (!token) return;
-
-            try {
-                const response = await apiService.getWishlist(token);
-                setWishlist(response.data);
-            } catch (error) {
-                console.error("Gagal mengambil wishlist:", error);
-            }
-        };
-
         fetchWishlist();
-    }, [apiService]);
+    }, [fetchWishlist]);
+
+    // Clear error when component unmounts or error changes
+    useEffect(() => {
+        if (error) {
+            toast({
+                title: "Error",
+                description: error,
+                variant: "destructive",
+            });
+            clearError();
+        }
+    }, [error, toast, clearError]);
 
     const handleRemoveWishlist = async (productId: string) => {
         try {
-            const token =
-                localStorage.getItem("token") ||
-                sessionStorage.getItem("token");
-
-            await apiService.removeWishlistItem(productId, token);
-
-            setWishlist((prev) =>
-                prev.filter((item: any) => item.product.id !== productId)
-            );
-        } catch (error) {
-            console.error("Gagal menghapus dari wishlist:", error);
+            await removeFromWishlist(productId);
+            toast({
+                title: "Berhasil",
+                description: "Produk berhasil dihapus dari wishlist",
+            });
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "Gagal menghapus dari wishlist",
+                variant: "destructive",
+            });
         }
     };
 
-    const handleAddToCart = (e: React.MouseEvent, item: any) => {
+    const handleAddToCart = async (e: React.MouseEvent, item: any) => {
         e.preventDefault();
         e.stopPropagation();
 
         const product = item.product;
-        const mainImage =
-            product.images.find((img: any) => img.isMain) || product.images[0];
+        if (!product) return;
 
-        addToCart({
-            id: product.id,
-            name: product.name,
-            price: product.discountPrice ?? product.price,
-            image: mainImage,
-        });
+        try {
+            // Find main image or use first available image
+            const mainImage = product.product_image?.find(
+                (img: any) => img.is_main
+            ) || product.product_image?.[0];
 
-        toast({
-            title: "Produk ditambahkan ke keranjang",
-            description: product.name,
-        });
+            // Create cart item object matching CartItem interface
+            const cartItem = {
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                discount_price: product.discount_price,
+                image: mainImage?.image_url || "",
+            };
+
+            // Add to cart using cartStore
+            await addToCart(cartItem, 1);
+
+            toast({
+                title: "Berhasil",
+                description: `${product.name} ditambahkan ke keranjang`,
+            });
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "Gagal menambahkan ke keranjang",
+                variant: "destructive",
+            });
+        }
     };
+
+    const formatPrice = (price: number) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+        }).format(price);
+    };
+
+    if (isFetchingWishlist) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div className="p-4 border-b">
+                    <h2 className="font-medium">Wishlist Saya</h2>
+                </div>
+                <div className="p-8 text-center">
+                    <Loader2 size={48} className="mx-auto text-gray-300 mb-4 animate-spin" />
+                    <p className="text-gray-600">Memuat wishlist...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -76,11 +126,18 @@ const WishlistTab: React.FC<WishlistTabProps> = ({ addToCart, apiService }) => {
 
             {wishlist.length > 0 ? (
                 <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {wishlist.map((item: any) => {
+                    {wishlist.map((item) => {
                         const product = item.product;
-                        const mainImage = product.images.find(
-                            (img: { isMain: true }) => img.isMain
-                        );
+                        
+                        if (!product) {
+                            return null; // Skip items without product data
+                        }
+
+                        const mainImage = product.product_image?.find(
+                            (img) => img.is_main
+                        ) || product.product_image?.[0];
+
+                        const isRemoving = isLoadingKey(`wishlist-remove-${product.id}`);
 
                         return (
                             <div
@@ -88,12 +145,19 @@ const WishlistTab: React.FC<WishlistTabProps> = ({ addToCart, apiService }) => {
                                 className="border rounded-md p-3 flex"
                             >
                                 <div className="w-20 h-20 rounded-md overflow-hidden">
-                                    <img
-                                        src={mainImage?.imageUrl}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover"
-                                    />
+                                    {mainImage ? (
+                                        <img
+                                            src={mainImage.image_url}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                                            <span className="text-gray-400 text-xs">No Image</span>
+                                        </div>
+                                    )}
                                 </div>
+                                
                                 <div className="ml-3 flex-grow">
                                     <Link
                                         to={`/products/${product.id}`}
@@ -101,60 +165,61 @@ const WishlistTab: React.FC<WishlistTabProps> = ({ addToCart, apiService }) => {
                                     >
                                         {product.name}
                                     </Link>
+                                    
                                     <div className="mt-1 font-medium text-kj-red">
-                                        {product.discountPrice ? (
+                                        {product.discount_price ? (
                                             <div className="flex flex-col items-start">
                                                 <span className="line-through text-xs text-gray-400 mb-1">
-                                                    {new Intl.NumberFormat(
-                                                        "id-ID",
-                                                        {
-                                                            style: "currency",
-                                                            currency: "IDR",
-                                                        }
-                                                    ).format(product.price)}
+                                                    {formatPrice(product.price)}
                                                 </span>
                                                 <span className="text-base">
-                                                    {new Intl.NumberFormat(
-                                                        "id-ID",
-                                                        {
-                                                            style: "currency",
-                                                            currency: "IDR",
-                                                        }
-                                                    ).format(
-                                                        product.discountPrice
-                                                    )}
+                                                    {formatPrice(product.discount_price)}
                                                 </span>
                                             </div>
                                         ) : (
                                             <span className="text-base">
-                                                {new Intl.NumberFormat(
-                                                    "id-ID",
-                                                    {
-                                                        style: "currency",
-                                                        currency: "IDR",
-                                                    }
-                                                ).format(product.price)}
+                                                {formatPrice(product.price)}
                                             </span>
                                         )}
                                     </div>
 
+                                    {product.category && (
+                                        <div className="mt-1">
+                                            <span className="text-xs text-gray-500">
+                                                {product.category.name}
+                                            </span>
+                                        </div>
+                                    )}
+
                                     <div className="flex space-x-2 mt-2">
                                         <Button
                                             size="sm"
-                                            onClick={(e) =>
-                                                handleAddToCart(e, item)
-                                            }
+                                            onClick={(e) => handleAddToCart(e, item)}
+                                            disabled={isRemoving || isAddingToCart}
                                         >
-                                            Tambah ke Keranjang
+                                            {isAddingToCart ? (
+                                                <>
+                                                    <Loader2 size={16} className="mr-1 animate-spin" />
+                                                    Menambahkan...
+                                                </>
+                                            ) : (
+                                                "Tambah ke Keranjang"
+                                            )}
                                         </Button>
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={() =>
-                                                handleRemoveWishlist(product.id)
-                                            }
+                                            onClick={() => handleRemoveWishlist(product.id)}
+                                            disabled={isRemoving || isAddingToCart}
                                         >
-                                            Hapus
+                                            {isRemoving ? (
+                                                <>
+                                                    <Loader2 size={16} className="mr-1 animate-spin" />
+                                                    Menghapus...
+                                                </>
+                                            ) : (
+                                                "Hapus"
+                                            )}
                                         </Button>
                                     </div>
                                 </div>

@@ -3,8 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/stores/authStore";
 import { useLoadingStore } from "@/stores/loadingStore";
+import { useToast } from "@/components/ui/use-toast";
 
 const ProfileTab: React.FC = () => {
+    const { toast } = useToast();
     const { user, updateProfile } = useAuthStore();
     const { isLoadingKey } = useLoadingStore();
 
@@ -26,7 +28,6 @@ const ProfileTab: React.FC = () => {
             [name]: value,
         }));
 
-        // Clear field error saat user mulai mengetik
         if (fieldErrors[name]) {
             setFieldErrors((prev) => ({
                 ...prev,
@@ -40,6 +41,8 @@ const ProfileTab: React.FC = () => {
 
         if (!userData.name.trim()) {
             errors.name = "Nama lengkap wajib diisi";
+        } else if (userData.name.length > 25) {
+            errors.name = "Nama tidak boleh lebih dari 25 karakter";
         }
 
         if (userData.phone && !/^[0-9+\-\s()]+$/.test(userData.phone)) {
@@ -65,10 +68,12 @@ const ProfileTab: React.FC = () => {
             await updateProfile({
                 name: userData.name,
                 phone: userData.phone,
-                // Email tidak bisa diubah di Supabase dengan mudah
-                // Jadi kita tidak mengirim email dalam update
             });
             setIsEditing(false);
+
+            toast({
+                title: "Profil Anda telah berhasil diperbarui",
+            });
         } catch (error: any) {
             console.error("Error updating profile:", error);
             setErrorMsg("Gagal memperbarui profil. Silakan coba lagi.");
@@ -139,7 +144,8 @@ const ProfileTab: React.FC = () => {
                         {/* Nama Lengkap */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Nama Lengkap *
+                                Nama Lengkap{" "}
+                                <span className="text-kj-red">*</span>
                             </label>
                             {isEditing ? (
                                 <Input
@@ -195,7 +201,7 @@ const ProfileTab: React.FC = () => {
                     </div>
 
                     {/* Email (Read-only) */}
-                    <div className="mb-4">
+                    <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
                             Email
                         </label>

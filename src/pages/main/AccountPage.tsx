@@ -10,46 +10,40 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
-// Import semua komponen tab
 import ProfileTab from "@/components/main/account/ProfileTab";
 import AddressTab from "@/components/main/account/AddressTab";
 import OrdersTab from "@/components/main/account/OrdersTab";
 import WishlistTab from "@/components/main/account/WishlistTab";
 import EditAddressTab from "@/components/main/account/EditAddressTab";
+import AddAddressTab from "@/components/main/account/AddAddressTab";
 import SettingsTab from "@/components/main/account/SettingsTab";
+import { Address } from "@/stores/addressStore";
 
 interface AccountPageProps {
-    apiService?: any; // Optional karena mungkin tidak semua tab memerlukan ini
+    apiService?: any; // Optional karena tidak semua tab memerlukan ini
     addToCart?: (item: any) => void; // Optional
 }
 
 const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
     const { user } = useAuthStore();
     const [activeTab, setActiveTab] = useState("profile");
-    const [selectedAddress, setSelectedAddress] = useState(null);
+    const [selectedAddress, setSelectedAddress] = useState<Address | null>(
+        null
+    );
 
     // Handler untuk edit alamat
-    const handleEditAddress = (address: any) => {
+    const handleEditAddress = (address: Address) => {
         setSelectedAddress(address);
         setActiveTab("editAddress");
     };
 
-    // Handler untuk update alamat
-    const handleUpdateAddress = async (addressData: any) => {
-        try {
-            if (apiService && selectedAddress) {
-                await apiService.updateAddress(selectedAddress.id, addressData);
-                // Kembali ke tab alamat setelah berhasil update
-                setActiveTab("addresses");
-            }
-        } catch (error) {
-            console.error("Gagal update alamat:", error);
-            throw error;
-        }
+    // Handler untuk tambah alamat
+    const handleAddAddress = () => {
+        setActiveTab("addAddress");
     };
 
-    // Handler untuk kembali dari edit address
-    const handleBackFromEditAddress = () => {
+    // Handler untuk kembali dari edit/add address
+    const handleBackToAddresses = () => {
         setSelectedAddress(null);
         setActiveTab("addresses");
     };
@@ -123,31 +117,23 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
                             </div>
 
                             <nav className="p-2">
-                                {/* Tombol kembali untuk edit address */}
-                                {activeTab === "editAddress" && (
-                                    <Button
-                                        variant="ghost"
-                                        className="w-full justify-start mb-2"
-                                        onClick={handleBackFromEditAddress}
-                                    >
-                                        <ArrowLeft size={16} className="mr-2" />
-                                        Kembali ke Alamat
-                                    </Button>
-                                )}
-
                                 {/* Menu items */}
                                 {menuItems.map((item) => {
                                     const Icon = item.icon;
+                                    const isActive =
+                                        activeTab === item.id ||
+                                        (item.id === "addresses" &&
+                                            (activeTab === "editAddress" ||
+                                                activeTab === "addAddress"));
+
                                     return (
                                         <Button
                                             key={item.id}
                                             variant={
-                                                activeTab === item.id
-                                                    ? "default"
-                                                    : "ghost"
+                                                isActive ? "default" : "ghost"
                                             }
                                             className={`w-full justify-start mb-1 ${
-                                                activeTab === item.id
+                                                isActive
                                                     ? "bg-kj-red hover:bg-kj-darkred"
                                                     : "text-gray-600 "
                                             }`}
@@ -172,8 +158,8 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
                         {/* Addresses Tab */}
                         {activeTab === "addresses" && (
                             <AddressTab
-                                apiService={apiService}
                                 onEditAddress={handleEditAddress}
+                                onAddAddress={handleAddAddress}
                             />
                         )}
 
@@ -192,8 +178,13 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
                         {activeTab === "editAddress" && selectedAddress && (
                             <EditAddressTab
                                 selectedAddress={selectedAddress}
-                                updateAddress={handleUpdateAddress}
+                                onBack={handleBackToAddresses}
                             />
+                        )}
+
+                        {/* Add Address Tab */}
+                        {activeTab === "addAddress" && (
+                            <AddAddressTab onBack={handleBackToAddresses} />
                         )}
 
                         {/* Settings Tab */}

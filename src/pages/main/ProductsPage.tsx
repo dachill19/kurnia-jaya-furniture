@@ -456,7 +456,7 @@ const ProductsPage = () => {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setCategoryFilter("all")}
-                                    className="h-4 w-4 p-0 ml-1 hover:text-white"
+                                    className="h-4 w-4 p-0 ml-1"
                                 >
                                     <X size={12} />
                                 </Button>
@@ -475,7 +475,7 @@ const ProductsPage = () => {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setPriceRange([0, 10000000])}
-                                    className="h-4 w-4 p-0 ml-1 hover:text-white"
+                                    className="h-4 w-4 p-0 ml-1"
                                 >
                                     <X size={12} />
                                 </Button>
@@ -494,7 +494,7 @@ const ProductsPage = () => {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setStockFilter("all")}
-                                    className="h-4 w-4 p-0 ml-1 hover:text-white"
+                                    className="h-4 w-4 p-0 ml-1"
                                 >
                                     <X size={12} />
                                 </Button>
@@ -511,7 +511,7 @@ const ProductsPage = () => {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setDiscountFilter(false)}
-                                    className="h-4 w-4 p-0 ml-1 hover:text-white"
+                                    className="h-4 w-4 p-0 ml-1"
                                 >
                                     <X size={12} />
                                 </Button>
@@ -528,7 +528,7 @@ const ProductsPage = () => {
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => setHotProductsFilter(false)}
-                                    className="h-4 w-4 p-0 ml-1 hover:text-white"
+                                    className="h-4 w-4 p-0 ml-1"
                                 >
                                     <X size={12} />
                                 </Button>
@@ -539,7 +539,7 @@ const ProductsPage = () => {
                             variant="ghost"
                             size="sm"
                             onClick={handleClearFilters}
-                            className="text-kj-red hover:text-white"
+                            className="text-kj-red"
                         >
                             Hapus Semua
                         </Button>
@@ -580,8 +580,8 @@ const ProductsPage = () => {
                                         }
                                         className={`w-full justify-start text-sm ${
                                             categoryFilter === category.id
-                                                ? "bg-kj-red hover:bg-kj-darkred"
-                                                : "hover:border-kj-red hover:text-white"
+                                                ? "hover:bg-kj-darkred"
+                                                : "hover:border-kj-red"
                                         }`}
                                         size="sm"
                                     >
@@ -635,8 +635,8 @@ const ProductsPage = () => {
                                         }
                                         className={`w-full justify-start text-sm ${
                                             stockFilter === option.value
-                                                ? "bg-kj-red hover:bg-kj-darkred"
-                                                : "hover:border-kj-red hover:text-white"
+                                                ? "hover:bg-kj-darkred"
+                                                : "hover:border-kj-red"
                                         }`}
                                         size="sm"
                                     >

@@ -127,7 +127,8 @@ const ProductDetailPage = () => {
                 {
                     id: product.id,
                     name: product.name,
-                    price: product.discount_price || product.price,
+                    price: product.price,
+                    discount_price: product.discount_price,
                     image: mainImage,
                 },
                 quantity

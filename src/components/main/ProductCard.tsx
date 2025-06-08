@@ -74,7 +74,8 @@ const ProductCard = ({
             await addToCart({
                 id,
                 name,
-                price: discountPrice ?? price,
+                price: price,
+                discount_price: discountPrice,
                 image: imageUrl,
             });
 

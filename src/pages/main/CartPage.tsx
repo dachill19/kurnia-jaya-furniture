@@ -80,7 +80,7 @@ const CartPage = () => {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="text-gray-500 hover:text-red-600"
+                                    className="text-gray-500"
                                     onClick={clearCart}
                                 >
                                     <Trash2 size={16} className="mr-1" />
@@ -130,7 +130,7 @@ const CartPage = () => {
                                                     ).format(displayPrice)}
                                                 </span>
                                                 {hasDiscount && (
-                                                    <span className="ml-2 text-gray-500 line-through text-sm">
+                                                    <span className="ml-2 text-gray-500 font-semibold line-through text-sm">
                                                         {new Intl.NumberFormat(
                                                             "id-ID",
                                                             {
@@ -190,7 +190,7 @@ const CartPage = () => {
                                             <Button
                                                 variant="ghost"
                                                 size="sm"
-                                                className="ml-4 p-1 text-gray-400 hover:text-kj-red"
+                                                className="ml-4 w-8 h-8 text-gray-400"
                                                 onClick={() =>
                                                     removeFromCart(item.id)
                                                 }

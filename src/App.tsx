@@ -14,6 +14,7 @@ import CategoriesPage from "./pages/main/CategoriesPage";
 import CategoryPage from "./pages/main/CategoryPage";
 import ProductDetailPage from "./pages/main/ProductDetailPage";
 import ProductsPage from "./pages/main/ProductsPage";
+import AccountPage from "./pages/main/AccountPage";
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -51,6 +52,7 @@ const App = () => {
                 <Route path="/" element={<Layout />}>
                     <Route index element={<HomePage />} />
                     <Route path="about" element={<AboutPage />} />
+                    <Route path="account" element={<AccountPage />} />
                     <Route path="auth" element={<AuthPage />} />
                     <Route path="categories" element={<CategoriesPage />} />
                     <Route

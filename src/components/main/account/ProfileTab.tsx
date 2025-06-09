@@ -42,8 +42,8 @@ const ProfileTab: React.FC = () => {
 
         if (!userData.name.trim()) {
             errors.name = "Nama lengkap wajib diisi";
-        } else if (userData.name.length > 25) {
-            errors.name = "Nama tidak boleh lebih dari 25 karakter";
+        } else if (userData.name.length > 50) {
+            errors.name = "Nama tidak boleh lebih dari 50 karakter";
         }
 
         if (userData.phone && !/^[0-9+\-\s()]+$/.test(userData.phone)) {

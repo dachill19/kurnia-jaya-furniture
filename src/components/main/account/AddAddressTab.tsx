@@ -26,7 +26,9 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
     });
 
     const [errorMsg, setErrorMsg] = useState("");
-    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>(
+        {}
+    );
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -49,7 +51,8 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
         if (!addressData.recipient.trim()) {
             errors.recipient = "Nama penerima wajib diisi";
         } else if (addressData.recipient.length > 50) {
-            errors.recipient = "Nama penerima tidak boleh lebih dari 50 karakter";
+            errors.recipient =
+                "Nama penerima tidak boleh lebih dari 50 karakter";
         }
 
         if (!addressData.label.trim()) {
@@ -140,11 +143,15 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                             name="recipient"
                             value={addressData.recipient}
                             onChange={handleInputChange}
-                            className={fieldErrors.recipient ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.recipient ? "border-red-500" : ""
+                            }
                             disabled={isAdding}
                         />
                         {fieldErrors.recipient && (
-                            <p className="text-sm text-red-600 mt-1">{fieldErrors.recipient}</p>
+                            <p className="text-sm text-red-600 mt-1">
+                                {fieldErrors.recipient}
+                            </p>
                         )}
                     </div>
 
@@ -157,11 +164,15 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                             value={addressData.label}
                             onChange={handleInputChange}
                             placeholder="Rumah, Kantor, dll"
-                            className={fieldErrors.label ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.label ? "border-red-500" : ""
+                            }
                             disabled={isAdding}
                         />
                         {fieldErrors.label && (
-                            <p className="text-sm text-red-600 mt-1">{fieldErrors.label}</p>
+                            <p className="text-sm text-red-600 mt-1">
+                                {fieldErrors.label}
+                            </p>
                         )}
                     </div>
 
@@ -173,17 +184,22 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                             name="province"
                             value={addressData.province}
                             onChange={handleInputChange}
-                            className={fieldErrors.province ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.province ? "border-red-500" : ""
+                            }
                             disabled={isAdding}
                         />
                         {fieldErrors.province && (
-                            <p className="text-sm text-red-600 mt-1">{fieldErrors.province}</p>
+                            <p className="text-sm text-red-600 mt-1">
+                                {fieldErrors.province}
+                            </p>
                         )}
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Kota/Kabupaten <span className="text-kj-red">*</span>
+                            Kota/Kabupaten{" "}
+                            <span className="text-kj-red">*</span>
                         </label>
                         <Input
                             name="city"
@@ -193,7 +209,9 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                             disabled={isAdding}
                         />
                         {fieldErrors.city && (
-                            <p className="text-sm text-red-600 mt-1">{fieldErrors.city}</p>
+                            <p className="text-sm text-red-600 mt-1">
+                                {fieldErrors.city}
+                            </p>
                         )}
                     </div>
 
@@ -205,27 +223,36 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                             name="subdistrict"
                             value={addressData.subdistrict}
                             onChange={handleInputChange}
-                            className={fieldErrors.subdistrict ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.subdistrict ? "border-red-500" : ""
+                            }
                             disabled={isAdding}
                         />
                         {fieldErrors.subdistrict && (
-                            <p className="text-sm text-red-600 mt-1">{fieldErrors.subdistrict}</p>
+                            <p className="text-sm text-red-600 mt-1">
+                                {fieldErrors.subdistrict}
+                            </p>
                         )}
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Kelurahan/Desa <span className="text-kj-red">*</span>
+                            Kelurahan/Desa{" "}
+                            <span className="text-kj-red">*</span>
                         </label>
                         <Input
                             name="village"
                             value={addressData.village}
                             onChange={handleInputChange}
-                            className={fieldErrors.village ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.village ? "border-red-500" : ""
+                            }
                             disabled={isAdding}
                         />
                         {fieldErrors.village && (
-                            <p className="text-sm text-red-600 mt-1">{fieldErrors.village}</p>
+                            <p className="text-sm text-red-600 mt-1">
+                                {fieldErrors.village}
+                            </p>
                         )}
                     </div>
 
@@ -237,29 +264,38 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                             name="zip_code"
                             value={addressData.zip_code}
                             onChange={handleInputChange}
-                            className={fieldErrors.zip_code ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.zip_code ? "border-red-500" : ""
+                            }
                             disabled={isAdding}
                             placeholder="12345"
                         />
                         {fieldErrors.zip_code && (
-                            <p className="text-sm text-red-600 mt-1">{fieldErrors.zip_code}</p>
+                            <p className="text-sm text-red-600 mt-1">
+                                {fieldErrors.zip_code}
+                            </p>
                         )}
                     </div>
 
                     <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Alamat Lengkap <span className="text-kj-red">*</span>
+                            Alamat Lengkap{" "}
+                            <span className="text-kj-red">*</span>
                         </label>
                         <Input
                             name="full_address"
                             value={addressData.full_address}
                             onChange={handleInputChange}
                             placeholder="Nomor rumah, nama jalan, RT/RW, dll"
-                            className={fieldErrors.full_address ? "border-red-500" : ""}
+                            className={
+                                fieldErrors.full_address ? "border-red-500" : ""
+                            }
                             disabled={isAdding}
                         />
                         {fieldErrors.full_address && (
-                            <p className="text-sm text-red-600 mt-1">{fieldErrors.full_address}</p>
+                            <p className="text-sm text-red-600 mt-1">
+                                {fieldErrors.full_address}
+                            </p>
                         )}
                     </div>
 

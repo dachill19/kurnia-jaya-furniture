@@ -18,7 +18,9 @@ const ProfileTab: React.FC = () => {
         phone: user?.phone || "",
     });
     const [errorMsg, setErrorMsg] = useState("");
-    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>(
+        {}
+    );
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -147,21 +149,28 @@ const ProfileTab: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Nama Lengkap <span className="text-kj-red">*</span>
+                                Nama Lengkap{" "}
+                                <span className="text-kj-red">*</span>
                             </label>
                             {isEditing ? (
                                 <Input
                                     name="name"
                                     value={userData.name}
                                     onChange={handleInputChange}
-                                    className={fieldErrors.name ? "border-red-500" : ""}
+                                    className={
+                                        fieldErrors.name ? "border-red-500" : ""
+                                    }
                                     disabled={isProfileLoading}
                                 />
                             ) : (
-                                <p className="text-gray-900 py-2">{userData.name || "-"}</p>
+                                <p className="text-gray-900 py-2">
+                                    {userData.name || "-"}
+                                </p>
                             )}
                             {fieldErrors.name && (
-                                <p className="text-sm text-red-600 mt-1">{fieldErrors.name}</p>
+                                <p className="text-sm text-red-600 mt-1">
+                                    {fieldErrors.name}
+                                </p>
                             )}
                         </div>
 
@@ -174,15 +183,23 @@ const ProfileTab: React.FC = () => {
                                     name="phone"
                                     value={userData.phone}
                                     onChange={handleInputChange}
-                                    className={fieldErrors.phone ? "border-red-500" : ""}
+                                    className={
+                                        fieldErrors.phone
+                                            ? "border-red-500"
+                                            : ""
+                                    }
                                     disabled={isProfileLoading}
                                     placeholder="Contoh: +62812345678"
                                 />
                             ) : (
-                                <p className="text-gray-900 py-2">{userData.phone || "-"}</p>
+                                <p className="text-gray-900 py-2">
+                                    {userData.phone || "-"}
+                                </p>
                             )}
                             {fieldErrors.phone && (
-                                <p className="text-sm text-red-600 mt-1">{fieldErrors.phone}</p>
+                                <p className="text-sm text-red-600 mt-1">
+                                    {fieldErrors.phone}
+                                </p>
                             )}
                         </div>
                     </div>
@@ -192,7 +209,9 @@ const ProfileTab: React.FC = () => {
                             Email
                         </label>
                         <p className="text-gray-900 py-2">{userData.email}</p>
-                        <p className="text-xs text-gray-500 mt-1">Email tidak dapat diubah</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                            Email tidak dapat diubah
+                        </p>
                     </div>
                 </form>
             </div>

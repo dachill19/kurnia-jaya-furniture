@@ -20,12 +20,7 @@ import AddAddressTab from "@/components/main/account/AddAddressTab";
 import SettingsTab from "@/components/main/account/SettingsTab";
 import { Address } from "@/stores/addressStore";
 
-interface AccountPageProps {
-    apiService?: any; // Optional karena tidak semua tab memerlukan ini
-    addToCart?: (item: any) => void; // Optional
-}
-
-const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
+const AccountPage: React.FC = () => {
     const { user, logout } = useAuthStore();
     const [activeTab, setActiveTab] = useState("profile");
     const [selectedAddress, setSelectedAddress] = useState<Address | null>(
@@ -54,9 +49,9 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
         try {
             await logout();
             // Redirect ke home page setelah logout berhasil
-            window.location.href = '/';
+            window.location.href = "/";
         } catch (error) {
-            console.error('Error logging out:', error);
+            console.error("Error logging out:", error);
         }
     };
 
@@ -160,14 +155,14 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
                                 })}
 
                                 {/* Logout Button */}
-                                <div className="mt-4 pt-2 border-t">
+                                <div className="mt-1 pt-2 border-t">
                                     <Button
                                         variant="ghost"
                                         className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                                         onClick={handleLogout}
                                     >
                                         <LogOut size={16} className="mr-3" />
-                                        Keluar
+                                        Logout
                                     </Button>
                                 </div>
                             </nav>
@@ -191,9 +186,7 @@ const AccountPage: React.FC<AccountPageProps> = ({ apiService, addToCart }) => {
                         {activeTab === "orders" && <OrdersTab />}
 
                         {/* Wishlist Tab */}
-                        {activeTab === "wishlist" && (
-                            <WishlistTab />
-                        )}
+                        {activeTab === "wishlist" && <WishlistTab />}
 
                         {/* Edit Address Tab */}
                         {activeTab === "editAddress" && selectedAddress && (

@@ -12,7 +12,6 @@ import {
     User,
     Phone,
     Mail,
-    UserCog,
     Loader2,
     Home,
     Grid3X3,
@@ -20,7 +19,6 @@ import {
     Info,
     ChevronDown,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -55,10 +53,6 @@ const Header = () => {
         }
     }, [user, fetchCart]);
 
-    const goToDashboard = () => {
-        navigate("/admin/login");
-    };
-
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
     };
@@ -91,38 +85,25 @@ const Header = () => {
         <header className="bg-white shadow-md relative">
             {/* Top Bar */}
             <div className="bg-gradient-to-r from-kj-brown to-kj-red text-white py-3">
-                <div className="container-custom flex justify-between items-center">
-                    <div className="hidden md:flex items-center space-x-6 text-sm">
-                        <a
-                            href="https://wa.me/6282298528428"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center hover:text-white/80 transition-colors duration-200"
-                        >
-                            <Phone className="h-4 w-4 mr-2" />
-                            <span>+62 822-9852-8428</span>
-                        </a>
-                        <a
-                            href="mailto:kurniajaya.furniture1688@gmail.com"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center hover:text-white/80 transition-colors duration-200"
-                        >
-                            <Mail className="h-4 w-4 mr-2" />
-                            <span>kurniajaya.furniture1688@gmail.com</span>
-                        </a>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-white text-sm hover:bg-white/10 flex items-center transition-all duration-200 hover:scale-105"
-                            onClick={goToDashboard}
-                        >
-                            <UserCog className="h-4 w-4 mr-1.5" />
-                            Dashboard
-                        </Button>
-                    </div>
+                <div className="container-custom items-center hidden md:flex space-x-6 text-sm">
+                    <a
+                        href="https://wa.me/6282298528428"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center hover:text-white/80 transition-colors duration-200"
+                    >
+                        <Phone className="h-4 w-4 mr-2" />
+                        <span>+62 822-9852-8428</span>
+                    </a>
+                    <a
+                        href="mailto:kurniajaya.furniture1688@gmail.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center hover:text-white/80 transition-colors duration-200"
+                    >
+                        <Mail className="h-4 w-4 mr-2" />
+                        <span>kurniajaya.furniture1688@gmail.com</span>
+                    </a>
                 </div>
             </div>
 

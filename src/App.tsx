@@ -39,7 +39,6 @@ const App = () => {
         <BrowserRouter>
             <Toaster />
             <Routes>
-                {/* <Route path="/admin/login" element={<AdminLogin />} /> */}
                 {/* <Route
                         path="/admin/*"
                         element={

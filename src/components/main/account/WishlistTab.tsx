@@ -180,7 +180,9 @@ const WishlistTab: React.FC = () => {
                                             onClick={(e) =>
                                                 handleAddToCart(e, item)
                                             }
-                                            disabled={isRemoving || isAddingToCart}
+                                            disabled={
+                                                isRemoving || isAddingToCart
+                                            }
                                         >
                                             {isAddingToCart ? (
                                                 <>
@@ -200,7 +202,9 @@ const WishlistTab: React.FC = () => {
                                             onClick={() =>
                                                 handleRemoveWishlist(product.id)
                                             }
-                                            disabled={isRemoving || isAddingToCart}
+                                            disabled={
+                                                isRemoving || isAddingToCart
+                                            }
                                         >
                                             {isRemoving ? (
                                                 <>

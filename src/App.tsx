@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 
 import Layout from "./components/layout/Layout";

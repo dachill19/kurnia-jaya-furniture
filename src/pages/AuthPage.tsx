@@ -9,9 +9,20 @@ import { useAuthStore } from "@/stores/authStore";
 const AuthPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const initialize = useAuthStore((state) => state.initialize);
+    const { initialize, user, isInitialized } = useAuthStore();
     const [isRegistering, setIsRegistering] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
+
+    // Redirect authenticated users away from auth page
+    useEffect(() => {
+        if (isInitialized && user) {
+            if (user.role === "ADMIN") {
+                navigate("/admin", { replace: true });
+            } else {
+                navigate("/", { replace: true });
+            }
+        }
+    }, [user, isInitialized, navigate]);
 
     // Set initial tab based on URL query
     useEffect(() => {
@@ -20,28 +31,14 @@ const AuthPage = () => {
         setIsRegistering(tab === "register");
     }, [location.search]);
 
-    // Listen for auth state changes
+    // Listen for auth state changes - but only for registration flow
     useEffect(() => {
-        initialize(); // Initialize auth state on mount
+        initialize();
+
         const { data: authListener } = supabase.auth.onAuthStateChange(
             (event, session) => {
-                if (event === "SIGNED_IN" && session?.user) {
-                    // Simpan URL saat ini sebelum redirect
-                    sessionStorage.setItem(
-                        "prevPath",
-                        location.pathname + location.search
-                    );
-                    setIsRegistered(true); // Show verification message for new users
-                    setTimeout(() => {
-                        // Redirect ke tab sebelumnya setelah delay
-                        const prevPath = sessionStorage.getItem("prevPath");
-                        if (prevPath) {
-                            navigate(prevPath);
-                        } else {
-                            navigate("/"); // Fallback ke homepage jika tidak ada tab sebelumnya
-                        }
-                        sessionStorage.removeItem("prevPath"); // Hapus setelah digunakan
-                    }, 3000); // Adjust delay as needed
+                if (event === "SIGNED_IN" && session?.user && isRegistering) {
+                    setIsRegistered(true);
                 }
             }
         );
@@ -49,8 +46,21 @@ const AuthPage = () => {
         return () => {
             authListener.subscription.unsubscribe();
         };
-    }, [initialize, navigate, location.pathname, location.search]);
+    }, [initialize, isRegistering]);
 
+    // Don't render anything while checking auth state
+    if (!isInitialized) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kj-red mx-auto mb-4"></div>
+                    <p className="text-gray-600">Memuat...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Show registration success message
     if (isRegistered) {
         return (
             <div className="container-custom py-16 min-h-[calc(100vh-400px)]">
@@ -64,6 +74,15 @@ const AuthPage = () => {
                             yang Anda daftarkan. Silakan buka email dan klik
                             link verifikasinya untuk menyelesaikan pendaftaran.
                         </p>
+                        <button
+                            onClick={() => {
+                                setIsRegistered(false);
+                                setIsRegistering(false);
+                            }}
+                            className="mt-4 text-kj-red hover:underline"
+                        >
+                            Kembali ke Login
+                        </button>
                     </div>
                 </div>
             </div>

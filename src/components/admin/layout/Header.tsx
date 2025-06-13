@@ -10,7 +10,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 const AdminHeader = () => {
     const [notifications, setNotifications] = useState([
@@ -38,18 +37,7 @@ const AdminHeader = () => {
     };
 
     return (
-        <header className="h-16 border-b bg-white px-6 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-                <div className="relative w-64">
-                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                        className="pl-8 bg-gray-50"
-                        placeholder="Cari..."
-                        type="search"
-                    />
-                </div>
-            </div>
-
+        <header className="h-16 border-b bg-white px-6 flex items-center justify-end">
             <div className="flex items-center gap-4">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

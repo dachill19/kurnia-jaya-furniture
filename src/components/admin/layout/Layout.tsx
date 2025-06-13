@@ -12,9 +12,6 @@ import {
 import {
     Sidebar,
     SidebarContent,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
@@ -45,10 +42,7 @@ const AdminLayout = () => {
         { title: "Pengguna", path: "/admin/users", icon: Users },
         { title: "Produk", path: "/admin/products", icon: Package },
         { title: "Pesanan", path: "/admin/orders", icon: ShoppingCart },
-        { title: "Pembayaran", path: "/admin/payments", icon: CreditCard },
         { title: "Notifikasi", path: "/admin/notifications", icon: Bell },
-        { title: "Keamanan", path: "/admin/security", icon: Shield },
-        { title: "Pengaturan", path: "/admin/settings", icon: Settings },
     ];
 
     return (
@@ -63,39 +57,31 @@ const AdminLayout = () => {
                         collapsed ? "flex justify-center" : ""
                     }`}
                 >
-                    <h2
-                        className={`text-lg font-serif font-bold text-kj-red ${
-                            collapsed ? "hidden" : ""
-                        }`}
-                    >
-                        Admin Panel
-                    </h2>
-                    {collapsed && (
+                    {collapsed ? (
                         <span className="text-kj-red font-bold">KJ</span>
+                    ) : (
+                        <h2 className="text-lg font-serif font-bold text-kj-red">
+                            Admin Panel
+                        </h2>
                     )}
                 </div>
 
                 <SidebarContent>
-                    <SidebarGroup defaultOpen>
-                        <SidebarGroupLabel>Menu Utama</SidebarGroupLabel>
-                        <SidebarGroupContent>
-                            <SidebarMenu>
-                                {menuItems.map((item) => (
-                                    <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton
-                                            className={getNavClass(item.path)}
-                                            onClick={() => navigate(item.path)}
-                                        >
-                                            <item.icon className="mr-2 h-4 w-4" />
-                                            {!collapsed && (
-                                                <span>{item.title}</span>
-                                            )}
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                ))}
-                            </SidebarMenu>
-                        </SidebarGroupContent>
-                    </SidebarGroup>
+                    {!collapsed && (
+                        <SidebarMenu>
+                            {menuItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        className={getNavClass(item.path)}
+                                        onClick={() => navigate(item.path)}
+                                    >
+                                        <item.icon className="mr-2 h-4 w-4" />
+                                        <span>{item.title}</span>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
+                        </SidebarMenu>
+                    )}
                 </SidebarContent>
             </Sidebar>
 

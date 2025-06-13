@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useWishlistStore } from "@/stores/wishlistStore";
 import { useCartStore } from "@/stores/cartStore";
 import { useLoadingStore } from "@/stores/loadingStore";
-import { WishlistTabSkeleton } from "@/components/main/skeleton/AccountSkeletons";
+import { WishlistTabSkeleton } from "@/components/skeleton/AccountSkeletons";
 
 const WishlistTab: React.FC = () => {
     const { toast } = useToast();

@@ -1,20 +1,23 @@
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStore } from "@/stores/authStore";
 
-import Layout from "./components/main/layout/Layout";
-import HomePage from "./pages/main/HomePage";
-import AboutPage from "./pages/main/AboutPage";
-import AuthPage from "./pages/main/AuthPage";
+import Layout from "./components/layout/Layout";
+import HomePage from "./pages/HomePage";
+import AboutPage from "./pages/AboutPage";
+import AuthPage from "./pages/AuthPage";
 import { SidebarProvider } from "./components/ui/sidebar";
-import CartPage from "./pages/main/CartPage";
-import NotFound from "./pages/main/NotFound";
-import CategoriesPage from "./pages/main/CategoriesPage";
-import CategoryPage from "./pages/main/CategoryPage";
-import ProductDetailPage from "./pages/main/ProductDetailPage";
-import ProductsPage from "./pages/main/ProductsPage";
-import AccountPage from "./pages/main/AccountPage";
+import CartPage from "./pages/CartPage";
+import NotFound from "./pages/NotFound";
+import CategoriesPage from "./pages/CategoriesPage";
+import CategoryPage from "./pages/CategoryPage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import ProductsPage from "./pages/ProductsPage";
+import AccountPage from "./pages/AccountPage";
+import Dashboard from "./pages/admin/Dashboard";
+import AdminLayout from "./components/admin/layout/Layout";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -39,15 +42,21 @@ const App = () => {
         <BrowserRouter>
             <Toaster />
             <Routes>
-                {/* <Route
-                        path="/admin/*"
-                        element={
+                {/* Protected Admin Routes */}
+                <Route
+                    path="/admin/*"
+                    element={
+                        <ProtectedRoute requiredRole="ADMIN">
                             <SidebarProvider>
                                 <AdminLayout />
                             </SidebarProvider>
-                        }
-                    >
-                    </Route> */}
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route index element={<Dashboard />} />
+                </Route>
+
+                {/* Main App Routes */}
                 <Route path="/" element={<Layout />}>
                     <Route index element={<HomePage />} />
                     <Route path="about" element={<AboutPage />} />

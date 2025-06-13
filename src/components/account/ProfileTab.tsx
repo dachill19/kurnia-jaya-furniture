@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { useAuthStore } from "@/stores/authStore";
 import { useLoadingStore } from "@/stores/loadingStore";
 import { useToast } from "@/components/ui/use-toast";
-import { ProfileTabSkeleton } from "@/components/main/skeleton/AccountSkeletons";
+import { ProfileTabSkeleton } from "@/components/skeleton/AccountSkeletons";
 
 const ProfileTab: React.FC = () => {
     const { toast } = useToast();

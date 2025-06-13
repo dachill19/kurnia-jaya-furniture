@@ -9,6 +9,7 @@ type User = {
     email: string;
     name?: string;
     phone?: string;
+    role?: "USER" | "ADMIN";
 };
 
 type AuthStore = {
@@ -26,6 +27,8 @@ type AuthStore = {
     updateProfile: (data: Partial<User>) => Promise<void>;
     logout: () => Promise<void>;
     initialize: () => Promise<void>;
+    isAdmin: () => boolean;
+    isUser: () => boolean;
 };
 
 export const useAuthStore = create<AuthStore>()(
@@ -34,13 +37,24 @@ export const useAuthStore = create<AuthStore>()(
             user: null,
             isInitialized: false,
 
+            isAdmin: () => {
+                const { user } = get();
+                return user?.role === "ADMIN";
+            },
+
+            isUser: () => {
+                const { user } = get();
+                return user?.role === "USER";
+            },
+
             initialize: async () => {
-                // Jangan jalankan initialize jika sudah di-initialize
+                // Jangan jalankan initialize jika sudah di-initialized
                 if (get().isInitialized) return;
-                
-                const { startLoading, stopLoading } = useLoadingStore.getState();
+
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
                 startLoading("auth-initialize");
-                
+
                 try {
                     const {
                         data: { session },
@@ -48,12 +62,21 @@ export const useAuthStore = create<AuthStore>()(
                     } = await supabase.auth.getSession();
 
                     if (session?.user && !error) {
+                        // Fetch user profile to get role
+                        const { data: profile, error: profileError } =
+                            await supabase
+                                .from("user")
+                                .select("role")
+                                .eq("id", session.user.id)
+                                .single();
+
                         set({
                             user: {
                                 id: session.user.id,
                                 email: session.user.email || "",
                                 name: session.user.user_metadata?.name || "",
                                 phone: session.user.phone || "",
+                                role: profile?.role || "USER",
                             },
                             isInitialized: true,
                         });
@@ -69,13 +92,14 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             fetchProfile: async () => {
-                // Jangan fetch profile jika user sudah ada dan sudah di-initialize
+                // Jangan fetch profile jika user sudah ada dan sudah di-initialized
                 const state = get();
                 if (state.user && state.isInitialized) return;
-                
-                const { startLoading, stopLoading } = useLoadingStore.getState();
+
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
                 startLoading("fetch-profile");
-                
+
                 try {
                     const {
                         data: { user },
@@ -83,12 +107,21 @@ export const useAuthStore = create<AuthStore>()(
                     } = await supabase.auth.getUser();
 
                     if (user && !error) {
+                        // Fetch user profile to get role
+                        const { data: profile, error: profileError } =
+                            await supabase
+                                .from("user")
+                                .select("role")
+                                .eq("id", user.id)
+                                .single();
+
                         set({
                             user: {
                                 id: user.id,
                                 email: user.email || "",
                                 name: user.user_metadata?.name || "",
                                 phone: user.phone || "",
+                                role: profile?.role || "USER",
                             },
                             isInitialized: true,
                         });
@@ -104,24 +137,35 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             login: async (email, password) => {
-                const { startLoading, stopLoading } = useLoadingStore.getState();
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
                 startLoading("auth-login");
-                
+
                 try {
-                    const { data, error } = await supabase.auth.signInWithPassword({
-                        email,
-                        password,
-                    });
-                    
+                    const { data, error } =
+                        await supabase.auth.signInWithPassword({
+                            email,
+                            password,
+                        });
+
                     if (error) throw error;
 
                     if (data.user) {
+                        // Fetch user profile to get role
+                        const { data: profile, error: profileError } =
+                            await supabase
+                                .from("user")
+                                .select("role")
+                                .eq("id", data.user.id)
+                                .single();
+
                         set({
                             user: {
                                 id: data.user.id,
                                 email: data.user.email || "",
                                 name: data.user.user_metadata?.name || "",
                                 phone: data.user.phone || "",
+                                role: profile?.role || "USER",
                             },
                             isInitialized: true,
                         });
@@ -132,9 +176,10 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             loginWithGoogle: async () => {
-                const { startLoading, stopLoading } = useLoadingStore.getState();
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
                 startLoading("auth-google");
-                
+
                 try {
                     const { error } = await supabase.auth.signInWithOAuth({
                         provider: "google",
@@ -149,9 +194,10 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             register: async (email, password, name, phone) => {
-                const { startLoading, stopLoading } = useLoadingStore.getState();
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
                 startLoading("auth-register");
-                
+
                 try {
                     const { data, error } = await supabase.auth.signUp({
                         email,
@@ -163,7 +209,7 @@ export const useAuthStore = create<AuthStore>()(
                             },
                         },
                     });
-                    
+
                     if (error) throw error;
 
                     if (data.user) {
@@ -173,6 +219,7 @@ export const useAuthStore = create<AuthStore>()(
                                 email: data.user.email || "",
                                 name: data.user.user_metadata?.name || name,
                                 phone: data.user.phone || phone || "",
+                                role: "USER", // Default role for new users
                             },
                             isInitialized: true,
                         });
@@ -183,9 +230,10 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             updateProfile: async (data) => {
-                const { startLoading, stopLoading } = useLoadingStore.getState();
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
                 startLoading("update-profile");
-                
+
                 try {
                     const { error } = await supabase.auth.updateUser({
                         data: {
@@ -193,7 +241,7 @@ export const useAuthStore = create<AuthStore>()(
                             phone: data.phone,
                         },
                     });
-                    
+
                     if (error) throw error;
 
                     const currentUser = get().user;
@@ -211,9 +259,10 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             logout: async () => {
-                const { startLoading, stopLoading } = useLoadingStore.getState();
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
                 startLoading("auth-logout");
-                
+
                 try {
                     await supabase.auth.signOut();
                     set({ user: null, isInitialized: true });
@@ -226,7 +275,7 @@ export const useAuthStore = create<AuthStore>()(
             name: "auth-store",
             partialize: (state) => ({
                 user: state.user,
-                isInitialized: state.isInitialized, // Simpan juga isInitialized
+                isInitialized: state.isInitialized,
             }),
         }
     )

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import CategoryCard from "@/components/main/CategoryCard";
+import CategoryCard from "@/components/CategoryCard";
 import { motion } from "framer-motion";
 import { useProductStore } from "@/stores/productStore";
 

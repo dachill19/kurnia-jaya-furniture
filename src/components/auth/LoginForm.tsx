@@ -28,7 +28,16 @@ const LoginForm = () => {
 
         try {
             await login(email, password);
-            navigate("/");
+
+            // Get updated user state after login
+            const { user } = useAuthStore.getState();
+
+            // Redirect based on role
+            if (user?.role === "ADMIN") {
+                navigate("/admin");
+            } else {
+                navigate("/");
+            }
         } catch (error: any) {
             const errorMessage = translateSupabaseError(error?.message);
             setErrorMsg(errorMessage);

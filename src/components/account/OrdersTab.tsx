@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ShoppingBag, Truck, CheckCircle, Clock, Star } from "lucide-react";
 import { useLoadingStore } from "@/stores/loadingStore"; // Added
-import { OrdersTabSkeleton } from "@/components/main/skeleton/AccountSkeletons";
+import { OrdersTabSkeleton } from "@/components/skeleton/AccountSkeletons";
 
 // Mock data - in a real app this would come from API
 const mockOrders = [

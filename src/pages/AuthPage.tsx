@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
-import LoginForm from "@/components/main/auth/LoginForm";
-import RegisterForm from "@/components/main/auth/RegisterForm";
+import LoginForm from "@/components/auth/LoginForm";
+import RegisterForm from "@/components/auth/RegisterForm";
 import { useAuthStore } from "@/stores/authStore";
 
 const AuthPage = () => {

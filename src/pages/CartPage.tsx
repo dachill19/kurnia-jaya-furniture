@@ -4,7 +4,7 @@ import { useLoadingStore } from "@/stores/loadingStore";
 import { Button } from "@/components/ui/button";
 import { Trash2, ShoppingCart, ChevronLeft, Plus, Minus } from "lucide-react";
 import { useEffect } from "react";
-import { CartPageSkeleton } from "@/components/main/skeleton/CartPageSkeleton";
+import { CartPageSkeleton } from "@/components/skeleton/CartPageSkeleton";
 
 const CartPage = () => {
     const {

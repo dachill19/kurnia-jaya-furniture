@@ -1,12 +1,12 @@
 import { useParams, Link } from "react-router-dom";
-import ProductCard from "@/components/main/ProductCard";
+import ProductCard from "@/components/ProductCard";
 import { ChevronRight, ChevronLeft, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useProductStore } from "@/stores/productStore";
 import { useLoadingStore } from "@/stores/loadingStore";
 import { Button } from "@/components/ui/button";
-import { ProductGridSkeleton } from "@/components/main/skeleton/ProductGridSkeleton";
-import { CategoryPageSkeleton } from "@/components/main/skeleton/CategoryPageSkeleton";
+import { ProductGridSkeleton } from "@/components/skeleton/ProductGridSkeleton";
+import { CategoryPageSkeleton } from "@/components/skeleton/CategoryPageSkeleton";
 
 const CategoryPage = () => {
     const { categoryName } = useParams();

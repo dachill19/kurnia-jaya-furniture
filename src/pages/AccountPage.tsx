@@ -11,13 +11,13 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
 
-import ProfileTab from "@/components/main/account/ProfileTab";
-import AddressTab from "@/components/main/account/AddressTab";
-import OrdersTab from "@/components/main/account/OrdersTab";
-import WishlistTab from "@/components/main/account/WishlistTab";
-import EditAddressTab from "@/components/main/account/EditAddressTab";
-import AddAddressTab from "@/components/main/account/AddAddressTab";
-import SettingsTab from "@/components/main/account/SettingsTab";
+import ProfileTab from "@/components/account/ProfileTab";
+import AddressTab from "@/components/account/AddressTab";
+import OrdersTab from "@/components/account/OrdersTab";
+import WishlistTab from "@/components/account/WishlistTab";
+import EditAddressTab from "@/components/account/EditAddressTab";
+import AddAddressTab from "@/components/account/AddAddressTab";
+import SettingsTab from "@/components/account/SettingsTab";
 import { Address } from "@/stores/addressStore";
 
 const AccountPage: React.FC = () => {

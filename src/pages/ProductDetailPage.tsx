@@ -17,7 +17,7 @@ import {
     HeartOff,
 } from "lucide-react";
 import { useLoadingStore } from "@/stores/loadingStore";
-import { ProductDetailPageSkeleton } from "@/components/main/skeleton/ProductDetailPageSkeleton";
+import { ProductDetailPageSkeleton } from "@/components/skeleton/ProductDetailPageSkeleton";
 
 const ProductDetailPage = () => {
     const { productId } = useParams();

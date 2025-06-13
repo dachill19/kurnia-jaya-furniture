@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import ProductCard from "@/components/main/ProductCard";
-import CategoryCard from "@/components/main/CategoryCard";
-import Hero from "@/components/main/Hero";
-import FeatureSection from "@/components/main/FeatureSection";
+import ProductCard from "@/components/ProductCard";
+import CategoryCard from "@/components/CategoryCard";
+import Hero from "@/components/Hero";
+import FeatureSection from "@/components/FeatureSection";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, AlertCircle } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { useLoadingStore } from "@/stores/loadingStore";
-import { ProductGridSkeleton } from "@/components/main/skeleton/ProductGridSkeleton";
-import { CategoryGridSkeleton } from "@/components/main/skeleton/CategoryGridSkeleton";
+import { ProductGridSkeleton } from "@/components/skeleton/ProductGridSkeleton";
+import { CategoryGridSkeleton } from "@/components/skeleton/CategoryGridSkeleton";
 
 const HomePage = () => {
     const {

@@ -1,28 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAddressStore } from "@/stores/addressStore";
+import { useAddressStore, type Address } from "@/stores/addressStore";
 import { useLoadingStore } from "@/stores/loadingStore";
-import { AddAddressTabSkeleton } from "@/components/main/skeleton/AccountSkeletons";
+import { EditAddressTabSkeleton } from "@/components/skeleton/AccountSkeletons";
 
-interface AddAddressTabProps {
+interface EditAddressTabProps {
+    selectedAddress: Address;
     onBack: () => void;
 }
 
-const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
-    const { addAddress } = useAddressStore();
+const EditAddressTab: React.FC<EditAddressTabProps> = ({
+    selectedAddress,
+    onBack,
+}) => {
+    const { updateAddress } = useAddressStore();
     const { isLoadingKey } = useLoadingStore();
 
     const [addressData, setAddressData] = useState({
-        recipient: "",
-        label: "",
-        province: "",
-        city: "",
-        subdistrict: "",
-        village: "",
-        zip_code: "",
-        full_address: "",
-        is_default: false,
+        recipient: selectedAddress?.recipient || "",
+        label: selectedAddress?.label || "",
+        province: selectedAddress?.province || "",
+        city: selectedAddress?.city || "",
+        subdistrict: selectedAddress?.subdistrict || "",
+        village: selectedAddress?.village || "",
+        zip_code: selectedAddress?.zip_code || "",
+        full_address: selectedAddress?.full_address || "",
+        is_default: selectedAddress?.is_default || false,
     });
 
     const [errorMsg, setErrorMsg] = useState("");
@@ -30,7 +34,25 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
         {}
     );
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    useEffect(() => {
+        if (selectedAddress) {
+            setAddressData({
+                recipient: selectedAddress.recipient,
+                label: selectedAddress.label,
+                province: selectedAddress.province,
+                city: selectedAddress.city,
+                subdistrict: selectedAddress.subdistrict,
+                village: selectedAddress.village,
+                zip_code: selectedAddress.zip_code,
+                full_address: selectedAddress.full_address,
+                is_default: selectedAddress.is_default,
+            });
+        }
+    }, [selectedAddress]);
+
+    const handleInputAddressChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
         const { name, value } = e.target;
         setAddressData((prev) => ({
             ...prev,
@@ -92,7 +114,7 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
         return errors;
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSaveAddress = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrorMsg("");
         setFieldErrors({});
@@ -104,24 +126,27 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
         }
 
         try {
-            await addAddress(addressData);
+            await updateAddress({
+                id: selectedAddress.id,
+                ...addressData,
+            });
             onBack();
         } catch (error: any) {
-            console.error("Gagal menambah alamat:", error);
-            setErrorMsg("Gagal menambah alamat. Silakan coba lagi.");
+            console.error("Gagal update alamat:", error);
+            setErrorMsg("Gagal mengupdate alamat. Silakan coba lagi.");
         }
     };
 
-    const isAdding = isLoadingKey("address-add");
+    const isUpdating = isLoadingKey(`address-update_${selectedAddress.id}`);
 
-    if (isAdding) {
-        return <AddAddressTabSkeleton />;
+    if (isUpdating) {
+        return <EditAddressTabSkeleton />;
     }
 
     return (
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
             <div className="p-4 border-b items-center">
-                <h2 className="font-medium">Tambah Alamat Baru</h2>
+                <h2 className="font-medium">Edit Alamat</h2>
             </div>
 
             <div className="p-4">
@@ -132,7 +157,7 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                 )}
 
                 <form
-                    onSubmit={handleSubmit}
+                    onSubmit={handleSaveAddress}
                     className="grid grid-cols-1 md:grid-cols-2 gap-4"
                 >
                     <div className="md:col-span-2">
@@ -142,11 +167,11 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                         <Input
                             name="recipient"
                             value={addressData.recipient}
-                            onChange={handleInputChange}
+                            onChange={handleInputAddressChange}
                             className={
                                 fieldErrors.recipient ? "border-red-500" : ""
                             }
-                            disabled={isAdding}
+                            disabled={isUpdating}
                         />
                         {fieldErrors.recipient && (
                             <p className="text-sm text-red-600 mt-1">
@@ -162,12 +187,12 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                         <Input
                             name="label"
                             value={addressData.label}
-                            onChange={handleInputChange}
+                            onChange={handleInputAddressChange}
                             placeholder="Rumah, Kantor, dll"
                             className={
                                 fieldErrors.label ? "border-red-500" : ""
                             }
-                            disabled={isAdding}
+                            disabled={isUpdating}
                         />
                         {fieldErrors.label && (
                             <p className="text-sm text-red-600 mt-1">
@@ -183,11 +208,11 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                         <Input
                             name="province"
                             value={addressData.province}
-                            onChange={handleInputChange}
+                            onChange={handleInputAddressChange}
                             className={
                                 fieldErrors.province ? "border-red-500" : ""
                             }
-                            disabled={isAdding}
+                            disabled={isUpdating}
                         />
                         {fieldErrors.province && (
                             <p className="text-sm text-red-600 mt-1">
@@ -204,9 +229,9 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                         <Input
                             name="city"
                             value={addressData.city}
-                            onChange={handleInputChange}
+                            onChange={handleInputAddressChange}
                             className={fieldErrors.city ? "border-red-500" : ""}
-                            disabled={isAdding}
+                            disabled={isUpdating}
                         />
                         {fieldErrors.city && (
                             <p className="text-sm text-red-600 mt-1">
@@ -222,11 +247,11 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                         <Input
                             name="subdistrict"
                             value={addressData.subdistrict}
-                            onChange={handleInputChange}
+                            onChange={handleInputAddressChange}
                             className={
                                 fieldErrors.subdistrict ? "border-red-500" : ""
                             }
-                            disabled={isAdding}
+                            disabled={isUpdating}
                         />
                         {fieldErrors.subdistrict && (
                             <p className="text-sm text-red-600 mt-1">
@@ -243,11 +268,11 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                         <Input
                             name="village"
                             value={addressData.village}
-                            onChange={handleInputChange}
+                            onChange={handleInputAddressChange}
                             className={
                                 fieldErrors.village ? "border-red-500" : ""
                             }
-                            disabled={isAdding}
+                            disabled={isUpdating}
                         />
                         {fieldErrors.village && (
                             <p className="text-sm text-red-600 mt-1">
@@ -263,11 +288,11 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                         <Input
                             name="zip_code"
                             value={addressData.zip_code}
-                            onChange={handleInputChange}
+                            onChange={handleInputAddressChange}
                             className={
                                 fieldErrors.zip_code ? "border-red-500" : ""
                             }
-                            disabled={isAdding}
+                            disabled={isUpdating}
                             placeholder="12345"
                         />
                         {fieldErrors.zip_code && (
@@ -285,12 +310,12 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                         <Input
                             name="full_address"
                             value={addressData.full_address}
-                            onChange={handleInputChange}
+                            onChange={handleInputAddressChange}
                             placeholder="Nomor rumah, nama jalan, RT/RW, dll"
                             className={
                                 fieldErrors.full_address ? "border-red-500" : ""
                             }
-                            disabled={isAdding}
+                            disabled={isUpdating}
                         />
                         {fieldErrors.full_address && (
                             <p className="text-sm text-red-600 mt-1">
@@ -312,7 +337,7 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                                     }))
                                 }
                                 className="mr-2"
-                                disabled={isAdding}
+                                disabled={isUpdating}
                             />
                             Jadikan Alamat Utama
                         </label>
@@ -323,16 +348,16 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
                             type="button"
                             variant="outline"
                             onClick={onBack}
-                            disabled={isAdding}
+                            disabled={isUpdating}
                         >
                             Batal
                         </Button>
                         <Button
                             type="submit"
-                            disabled={isAdding}
+                            disabled={isUpdating}
                             className="hover:bg-kj-darkred"
                         >
-                            {isAdding ? "Menyimpan..." : "Simpan Alamat"}
+                            {isUpdating ? "Menyimpan..." : "Simpan"}
                         </Button>
                     </div>
                 </form>
@@ -341,4 +366,4 @@ const AddAddressTab: React.FC<AddAddressTabProps> = ({ onBack }) => {
     );
 };
 
-export default AddAddressTab;
+export default EditAddressTab;

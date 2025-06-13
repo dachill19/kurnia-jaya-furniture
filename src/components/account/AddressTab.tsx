@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAddressStore } from "@/stores/addressStore";
 import { useLoadingStore } from "@/stores/loadingStore";
-import { AddressTabSkeleton } from "@/components/main/skeleton/AccountSkeletons";
+import { AddressTabSkeleton } from "@/components/skeleton/AccountSkeletons";
 
 interface AddressTabProps {
     onEditAddress: (address: any) => void;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import ProductCard from "@/components/main/ProductCard";
+import ProductCard from "@/components/ProductCard";
 import { useProductStore } from "@/stores/productStore";
 import { useLoadingStore } from "@/stores/loadingStore";
 import { Search, Sliders, X, ChevronLeft, ChevronRight } from "lucide-react";
@@ -15,7 +15,7 @@ import {
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ProductsPageSkeleton } from "@/components/main/skeleton/ProductsPageSkeleton";
+import { ProductsPageSkeleton } from "@/components/skeleton/ProductsPageSkeleton";
 
 const ProductsPage = () => {
     // Search and basic filters

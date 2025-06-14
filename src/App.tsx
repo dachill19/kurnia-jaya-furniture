@@ -18,6 +18,7 @@ import AccountPage from "./pages/AccountPage";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminLayout from "./components/admin/layout/Layout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import { AdminProductsPage } from "./pages/AdminProductsPage";
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -26,7 +27,6 @@ const App = () => {
         initialize();
     }, [initialize]);
 
-    // Tampilkan loading spinner sampai auth state terinisialisasi
     if (!isInitialized) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -42,7 +42,6 @@ const App = () => {
         <BrowserRouter>
             <Toaster />
             <Routes>
-                {/* Protected Admin Routes */}
                 <Route
                     path="/admin/*"
                     element={
@@ -54,24 +53,21 @@ const App = () => {
                     }
                 >
                     <Route index element={<Dashboard />} />
+                    <Route path="products" element={<AdminProductsPage />} />
+                    <Route path="users" element={<div>Users Page (TBD)</div>} />
+                    <Route path="orders" element={<div>Orders Page (TBD)</div>} />
+                    <Route path="notifications" element={<div>Notifications Page (TBD)</div>} />
                 </Route>
 
-                {/* Main App Routes */}
                 <Route path="/" element={<Layout />}>
                     <Route index element={<HomePage />} />
                     <Route path="about" element={<AboutPage />} />
                     <Route path="account" element={<AccountPage />} />
                     <Route path="auth" element={<AuthPage />} />
                     <Route path="categories" element={<CategoriesPage />} />
-                    <Route
-                        path="categories/:categoryName"
-                        element={<CategoryPage />}
-                    />
+                    <Route path="categories/:categoryName" element={<CategoryPage />} />
                     <Route path="products" element={<ProductsPage />} />
-                    <Route
-                        path="products/:productId"
-                        element={<ProductDetailPage />}
-                    />
+                    <Route path="products/:productId" element={<ProductDetailPage />} />
                     <Route path="cart" element={<CartPage />} />
                     <Route path="*" element={<NotFound />} />
                 </Route>

@@ -1,0 +1,194 @@
+import { create } from "zustand";
+import { supabase } from "@/lib/supabase";
+import { useLoadingStore } from "../loadingStore";
+
+type User = {
+    id: string;
+    email: string;
+    name?: string;
+    phone?: string;
+    role: "USER" | "ADMIN";
+    created_at: string;
+    updated_at: string;
+};
+
+type UserStats = {
+    totalUsers: number;
+    activeToday: number;
+    newThisMonth: number;
+};
+
+type UserStore = {
+    users: User[];
+    stats: UserStats;
+    isLoading: boolean;
+    error: string | null;
+
+    // Actions
+    fetchUsers: () => Promise<void>;
+    fetchUserStats: () => Promise<void>;
+    searchUsers: (searchTerm: string) => User[];
+    exportUsers: () => void;
+    refreshData: () => Promise<void>;
+};
+
+export const useUserStore = create<UserStore>((set, get) => ({
+    users: [],
+    stats: {
+        totalUsers: 0,
+        activeToday: 0,
+        newThisMonth: 0,
+    },
+    isLoading: false,
+    error: null,
+
+    fetchUsers: async () => {
+        const { startLoading, stopLoading } = useLoadingStore.getState();
+        startLoading("fetch-users");
+        set({ isLoading: true, error: null });
+
+        try {
+            const { data, error } = await supabase
+                .from("user")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+
+            set({ users: data || [] });
+        } catch (error) {
+            console.error("Error fetching users:", error);
+            set({
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to fetch users",
+            });
+        } finally {
+            set({ isLoading: false });
+            stopLoading("fetch-users");
+        }
+    },
+
+    fetchUserStats: async () => {
+        const { startLoading, stopLoading } = useLoadingStore.getState();
+        startLoading("fetch-user-stats");
+
+        try {
+            // Get total users
+            const { count: totalUsers, error: totalError } = await supabase
+                .from("user")
+                .select("*", { count: "exact", head: true });
+
+            if (totalError) throw totalError;
+
+            // Get users created this month
+            const currentMonth = new Date();
+            const firstDayOfMonth = new Date(
+                currentMonth.getFullYear(),
+                currentMonth.getMonth(),
+                1
+            );
+
+            const { count: newThisMonth, error: monthError } = await supabase
+                .from("user")
+                .select("*", { count: "exact", head: true })
+                .gte("created_at", firstDayOfMonth.toISOString());
+
+            if (monthError) throw monthError;
+
+            // Get users updated today (as proxy for active today)
+            const today = new Date();
+            const startOfDay = new Date(
+                today.getFullYear(),
+                today.getMonth(),
+                today.getDate()
+            );
+
+            const { count: activeToday, error: todayError } = await supabase
+                .from("user")
+                .select("*", { count: "exact", head: true })
+                .gte("updated_at", startOfDay.toISOString());
+
+            if (todayError) throw todayError;
+
+            set({
+                stats: {
+                    totalUsers: totalUsers || 0,
+                    activeToday: activeToday || 0,
+                    newThisMonth: newThisMonth || 0,
+                },
+            });
+        } catch (error) {
+            console.error("Error fetching user stats:", error);
+            set({
+                error:
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to fetch user stats",
+            });
+        } finally {
+            stopLoading("fetch-user-stats");
+        }
+    },
+
+    searchUsers: (searchTerm: string) => {
+        const { users } = get();
+        if (!searchTerm.trim()) return users;
+
+        return users.filter(
+            (user) =>
+                user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.id.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    },
+
+    exportUsers: () => {
+        const { users } = get();
+
+        // Create CSV content
+        const headers = [
+            "User ID",
+            "Nama",
+            "Email",
+            "Telepon",
+            "Role",
+            "Tanggal Bergabung",
+            "Terakhir Diperbarui",
+        ];
+        const csvContent = [
+            headers.join(","),
+            ...users.map((user) =>
+                [
+                    user.id,
+                    user.name || "",
+                    user.email,
+                    user.phone || "",
+                    user.role,
+                    new Date(user.created_at).toLocaleDateString("id-ID"),
+                    new Date(user.updated_at).toLocaleDateString("id-ID"),
+                ].join(",")
+            ),
+        ].join("\n");
+
+        // Create and download file
+        const blob = new Blob([csvContent], {
+            type: "text/csv;charset=utf-8;",
+        });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `data-pengguna-${
+            new Date().toISOString().split("T")[0]
+        }.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    },
+
+    refreshData: async () => {
+        await Promise.all([get().fetchUsers(), get().fetchUserStats()]);
+    },
+}));

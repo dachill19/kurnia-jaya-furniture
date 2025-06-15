@@ -19,6 +19,8 @@ import Dashboard from "./pages/admin/Dashboard";
 import AdminLayout from "./components/admin/layout/Layout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AdminProductsPage } from "./pages/AdminProductsPage";
+import UsersPage from "./pages/admin/UsersPage";
+import CheckoutPage from "./pages/CheckoutPage";
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -54,9 +56,15 @@ const App = () => {
                 >
                     <Route index element={<Dashboard />} />
                     <Route path="products" element={<AdminProductsPage />} />
-                    <Route path="users" element={<div>Users Page (TBD)</div>} />
-                    <Route path="orders" element={<div>Orders Page (TBD)</div>} />
-                    <Route path="notifications" element={<div>Notifications Page (TBD)</div>} />
+                    <Route path="users" element={<UsersPage />} />
+                    <Route
+                        path="orders"
+                        element={<div>Orders Page (TBD)</div>}
+                    />
+                    <Route
+                        path="notifications"
+                        element={<div>Notifications Page (TBD)</div>}
+                    />
                 </Route>
 
                 <Route path="/" element={<Layout />}>
@@ -65,10 +73,17 @@ const App = () => {
                     <Route path="account" element={<AccountPage />} />
                     <Route path="auth" element={<AuthPage />} />
                     <Route path="categories" element={<CategoriesPage />} />
-                    <Route path="categories/:categoryName" element={<CategoryPage />} />
+                    <Route
+                        path="categories/:categoryName"
+                        element={<CategoryPage />}
+                    />
                     <Route path="products" element={<ProductsPage />} />
-                    <Route path="products/:productId" element={<ProductDetailPage />} />
+                    <Route
+                        path="products/:productId"
+                        element={<ProductDetailPage />}
+                    />
                     <Route path="cart" element={<CartPage />} />
+                    <Route path="checkout" element={<CheckoutPage />} />
                     <Route path="*" element={<NotFound />} />
                 </Route>
             </Routes>

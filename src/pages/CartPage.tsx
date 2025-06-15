@@ -30,12 +30,6 @@ const CartPage = () => {
         return <CartPageSkeleton />;
     }
 
-    // Shipping Cost (fixed for now)
-    const shippingCost = 50000;
-
-    // Calculate total to be paid
-    const totalToPay = totalPrice + shippingCost;
-
     if (cart.length === 0) {
         return (
             <div className="container-custom py-16 text-center">
@@ -221,47 +215,25 @@ const CartPage = () => {
 
                 {/* Order Summary */}
                 <div className="lg:col-span-1">
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-4">
+                    <div
+                        className="bg-white rounded-lg shadow-sm overflow-hidden mb-4 sticky
+                        top-6"
+                    >
                         <div className="p-4 border-b">
                             <h2 className="font-medium">Ringkasan Pesanan</h2>
                         </div>
 
                         <div className="p-4">
                             {/* Price Summary */}
-                            <div className="space-y-3 mb-6">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                        Subtotal
-                                    </span>
-                                    <span className="font-medium">
-                                        {new Intl.NumberFormat("id-ID", {
-                                            style: "currency",
-                                            currency: "IDR",
-                                        }).format(totalPrice)}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600">
-                                        Pengiriman
-                                    </span>
-                                    <span className="font-medium">
-                                        {new Intl.NumberFormat("id-ID", {
-                                            style: "currency",
-                                            currency: "IDR",
-                                        }).format(shippingCost)}
-                                    </span>
-                                </div>
-                                <div className="pt-3 border-t flex justify-between">
-                                    <span className="font-medium">Total</span>
-                                    <span className="font-bold text-kj-red">
-                                        {new Intl.NumberFormat("id-ID", {
-                                            style: "currency",
-                                            currency: "IDR",
-                                        }).format(totalToPay)}
-                                    </span>
-                                </div>
+                            <div className="mb-4 flex justify-between">
+                                <span className="font-medium">Total</span>
+                                <span className="font-bold text-kj-red">
+                                    {new Intl.NumberFormat("id-ID", {
+                                        style: "currency",
+                                        currency: "IDR",
+                                    }).format(totalPrice)}
+                                </span>
                             </div>
-
                             {/* Checkout Button */}
                             <Button
                                 className="w-full bg-kj-red hover:bg-kj-darkred text-white"

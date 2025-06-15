@@ -18,7 +18,10 @@ import AccountPage from "./pages/AccountPage";
 import Dashboard from "./pages/admin/Dashboard";
 import AdminLayout from "./components/admin/layout/Layout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import { AdminProductsPage } from "./pages/AdminProductsPage";
+import AdminProductsPage from "./pages/admin/AdminProductsPage";
+import AddProductPage from "./pages/admin/AddProductPage";
+import EditProductPage from "./pages/admin/EditProductPage"; // Import EditProductPage
+import AdminProductDetailPage from "./pages/admin/ProductDetailPage"; // Import Admin ProductDetailPage
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -54,6 +57,10 @@ const App = () => {
                 >
                     <Route index element={<Dashboard />} />
                     <Route path="products" element={<AdminProductsPage />} />
+                    <Route path="products/add" element={<AddProductPage />} />
+                    <Route path="products/:productId" element={<AdminProductDetailPage />} />
+                    <Route path="products/:productId/edit" element={<EditProductPage />} />
+                    <Route path="products/import" element={<div>Import Products Page (TBD)</div>} />
                     <Route path="users" element={<div>Users Page (TBD)</div>} />
                     <Route path="orders" element={<div>Orders Page (TBD)</div>} />
                     <Route path="notifications" element={<div>Notifications Page (TBD)</div>} />

@@ -20,10 +20,12 @@ import AdminLayout from "./components/admin/layout/Layout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import AdminProductsPage from "./pages/admin/AdminProductsPage";
 import AddProductPage from "./pages/admin/AddProductPage";
-import EditProductPage from "./pages/admin/EditProductPage"; // Import EditProductPage
-import AdminProductDetailPage from "./pages/admin/ProductDetailPage"; // Import Admin ProductDetailPage
+import EditProductPage from "./pages/admin/EditProductPage";
+import AdminProductDetailPage from "./pages/admin/ProductDetailPage";
 import UsersPage from "./pages/admin/AdminUsersPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import AddCategoryPage from "./pages/admin/AddCategoryPage"; // Import AddCategoryPage
+import EditCategoryPage from "./pages/admin/EditCategoryPage"; // Import EditCategoryPage
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -72,6 +74,14 @@ const App = () => {
                     <Route
                         path="products/import"
                         element={<div>Import Products Page (TBD)</div>}
+                    />
+                    <Route
+                        path="categories/add"
+                        element={<AddCategoryPage />}
+                    />
+                    <Route
+                        path="categories/:categoryId/edit"
+                        element={<EditCategoryPage />}
                     />
                     <Route
                         path="orders"

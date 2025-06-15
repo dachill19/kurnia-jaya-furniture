@@ -12,9 +12,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, X, Upload } from "lucide-react";
+import { ArrowLeft, X, Upload, Edit, Trash } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { useAdminProductStore } from "@/stores/admin/adminProductStore";
+import { useAdminCategoryStore } from "@/stores/admin/adminCategoryStore";
 import { useLoadingStore } from "@/stores/loadingStore";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -31,8 +32,12 @@ const EditProductPage = () => {
     const {
         updateProduct,
         error: adminError,
-        clearError,
+        clearError: clearProductError,
     } = useAdminProductStore();
+    const {
+        error: categoryError,
+        clearError: clearCategoryError,
+    } = useAdminCategoryStore();
     const { isLoadingKey, startLoading, stopLoading } = useLoadingStore();
     const { toast } = useToast();
 
@@ -74,15 +79,16 @@ const EditProductPage = () => {
     }, [productDetail, productId]);
 
     useEffect(() => {
-        if (productError || adminError) {
+        if (productError || adminError || categoryError) {
             toast({
                 title: "Error",
-                description: productError || adminError,
+                description: productError || adminError || categoryError,
                 variant: "destructive",
             });
-            clearError();
+            clearProductError();
+            clearCategoryError();
         }
-    }, [productError, adminError, toast, clearError]);
+    }, [productError, adminError, categoryError, toast, clearProductError, clearCategoryError]);
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -92,7 +98,11 @@ const EditProductPage = () => {
     };
 
     const handleSelectChange = (value: string) => {
-        setFormData((prev) => ({ ...prev, category_id: value }));
+        if (value === "add_category") {
+            navigate("/admin/categories/add");
+        } else {
+            setFormData((prev) => ({ ...prev, category_id: value }));
+        }
     };
 
     const handleCheckboxChange = (checked: boolean) => {
@@ -104,10 +114,7 @@ const EditProductPage = () => {
             const newFiles = Array.from(e.target.files);
             setImages((prev) => [...prev, ...newFiles]);
 
-            // Create preview URLs
-            const newPreviews = newFiles.map((file) =>
-                URL.createObjectURL(file)
-            );
+            const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
             setPreviewImages((prev) => [...prev, ...newPreviews]);
         }
     };
@@ -116,7 +123,6 @@ const EditProductPage = () => {
         const newImages = images.filter((_, i) => i !== index);
         const newPreviews = previewImages.filter((_, i) => i !== index);
 
-        // Revoke object URL to prevent memory leaks
         URL.revokeObjectURL(previewImages[index]);
 
         setImages(newImages);
@@ -127,15 +133,44 @@ const EditProductPage = () => {
         setExistingImages(existingImages.filter((img) => img.id !== imageId));
     };
 
+    const handleEditCategory = (categoryId: string) => {
+        navigate(`/admin/categories/${categoryId}/edit`);
+    };
+
+    const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+        if (window.confirm(`Apakah Anda yakin ingin menghapus ${categoryName}?`)) {
+            const { deleteCategory } = useAdminCategoryStore.getState();
+            startLoading("delete-category");
+            try {
+                await deleteCategory(categoryId);
+                toast({
+                    title: "Success",
+                    description: `${categoryName} telah dihapus.`,
+                });
+                getCategories();
+                if (formData.category_id === categoryId) {
+                    setFormData((prev) => ({ ...prev, category_id: "" }));
+                }
+            } catch (error: any) {
+                toast({
+                    title: "Error",
+                    description: error.message || "Gagal menghapus kategori.",
+                    variant: "destructive",
+                });
+            } finally {
+                stopLoading("delete-category");
+            }
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!productId) return;
 
-        // Validation
         if (!formData.name.trim()) {
             toast({
                 title: "Error",
-                description: "Product name is required.",
+                description: "Nama produk harus diisi.",
                 variant: "destructive",
             });
             return;
@@ -144,7 +179,7 @@ const EditProductPage = () => {
         if (!formData.description.trim()) {
             toast({
                 title: "Error",
-                description: "Product description is required.",
+                description: "Deskripsi produk harus diisi.",
                 variant: "destructive",
             });
             return;
@@ -153,7 +188,7 @@ const EditProductPage = () => {
         if (!formData.category_id) {
             toast({
                 title: "Error",
-                description: "Please select a category.",
+                description: "Kategori harus dipilih.",
                 variant: "destructive",
             });
             return;
@@ -165,7 +200,7 @@ const EditProductPage = () => {
         if (isNaN(price) || price <= 0) {
             toast({
                 title: "Error",
-                description: "Please enter a valid price.",
+                description: "Harga harus valid dan lebih dari 0.",
                 variant: "destructive",
             });
             return;
@@ -174,7 +209,7 @@ const EditProductPage = () => {
         if (isNaN(stock) || stock < 0) {
             toast({
                 title: "Error",
-                description: "Please enter a valid stock quantity.",
+                description: "Stok harus valid dan tidak boleh negatif.",
                 variant: "destructive",
             });
             return;
@@ -200,18 +235,17 @@ const EditProductPage = () => {
                 images.length > 0 ? images : undefined
             );
 
-            // Clean up preview URLs
             previewImages.forEach((url) => URL.revokeObjectURL(url));
 
             toast({
                 title: "Success",
-                description: "Product updated successfully.",
+                description: "Produk berhasil diperbarui.",
             });
             navigate("/admin/products");
         } catch (error: any) {
             toast({
                 title: "Error",
-                description: error.message || "Failed to update product.",
+                description: error.message || "Gagal memperbarui produk.",
                 variant: "destructive",
             });
         } finally {
@@ -219,19 +253,18 @@ const EditProductPage = () => {
         }
     };
 
-    // Clean up preview URLs on component unmount
     useEffect(() => {
         return () => {
             previewImages.forEach((url) => URL.revokeObjectURL(url));
         };
-    }, []);
+    }, [previewImages]);
 
     if (isLoadingKey("product-detail")) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kj-red mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading product details...</p>
+                    <p className="text-gray-600">Memuat detail produk...</p>
                 </div>
             </div>
         );
@@ -241,9 +274,9 @@ const EditProductPage = () => {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
-                    <p className="text-gray-600 mb-4">Product not found.</p>
+                    <p className="text-gray-600 mb-4">Produk tidak ditemukan.</p>
                     <Button onClick={() => navigate("/admin/products")}>
-                        Back to Products
+                        Kembali ke Produk
                     </Button>
                 </div>
             </div>
@@ -251,7 +284,7 @@ const EditProductPage = () => {
     }
 
     return (
-        <div className="container-custom py-8">
+        <div className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
                 <Button
                     variant="ghost"
@@ -304,13 +337,46 @@ const EditProductPage = () => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         {categories.map((category) => (
-                                            <SelectItem
+                                            <div
                                                 key={category.id}
-                                                value={category.id}
+                                                className="flex items-center justify-between px-2 py-1 hover:bg-gray-100"
                                             >
-                                                {category.name}
-                                            </SelectItem>
+                                                <SelectItem
+                                                    value={category.id}
+                                                    className="flex-1 cursor-pointer"
+                                                >
+                                                    {category.name}
+                                                </SelectItem>
+                                                <div className="flex gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleEditCategory(category.id)}
+                                                        disabled={isLoadingKey("delete-category")}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDeleteCategory(category.id, category.name)
+                                                        }
+                                                        disabled={isLoadingKey("delete-category")}
+                                                    >
+                                                        <Trash className="h-4 w-4 text-red-500" />
+                                                    </Button>
+                                                </div>
+                                            </div>
                                         ))}
+                                        <div className="border-t border-gray-200 mt-2">
+                                            <SelectItem
+                                                value="add_category"
+                                                className="flex items-center px-2 py-2 cursor-pointer text-kj-red hover:bg-gray-100"
+                                            >
+                                                + Tambah Kategori
+                                            </SelectItem>
+                                        </div>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -418,9 +484,7 @@ const EditProductPage = () => {
                                                 className="sr-only"
                                             />
                                         </label>
-                                        <p className="pl-1">
-                                            atau drag and drop
-                                        </p>
+                                        <p className="pl-1">atau drag and drop</p>
                                     </div>
                                     <p className="text-xs text-gray-500">
                                         PNG, JPG, GIF hingga 10MB
@@ -428,7 +492,6 @@ const EditProductPage = () => {
                                 </div>
                             </div>
 
-                            {/* Preview new images */}
                             {images.length > 0 && (
                                 <div className="mt-4">
                                     <h4 className="text-sm font-medium text-gray-700 mb-2">
@@ -436,10 +499,7 @@ const EditProductPage = () => {
                                     </h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                         {images.map((file, index) => (
-                                            <div
-                                                key={index}
-                                                className="relative group"
-                                            >
+                                            <div key={index} className="relative group">
                                                 <img
                                                     src={previewImages[index]}
                                                     alt={`Preview ${index + 1}`}
@@ -447,11 +507,7 @@ const EditProductPage = () => {
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() =>
-                                                        handleRemoveNewImage(
-                                                            index
-                                                        )
-                                                    }
+                                                    onClick={() => handleRemoveNewImage(index)}
                                                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
                                                     <X className="h-3 w-3" />
@@ -465,7 +521,6 @@ const EditProductPage = () => {
                                 </div>
                             )}
 
-                            {/* Existing images */}
                             {existingImages.length > 0 && (
                                 <div className="mt-4">
                                     <h4 className="text-sm font-medium text-gray-700 mb-2">
@@ -473,10 +528,7 @@ const EditProductPage = () => {
                                     </h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                         {existingImages.map((image) => (
-                                            <div
-                                                key={image.id}
-                                                className="relative group"
-                                            >
+                                            <div key={image.id} className="relative group">
                                                 <img
                                                     src={image.image_url}
                                                     alt="Existing product"
@@ -484,11 +536,7 @@ const EditProductPage = () => {
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() =>
-                                                        handleRemoveExistingImage(
-                                                            image.id
-                                                        )
-                                                    }
+                                                    onClick={() => handleRemoveExistingImage(image.id)}
                                                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
                                                     <X className="h-3 w-3" />

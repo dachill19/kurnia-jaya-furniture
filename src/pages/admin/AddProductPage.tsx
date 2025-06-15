@@ -12,9 +12,10 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Edit, Trash } from "lucide-react";
 import { useProductStore } from "@/stores/productStore";
 import { useAdminProductStore } from "@/stores/admin/adminProductStore";
+import { useAdminCategoryStore } from "@/stores/admin/adminCategoryStore";
 import { useLoadingStore } from "@/stores/loadingStore";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -28,8 +29,12 @@ const AddProductPage = () => {
     const {
         createProduct,
         error: adminError,
-        clearError,
+        clearError: clearProductError,
     } = useAdminProductStore();
+    const {
+        error: categoryError,
+        clearError: clearCategoryError,
+    } = useAdminCategoryStore();
     const { isLoadingKey, startLoading, stopLoading } = useLoadingStore();
     const { toast } = useToast();
 
@@ -49,15 +54,16 @@ const AddProductPage = () => {
     }, [getCategories]);
 
     useEffect(() => {
-        if (productError || adminError) {
+        if (productError || adminError || categoryError) {
             toast({
                 title: "Error",
-                description: productError || adminError,
+                description: productError || adminError || categoryError,
                 variant: "destructive",
             });
-            clearError();
+            clearProductError();
+            clearCategoryError();
         }
-    }, [productError, adminError, toast, clearError]);
+    }, [productError, adminError, categoryError, toast, clearProductError, clearCategoryError]);
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -67,7 +73,11 @@ const AddProductPage = () => {
     };
 
     const handleSelectChange = (value: string) => {
-        setFormData((prev) => ({ ...prev, category_id: value }));
+        if (value === "add_category") {
+            navigate("/admin/categories/add");
+        } else {
+            setFormData((prev) => ({ ...prev, category_id: value }));
+        }
     };
 
     const handleCheckboxChange = (checked: boolean) => {
@@ -84,10 +94,39 @@ const AddProductPage = () => {
         setImages(images.filter((_, i) => i !== index));
     };
 
+    const handleEditCategory = (categoryId: string) => {
+        navigate(`/admin/categories/${categoryId}/edit`);
+    };
+
+    const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
+        if (window.confirm(`Apakah Anda yakin ingin menghapus ${categoryName}?`)) {
+            const { deleteCategory } = useAdminCategoryStore.getState();
+            startLoading("delete-category");
+            try {
+                await deleteCategory(categoryId);
+                toast({
+                    title: "Success",
+                    description: `${categoryName} telah dihapus.`,
+                });
+                getCategories();
+                if (formData.category_id === categoryId) {
+                    setFormData((prev) => ({ ...prev, category_id: "" }));
+                }
+            } catch (error: any) {
+                toast({
+                    title: "Error",
+                    description: error.message || "Gagal menghapus kategori.",
+                    variant: "destructive",
+                });
+            } finally {
+                stopLoading("delete-category");
+            }
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation
         if (!formData.name.trim()) {
             toast({
                 title: "Error",
@@ -158,7 +197,7 @@ const AddProductPage = () => {
     };
 
     return (
-        <div className="container-custom py-8">
+        <div className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
                 <Button
                     variant="ghost"
@@ -211,13 +250,46 @@ const AddProductPage = () => {
                                     </SelectTrigger>
                                     <SelectContent>
                                         {categories.map((category) => (
-                                            <SelectItem
+                                            <div
                                                 key={category.id}
-                                                value={category.id}
+                                                className="flex items-center justify-between px-2 py-1 hover:bg-gray-100"
                                             >
-                                                {category.name}
-                                            </SelectItem>
+                                                <SelectItem
+                                                    value={category.id}
+                                                    className="flex-1 cursor-pointer"
+                                                >
+                                                    {category.name}
+                                                </SelectItem>
+                                                <div className="flex gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() => handleEditCategory(category.id)}
+                                                        disabled={isLoadingKey("delete-category")}
+                                                    >
+                                                        <Edit className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleDeleteCategory(category.id, category.name)
+                                                        }
+                                                        disabled={isLoadingKey("delete-category")}
+                                                    >
+                                                        <Trash className="h-4 w-4 text-red-500" />
+                                                    </Button>
+                                                </div>
+                                            </div>
                                         ))}
+                                        <div className="border-t border-gray-200 mt-2">
+                                            <SelectItem
+                                                value="add_category"
+                                                className="flex items-center px-2 py-2 cursor-pointer text-kj-red hover:bg-gray-100"
+                                            >
+                                                + Tambah Kategori
+                                            </SelectItem>
+                                        </div>
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -329,9 +401,7 @@ const AddProductPage = () => {
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    onClick={() =>
-                                                        removeImage(index)
-                                                    }
+                                                    onClick={() => removeImage(index)}
                                                     className="text-red-500 hover:text-red-700 text-sm font-medium"
                                                 >
                                                     ×

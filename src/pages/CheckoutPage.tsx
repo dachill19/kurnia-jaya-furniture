@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import { useAddressStore } from "@/stores/addressStore";
+import { useCheckoutStore } from "@/stores/checkoutStore";
+import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,15 +18,20 @@ import {
 } from "lucide-react";
 
 const CheckoutPage = () => {
-    const { cart, totalPrice, clearCart, getDisplayPrice } = useCartStore();
+    const navigate = useNavigate();
+    const { cart, totalPrice, getDisplayPrice } = useCartStore();
     const { addresses, defaultAddress, fetchAddresses } = useAddressStore();
+    const { createOrder, isProcessing, error } = useCheckoutStore();
+    const { user } = useAuthStore();
     const { toast } = useToast();
 
     const [paymentMethod, setPaymentMethod] = useState<string>("bank-transfer");
+    const [paidAmount, setPaidAmount] = useState<number>(0);
+    const [walletMethod, setWalletMethod] = useState<string>("gopay");
     const [shippingMethod, setShippingMethod] = useState<string>("regular");
     const [selectedAddressId, setSelectedAddressId] = useState<string>("");
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
-    const [isProcessing, setIsProcessing] = useState(false);
+    const [orderId, setOrderId] = useState<string>("");
 
     // Shipping costs
     const shippingCosts = {
@@ -49,7 +56,18 @@ const CheckoutPage = () => {
         }
     }, [defaultAddress, selectedAddressId]);
 
-    const handlePlaceOrder = () => {
+    // Show error toast when checkout error occurs
+    useEffect(() => {
+        if (error) {
+            toast({
+                title: "Terjadi kesalahan",
+                description: error,
+                variant: "destructive",
+            });
+        }
+    }, [error, toast]);
+
+    const handlePlaceOrder = async () => {
         // Basic validation
         if (!selectedAddressId) {
             toast({
@@ -60,14 +78,86 @@ const CheckoutPage = () => {
             return;
         }
 
-        setIsProcessing(true);
+        if (!user) {
+            toast({
+                title: "Anda belum login",
+                description: "Silakan login terlebih dahulu",
+                variant: "destructive",
+            });
+            navigate("/login");
+            return;
+        }
 
-        // Simulate order processing
-        setTimeout(() => {
-            setIsProcessing(false);
-            setIsOrderPlaced(true);
-            clearCart();
-        }, 2000);
+        const selectedAddress = addresses.find(
+            (addr) => addr.id === selectedAddressId
+        );
+        if (!selectedAddress) {
+            toast({
+                title: "Alamat tidak valid",
+                description: "Alamat yang dipilih tidak ditemukan",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const currentTotal = totalToPay;
+        setPaidAmount(currentTotal);
+
+        // Prepare order data dengan address_id reference
+        const orderData = {
+            total_amount: currentTotal,
+            status: "PENDING" as const,
+            shipping_data: {
+                address_id: selectedAddressId, // Reference ke address table
+                estimated_delivery: calculateEstimatedDelivery(),
+            },
+            order_items: cart.map((item) => ({
+                product_id: item.id,
+                quantity: item.quantity,
+                price: getDisplayPrice(item),
+            })),
+            payment_data: {
+                method: getPaymentMethodName(),
+                amount: currentTotal,
+                status: "PENDING" as const,
+            },
+        };
+
+        try {
+            const result = await createOrder(orderData);
+
+            if (result.success && result.orderId) {
+                setOrderId(result.orderId);
+                setIsOrderPlaced(true);
+
+                toast({
+                    title: "Pesanan berhasil dibuat!",
+                    description: "Silakan lakukan pembayaran sesuai instruksi",
+                });
+            }
+        } catch (err) {
+            console.error("Order creation failed:", err);
+        }
+    };
+
+    const calculateEstimatedDelivery = () => {
+        const days = shippingMethod === "regular" ? 7 : 2;
+        const deliveryDate = new Date();
+        deliveryDate.setDate(deliveryDate.getDate() + days);
+        return deliveryDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+    };
+
+    const getPaymentMethodName = () => {
+        switch (paymentMethod) {
+            case "bank-transfer":
+                return "Transfer Bank";
+            case "e-wallet":
+                return `E-Wallet (${walletMethod.toUpperCase()})`;
+            case "credit-card":
+                return "Kartu Kredit";
+            default:
+                return "Transfer Bank";
+        }
     };
 
     const selectedAddress = addresses.find(
@@ -121,29 +211,23 @@ const CheckoutPage = () => {
                     <div className="bg-gray-50 rounded-md p-4 mb-6 text-left">
                         <h3 className="font-medium mb-2">Detail Pesanan</h3>
                         <p className="text-sm text-gray-600 mb-1">
-                            <strong>ID Pesanan:</strong> #KJ
-                            {Math.floor(Math.random() * 10000)
-                                .toString()
-                                .padStart(4, "0")}
+                            <strong>ID Pesanan:</strong> #
+                            {orderId.toUpperCase()}
                         </p>
                         <p className="text-sm text-gray-600 mb-1">
                             <strong>Tanggal:</strong>{" "}
-                            {new Date().toLocaleDateString()}
+                            {new Date().toLocaleDateString("id-ID")}
                         </p>
                         <p className="text-sm text-gray-600 mb-1">
                             <strong>Metode Pembayaran:</strong>{" "}
-                            {paymentMethod === "bank-transfer"
-                                ? "Transfer Bank"
-                                : paymentMethod === "e-wallet"
-                                ? "E-Wallet"
-                                : "Kartu Kredit"}
+                            {getPaymentMethodName()}
                         </p>
                         <p className="text-sm text-gray-600">
                             <strong>Total:</strong>{" "}
                             {new Intl.NumberFormat("id-ID", {
                                 style: "currency",
                                 currency: "IDR",
-                            }).format(totalToPay)}
+                            }).format(paidAmount)}
                         </p>
                     </div>
 
@@ -332,7 +416,7 @@ const CheckoutPage = () => {
                         </div>
                         <div className="p-4">
                             <Tabs
-                                defaultValue="bank-transfer"
+                                value={paymentMethod}
                                 onValueChange={setPaymentMethod}
                             >
                                 <TabsList className="grid grid-cols-3 mb-4">
@@ -410,8 +494,15 @@ const CheckoutPage = () => {
                                                     id="wallet-gopay"
                                                     name="wallet"
                                                     value="gopay"
+                                                    checked={
+                                                        walletMethod === "gopay"
+                                                    }
+                                                    onChange={(e) =>
+                                                        setWalletMethod(
+                                                            e.target.value
+                                                        )
+                                                    }
                                                     className="h-4 w-4 text-kj-red focus:ring-kj-red border-gray-300"
-                                                    defaultChecked
                                                 />
                                                 <label
                                                     htmlFor="wallet-gopay"
@@ -427,6 +518,14 @@ const CheckoutPage = () => {
                                                     id="wallet-ovo"
                                                     name="wallet"
                                                     value="ovo"
+                                                    checked={
+                                                        walletMethod === "ovo"
+                                                    }
+                                                    onChange={(e) =>
+                                                        setWalletMethod(
+                                                            e.target.value
+                                                        )
+                                                    }
                                                     className="h-4 w-4 text-kj-red focus:ring-kj-red border-gray-300"
                                                 />
                                                 <label
@@ -443,6 +542,14 @@ const CheckoutPage = () => {
                                                     id="wallet-dana"
                                                     name="wallet"
                                                     value="dana"
+                                                    checked={
+                                                        walletMethod === "dana"
+                                                    }
+                                                    onChange={(e) =>
+                                                        setWalletMethod(
+                                                            e.target.value
+                                                        )
+                                                    }
                                                     className="h-4 w-4 text-kj-red focus:ring-kj-red border-gray-300"
                                                 />
                                                 <label

@@ -58,6 +58,7 @@ const App = () => {
                     }
                 >
                     <Route index element={<Dashboard />} />
+                    <Route path="users" element={<UsersPage />} />
                     <Route path="products" element={<AdminProductsPage />} />
                     <Route path="products/add" element={<AddProductPage />} />
                     <Route
@@ -72,16 +73,6 @@ const App = () => {
                         path="products/import"
                         element={<div>Import Products Page (TBD)</div>}
                     />
-                    <Route path="users" element={<div>Users Page (TBD)</div>} />
-                    <Route
-                        path="orders"
-                        element={<div>Orders Page (TBD)</div>}
-                    />
-                    <Route
-                        path="notifications"
-                        element={<div>Notifications Page (TBD)</div>}
-                    />
-                    <Route path="users" element={<UsersPage />} />
                     <Route
                         path="orders"
                         element={<div>Orders Page (TBD)</div>}

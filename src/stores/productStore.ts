@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { supabase } from '../lib/supabase';
 import { useLoadingStore } from './loadingStore';
-import { uploadImage } from '../lib/cloudinary';
 
 type Category = {
   id: string;
@@ -63,18 +62,12 @@ type ProductStore = {
   getProductById: (productId: string) => Promise<void>;
   getHotProducts: () => Promise<void>;
   getLatestProducts: () => Promise<void>;
-  createProduct: (
-    product: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'product_image' | 'reviews' | 'category'>,
-    images: File[]
-  ) => Promise<void>;
-  updateProduct: (id: string, product: Partial<Product>, images?: File[]) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
   clearError: () => void;
 };
 
 export const useProductStore = create<ProductStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       categories: [],
       products: [],
       productDetail: null,
@@ -278,167 +271,6 @@ export const useProductStore = create<ProductStore>()(
           set({ error: error.message || 'Failed to fetch latest products' });
         } finally {
           stopLoading('latest-products');
-        }
-      },
-
-      createProduct: async (product, images) => {
-        const { startLoading, stopLoading } = useLoadingStore.getState();
-        startLoading('create-product');
-        try {
-          set({ error: null });
-          // Insert product to Supabase
-          const { data: productData, error: productError } = await supabase
-            .from('product')
-            .insert({
-              id: crypto.randomUUID(),
-              name: product.name,
-              description: product.description,
-              price: product.price,
-              discount_price: product.discount_price,
-              stock: product.stock,
-              category_id: product.category_id,
-              is_hot: product.is_hot,
-            })
-            .select()
-            .single();
-
-          if (productError) throw productError;
-
-          // Upload images to Cloudinary and insert to product_image
-          const imagePromises = images.map(async (file: File, index: number) => {
-            const imageUrl = await uploadImage(file);
-            return {
-              product_id: productData.id,
-              image_url: imageUrl,
-              is_main: index === 0,
-            };
-          });
-          const imageData = await Promise.all(imagePromises);
-          const { error: imageError } = await supabase
-            .from('product_image')
-            .insert(imageData);
-
-          if (imageError) throw imageError;
-
-          // Update store
-          const newProduct = {
-            ...productData,
-            product_image: imageData,
-            category: get().categories.find((c) => c.id === product.category_id),
-            reviews: [],
-          };
-          set((state) => ({
-            products: [...state.products, newProduct],
-          }));
-        } catch (error: any) {
-          console.error('Error creating product:', error);
-          set({ error: error.message || 'Failed to create product' });
-        } finally {
-          stopLoading('create-product');
-        }
-      },
-
-      updateProduct: async (id, product, images) => {
-        const { startLoading, stopLoading } = useLoadingStore.getState();
-        startLoading('update-product');
-        try {
-          set({ error: null });
-          // Update product in Supabase
-          const { data: productData, error: productError } = await supabase
-            .from('product')
-            .update({
-              name: product.name,
-              description: product.description,
-              price: product.price,
-              discount_price: product.discount_price,
-              stock: product.stock,
-              category_id: product.category_id,
-              is_hot: product.is_hot,
-              updated_at: new Date().toISOString(),
-            })
-            .eq('id', id)
-            .select()
-            .single();
-
-          if (productError) throw productError;
-
-          // Handle images if provided
-          let imageData = productData.product_image || [];
-          if (images && images.length > 0) {
-            // Delete existing images
-            const { error: deleteImageError } = await supabase
-              .from('product_image')
-              .delete()
-              .eq('product_id', id);
-            if (deleteImageError) throw deleteImageError;
-
-            // Upload new images
-            const imagePromises = images.map(async (file: File, index: number) => {
-              const imageUrl = await uploadImage(file);
-              return {
-                product_id: id,
-                image_url: imageUrl,
-                is_main: index === 0,
-              };
-            });
-            imageData = await Promise.all(imagePromises);
-            const { error: imageError } = await supabase
-              .from('product_image')
-              .insert(imageData);
-            if (imageError) throw imageError;
-          }
-
-          // Update store
-          set((state) => ({
-            products: state.products.map((p) =>
-              p.id === id
-                ? {
-                    ...productData,
-                    category: get().categories.find((c) => c.id === product.category_id),
-                    product_image: imageData.length > 0 ? imageData : p.product_image,
-                    reviews: p.reviews,
-                  }
-                : p
-            ),
-            productDetail: state.productDetail?.id === id ? { ...productData, product_image: imageData } : state.productDetail,
-          }));
-        } catch (error: any) {
-          console.error('Error updating product:', error);
-          set({ error: error.message || 'Failed to update product' });
-        } finally {
-          stopLoading('update-product');
-        }
-      },
-
-      deleteProduct: async (id) => {
-        const { startLoading, stopLoading } = useLoadingStore.getState();
-        startLoading('delete-product');
-        try {
-          set({ error: null });
-          // Delete product images first
-          const { error: imageError } = await supabase
-            .from('product_image')
-            .delete()
-            .eq('product_id', id);
-          if (imageError) throw imageError;
-
-          // Delete product
-          const { error: productError } = await supabase
-            .from('product')
-            .delete()
-            .eq('id', id);
-          if (productError) throw productError;
-
-          // Update store
-          set((state) => ({
-            products: state.products.filter((p) => p.id !== id),
-            productDetail: state.productDetail?.id === id ? null : state.productDetail,
-          }));
-        } catch (error: any) {
-          console.error('Error deleting product:', error);
-          set({ error: error.message || 'Failed to delete product' });
-        } finally {
-          stopLoading('delete-product');
         }
       },
     }),

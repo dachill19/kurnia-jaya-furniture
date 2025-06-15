@@ -124,7 +124,9 @@ const AdminProductDetailPage = () => {
                         disabled={isLoadingKey("delete-product")}
                     >
                         <Trash className="h-4 w-4 mr-2" />
-                        {isLoadingKey("delete-product") ? "Deleting..." : "Delete"}
+                        {isLoadingKey("delete-product")
+                            ? "Deleting..."
+                            : "Delete"}
                     </Button>
                 </div>
             </div>

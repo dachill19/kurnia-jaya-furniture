@@ -34,10 +34,8 @@ const EditProductPage = () => {
         error: adminError,
         clearError: clearProductError,
     } = useAdminProductStore();
-    const {
-        error: categoryError,
-        clearError: clearCategoryError,
-    } = useAdminCategoryStore();
+    const { error: categoryError, clearError: clearCategoryError } =
+        useAdminCategoryStore();
     const { isLoadingKey, startLoading, stopLoading } = useLoadingStore();
     const { toast } = useToast();
 
@@ -88,7 +86,14 @@ const EditProductPage = () => {
             clearProductError();
             clearCategoryError();
         }
-    }, [productError, adminError, categoryError, toast, clearProductError, clearCategoryError]);
+    }, [
+        productError,
+        adminError,
+        categoryError,
+        toast,
+        clearProductError,
+        clearCategoryError,
+    ]);
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -114,7 +119,9 @@ const EditProductPage = () => {
             const newFiles = Array.from(e.target.files);
             setImages((prev) => [...prev, ...newFiles]);
 
-            const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+            const newPreviews = newFiles.map((file) =>
+                URL.createObjectURL(file)
+            );
             setPreviewImages((prev) => [...prev, ...newPreviews]);
         }
     };
@@ -137,8 +144,13 @@ const EditProductPage = () => {
         navigate(`/admin/categories/${categoryId}/edit`);
     };
 
-    const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
-        if (window.confirm(`Apakah Anda yakin ingin menghapus ${categoryName}?`)) {
+    const handleDeleteCategory = async (
+        categoryId: string,
+        categoryName: string
+    ) => {
+        if (
+            window.confirm(`Apakah Anda yakin ingin menghapus ${categoryName}?`)
+        ) {
             const { deleteCategory } = useAdminCategoryStore.getState();
             startLoading("delete-category");
             try {
@@ -274,7 +286,9 @@ const EditProductPage = () => {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="text-center">
-                    <p className="text-gray-600 mb-4">Produk tidak ditemukan.</p>
+                    <p className="text-gray-600 mb-4">
+                        Produk tidak ditemukan.
+                    </p>
                     <Button onClick={() => navigate("/admin/products")}>
                         Kembali ke Produk
                     </Button>
@@ -351,8 +365,14 @@ const EditProductPage = () => {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleEditCategory(category.id)}
-                                                        disabled={isLoadingKey("delete-category")}
+                                                        onClick={() =>
+                                                            handleEditCategory(
+                                                                category.id
+                                                            )
+                                                        }
+                                                        disabled={isLoadingKey(
+                                                            "delete-category"
+                                                        )}
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
@@ -360,9 +380,14 @@ const EditProductPage = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() =>
-                                                            handleDeleteCategory(category.id, category.name)
+                                                            handleDeleteCategory(
+                                                                category.id,
+                                                                category.name
+                                                            )
                                                         }
-                                                        disabled={isLoadingKey("delete-category")}
+                                                        disabled={isLoadingKey(
+                                                            "delete-category"
+                                                        )}
                                                     >
                                                         <Trash className="h-4 w-4 text-red-500" />
                                                     </Button>
@@ -484,7 +509,9 @@ const EditProductPage = () => {
                                                 className="sr-only"
                                             />
                                         </label>
-                                        <p className="pl-1">atau drag and drop</p>
+                                        <p className="pl-1">
+                                            atau drag and drop
+                                        </p>
                                     </div>
                                     <p className="text-xs text-gray-500">
                                         PNG, JPG, GIF hingga 10MB
@@ -499,7 +526,10 @@ const EditProductPage = () => {
                                     </h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                         {images.map((file, index) => (
-                                            <div key={index} className="relative group">
+                                            <div
+                                                key={index}
+                                                className="relative group"
+                                            >
                                                 <img
                                                     src={previewImages[index]}
                                                     alt={`Preview ${index + 1}`}
@@ -507,7 +537,11 @@ const EditProductPage = () => {
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleRemoveNewImage(index)}
+                                                    onClick={() =>
+                                                        handleRemoveNewImage(
+                                                            index
+                                                        )
+                                                    }
                                                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
                                                     <X className="h-3 w-3" />
@@ -528,7 +562,10 @@ const EditProductPage = () => {
                                     </h4>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                                         {existingImages.map((image) => (
-                                            <div key={image.id} className="relative group">
+                                            <div
+                                                key={image.id}
+                                                className="relative group"
+                                            >
                                                 <img
                                                     src={image.image_url}
                                                     alt="Existing product"
@@ -536,7 +573,11 @@ const EditProductPage = () => {
                                                 />
                                                 <button
                                                     type="button"
-                                                    onClick={() => handleRemoveExistingImage(image.id)}
+                                                    onClick={() =>
+                                                        handleRemoveExistingImage(
+                                                            image.id
+                                                        )
+                                                    }
                                                     className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                                                 >
                                                     <X className="h-3 w-3" />

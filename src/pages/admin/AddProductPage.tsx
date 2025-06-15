@@ -31,10 +31,8 @@ const AddProductPage = () => {
         error: adminError,
         clearError: clearProductError,
     } = useAdminProductStore();
-    const {
-        error: categoryError,
-        clearError: clearCategoryError,
-    } = useAdminCategoryStore();
+    const { error: categoryError, clearError: clearCategoryError } =
+        useAdminCategoryStore();
     const { isLoadingKey, startLoading, stopLoading } = useLoadingStore();
     const { toast } = useToast();
 
@@ -63,7 +61,14 @@ const AddProductPage = () => {
             clearProductError();
             clearCategoryError();
         }
-    }, [productError, adminError, categoryError, toast, clearProductError, clearCategoryError]);
+    }, [
+        productError,
+        adminError,
+        categoryError,
+        toast,
+        clearProductError,
+        clearCategoryError,
+    ]);
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -98,8 +103,13 @@ const AddProductPage = () => {
         navigate(`/admin/categories/${categoryId}/edit`);
     };
 
-    const handleDeleteCategory = async (categoryId: string, categoryName: string) => {
-        if (window.confirm(`Apakah Anda yakin ingin menghapus ${categoryName}?`)) {
+    const handleDeleteCategory = async (
+        categoryId: string,
+        categoryName: string
+    ) => {
+        if (
+            window.confirm(`Apakah Anda yakin ingin menghapus ${categoryName}?`)
+        ) {
             const { deleteCategory } = useAdminCategoryStore.getState();
             startLoading("delete-category");
             try {
@@ -264,8 +274,14 @@ const AddProductPage = () => {
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        onClick={() => handleEditCategory(category.id)}
-                                                        disabled={isLoadingKey("delete-category")}
+                                                        onClick={() =>
+                                                            handleEditCategory(
+                                                                category.id
+                                                            )
+                                                        }
+                                                        disabled={isLoadingKey(
+                                                            "delete-category"
+                                                        )}
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
@@ -273,9 +289,14 @@ const AddProductPage = () => {
                                                         variant="ghost"
                                                         size="sm"
                                                         onClick={() =>
-                                                            handleDeleteCategory(category.id, category.name)
+                                                            handleDeleteCategory(
+                                                                category.id,
+                                                                category.name
+                                                            )
                                                         }
-                                                        disabled={isLoadingKey("delete-category")}
+                                                        disabled={isLoadingKey(
+                                                            "delete-category"
+                                                        )}
                                                     >
                                                         <Trash className="h-4 w-4 text-red-500" />
                                                     </Button>
@@ -401,7 +422,9 @@ const AddProductPage = () => {
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeImage(index)}
+                                                    onClick={() =>
+                                                        removeImage(index)
+                                                    }
                                                     className="text-red-500 hover:text-red-700 text-sm font-medium"
                                                 >
                                                     ×

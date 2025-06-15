@@ -89,7 +89,7 @@ const AdminProductsPage = () => {
     };
 
     return (
-        <div className="space-y-6 container-custom py-8">
+        <div className="space-y-6">
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold text-gray-800">
@@ -218,9 +218,9 @@ const AdminProductsPage = () => {
                             {filteredProducts.map((product) => (
                                 <Card
                                     key={product.id}
-                                    className="border-none shadow-sm hover:shadow-md transition-all duration-200"
+                                    className="border-none shadow-sm hover:shadow-md transition-all duration-200 h-full flex flex-col"
                                 >
-                                    <CardContent className="p-4">
+                                    <CardContent className="p-4 flex flex-col h-full">
                                         <div className="aspect-square mb-4 overflow-hidden rounded-lg bg-gray-100">
                                             <img
                                                 src={
@@ -234,7 +234,7 @@ const AdminProductsPage = () => {
                                             />
                                         </div>
 
-                                        <div className="space-y-2">
+                                        <div className="flex-1 space-y-2">
                                             <h3 className="font-semibold text-base truncate text-gray-800">
                                                 {product.name}
                                             </h3>
@@ -292,7 +292,7 @@ const AdminProductsPage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="mt-4 flex gap-2">
+                                        <div className="mt-auto flex gap-2 pt-4">
                                             <Button
                                                 variant="outline"
                                                 size="sm"
@@ -318,7 +318,6 @@ const AdminProductsPage = () => {
                                                 <Edit className="h-4 w-4" />
                                             </Button>
                                             <Button
-                                                variant="outline"
                                                 size="sm"
                                                 onClick={() =>
                                                     handleDelete(
@@ -326,7 +325,7 @@ const AdminProductsPage = () => {
                                                         product.name
                                                     )
                                                 }
-                                                className="flex-1 hover:bg-red-50 hover:border-red-200"
+                                                className="flex-1 bg-kj-red hover:bg-kj-red/90"
                                             >
                                                 <Trash className="h-4 w-4" />
                                             </Button>

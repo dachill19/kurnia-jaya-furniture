@@ -94,7 +94,7 @@ const AdminProductDetailPage = () => {
     }
 
     return (
-        <div className="space-y-6 container-custom py-8">
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                     <Button
@@ -119,14 +119,12 @@ const AdminProductDetailPage = () => {
                         Edit Produk
                     </Button>
                     <Button
-                        variant="destructive"
                         onClick={handleDelete}
+                        className="bg-kj-red hover:bg-kj-red/90"
                         disabled={isLoadingKey("delete-product")}
                     >
                         <Trash className="h-4 w-4 mr-2" />
-                        {isLoadingKey("delete-product")
-                            ? "Deleting..."
-                            : "Delete"}
+                        {isLoadingKey("delete-product") ? "Deleting..." : "Delete"}
                     </Button>
                 </div>
             </div>

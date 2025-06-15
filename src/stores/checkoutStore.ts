@@ -52,7 +52,6 @@ interface CheckoutState {
     createOrder: (
         orderData: Omit<CreateOrderData, "user_id">
     ) => Promise<{ success: boolean; orderId?: string; error?: string }>;
-    getOrderById: (orderId: string) => Promise<Order | null>;
     clearCurrentOrder: () => void;
 }
 
@@ -192,41 +191,6 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
             };
         } finally {
             stopLoading("checkout-create-order");
-        }
-    },
-
-    getOrderById: async (orderId) => {
-        const { startLoading, stopLoading } = useLoadingStore.getState();
-
-        try {
-            startLoading("checkout-get-order");
-
-            const { data: order, error } = await supabase
-                .from("order")
-                .select(
-                    `
-                    *,
-                    shipping(
-                        *,
-                        address(*)
-                    ),
-                    order_item(*),
-                    payment(*)
-                `
-                )
-                .eq("id", orderId)
-                .single();
-
-            if (error) {
-                throw new Error(`Failed to fetch order: ${error.message}`);
-            }
-
-            return order;
-        } catch (error) {
-            console.error("Get order error:", error);
-            return null;
-        } finally {
-            stopLoading("checkout-get-order");
         }
     },
 

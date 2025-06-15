@@ -1,71 +1,48 @@
-import { useState, useEffect } from "react"; // Added useState, useEffect
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, Truck, CheckCircle, Clock, Star } from "lucide-react";
-import { useLoadingStore } from "@/stores/loadingStore"; // Added
+import {
+    ShoppingBag,
+    Truck,
+    CheckCircle,
+    Clock,
+    Star,
+    AlertCircle,
+} from "lucide-react";
+import { useOrderStore } from "@/stores/orderStore";
 import { OrdersTabSkeleton } from "@/components/skeleton/AccountSkeletons";
 
-// Mock data - in a real app this would come from API
-const mockOrders = [
-    {
-        id: "ORD-001",
-        date: "2023-10-15",
-        total: 6500000,
-        status: "delivered",
-        items: [
-            {
-                id: "sofa-premium-01",
-                name: "Premium Comfort Sofa",
-                quantity: 1,
-                price: 4500000,
-                image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=2070&auto=format&fit=crop",
-            },
-            {
-                id: "coffee-table-01",
-                name: "Glass Top Coffee Table",
-                quantity: 1,
-                price: 1800000,
-                image: "https://images.unsplash.com/photo-1499933374294-4584851497cc?q=80&w=2070&auto=format&fit=crop",
-            },
-        ],
-    },
-    {
-        id: "ORD-002",
-        date: "2023-11-20",
-        total: 6200000,
-        status: "processing",
-        items: [
-            {
-                id: "bed-premium-01",
-                name: "King Size Wooden Bed",
-                quantity: 1,
-                price: 6200000,
-                image: "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?q=80&w=2070&auto=format&fit=crop",
-            },
-        ],
-    },
-];
-
 const OrdersTab = () => {
-    const { isLoadingKey } = useLoadingStore();
-    const [orders, setOrders] = useState(mockOrders); // Replace with API call in real app
-    const [isLoadingOrders, setIsLoadingOrders] = useState(true); // Simulate loading
+    const { orders, isLoading, error, fetchUserOrders, clearError } =
+        useOrderStore();
 
     useEffect(() => {
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoadingOrders(false);
-        }, 1000); // Mock delay
-    }, []);
+        fetchUserOrders();
+    }, [fetchUserOrders]);
+
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => {
+                clearError();
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [error, clearError]);
 
     const getStatusLabel = (status: string) => {
         switch (status) {
-            case "processing":
+            case "PENDING":
+                return "Menunggu";
+            case "CONFIRMED":
+                return "Dikonfirmasi";
+            case "PROCESSING":
                 return "Diproses";
-            case "shipped":
+            case "SHIPPED":
                 return "Dikirim";
-            case "delivered":
+            case "DELIVERED":
                 return "Diterima";
+            case "CANCELLED":
+                return "Dibatalkan";
             default:
                 return status;
         }
@@ -73,18 +50,38 @@ const OrdersTab = () => {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
-            case "processing":
+            case "PENDING":
+            case "CONFIRMED":
+                return <Clock className="text-yellow-500" size={18} />;
+            case "PROCESSING":
                 return <Clock className="text-orange-500" size={18} />;
-            case "shipped":
+            case "SHIPPED":
                 return <Truck className="text-blue-500" size={18} />;
-            case "delivered":
+            case "DELIVERED":
                 return <CheckCircle className="text-green-500" size={18} />;
+            case "CANCELLED":
+                return <AlertCircle className="text-red-500" size={18} />;
             default:
                 return <Clock size={18} />;
         }
     };
 
-    if (isLoadingOrders) {
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+        }).format(amount);
+    };
+
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("id-ID", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    };
+
+    if (isLoading) {
         return <OrdersTabSkeleton />;
     }
 
@@ -94,6 +91,17 @@ const OrdersTab = () => {
                 <h2 className="font-medium">Pesanan Saya</h2>
             </div>
 
+            {error && (
+                <div className="p-4 bg-red-50 border-l-4 border-red-400">
+                    <div className="flex">
+                        <AlertCircle className="text-red-400" size={20} />
+                        <div className="ml-3">
+                            <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {orders.length > 0 ? (
                 <div className="divide-y">
                     {orders.map((order) => (
@@ -101,12 +109,10 @@ const OrdersTab = () => {
                             <div className="flex flex-col md:flex-row justify-between mb-4">
                                 <div>
                                     <h3 className="font-medium">
-                                        Pesanan #{order.id}
+                                        Pesanan #{order.id.toUpperCase()}
                                     </h3>
                                     <p className="text-sm text-gray-500">
-                                        {new Date(
-                                            order.date
-                                        ).toLocaleDateString()}
+                                        {formatDate(order.created_at)}
                                     </p>
                                 </div>
                                 <div className="flex items-center mt-2 md:mt-0">
@@ -117,75 +123,111 @@ const OrdersTab = () => {
                                         </span>
                                     </div>
                                     <span className="font-medium text-kj-red">
-                                        {new Intl.NumberFormat("id-ID", {
-                                            style: "currency",
-                                            currency: "IDR",
-                                        }).format(order.total)}
+                                        {formatCurrency(order.total_amount)}
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="bg-gray-50 p-3 rounded-md">
-                                {order.items.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className="flex items-center py-2"
-                                    >
-                                        <div className="w-16 h-16 rounded-md overflow-hidden">
-                                            <img
-                                                src={item.image}
-                                                alt={item.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                        <div className="ml-3 flex-grow">
-                                            <Link
-                                                to={`/products/${item.id}`}
-                                                className="font-medium hover:text-kj-red"
+                            {order.order_items &&
+                                order.order_items.length > 0 && (
+                                    <div className="bg-gray-50 p-3 rounded-md">
+                                        {order.order_items.map((item) => (
+                                            <div
+                                                key={item.id}
+                                                className="flex items-center py-2"
                                             >
-                                                {item.name}
-                                            </Link>
-                                            <div className="text-sm text-gray-500">
-                                                Jumlah: {item.quantity} x{" "}
-                                                {new Intl.NumberFormat(
-                                                    "id-ID",
-                                                    {
-                                                        style: "currency",
-                                                        currency: "IDR",
-                                                    }
-                                                ).format(item.price)}
-                                            </div>
-                                        </div>
+                                                {/* Only show image if it exists */}
+                                                {item.product?.product_image &&
+                                                    item.product.product_image
+                                                        .length > 0 && (
+                                                        <div className="w-16 h-16 rounded-md overflow-hidden">
+                                                            <img
+                                                                src={
+                                                                    item.product.product_image.find(
+                                                                        (img) =>
+                                                                            img.is_main
+                                                                    )
+                                                                        ?.image_url ||
+                                                                    item.product
+                                                                        .product_image[0]
+                                                                        ?.image_url
+                                                                }
+                                                                alt={
+                                                                    item.product
+                                                                        ?.name ||
+                                                                    "Product"
+                                                                }
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                        </div>
+                                                    )}
 
-                                        {order.status === "delivered" && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
-                                            >
-                                                <Star
-                                                    size={16}
-                                                    className="mr-1"
-                                                />
-                                                Nilai
-                                            </Button>
-                                        )}
+                                                <div
+                                                    className={`flex-grow ${
+                                                        item.product
+                                                            ?.product_image &&
+                                                        item.product
+                                                            .product_image
+                                                            .length > 0
+                                                            ? "ml-3"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    <Link
+                                                        to={`/products/${item.product_id}`}
+                                                        className="font-medium hover:text-kj-red"
+                                                    >
+                                                        {item.product?.name ||
+                                                            "Product Name"}
+                                                    </Link>
+                                                    <div className="text-sm text-gray-500">
+                                                        Jumlah: {item.quantity}{" "}
+                                                        x{" "}
+                                                        {formatCurrency(
+                                                            item.price
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {order.status ===
+                                                    "DELIVERED" && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
+                                                    >
+                                                        <Star
+                                                            size={16}
+                                                            className="mr-1"
+                                                        />
+                                                        Nilai
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
+                                )}
 
                             <div className="flex justify-between mt-4">
-                                <Button variant="outline" size="sm">
-                                    Detail Pesanan
+                                <Button variant="outline" size="sm" asChild>
+                                    <Link to={`/account/orders/${order.id}`}>
+                                        Detail Pesanan
+                                    </Link>
                                 </Button>
 
-                                {order.status === "processing" && (
+                                {(order.status === "PROCESSING" ||
+                                    order.status === "SHIPPED") && (
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="text-kj-red border-kj-red"
+                                        className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
+                                        asChild
                                     >
-                                        Lacak Pesanan
+                                        <Link
+                                            to={`/account/orders/${order.id}/track`}
+                                        >
+                                            Lacak Pesanan
+                                        </Link>
                                     </Button>
                                 )}
                             </div>

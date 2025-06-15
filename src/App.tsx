@@ -22,8 +22,7 @@ import AdminProductsPage from "./pages/admin/AdminProductsPage";
 import AddProductPage from "./pages/admin/AddProductPage";
 import EditProductPage from "./pages/admin/EditProductPage"; // Import EditProductPage
 import AdminProductDetailPage from "./pages/admin/ProductDetailPage"; // Import Admin ProductDetailPage
-import { AdminProductsPage } from "./pages/AdminProductsPage";
-import UsersPage from "./pages/admin/UsersPage";
+import UsersPage from "./pages/admin/AdminUsersPage";
 import CheckoutPage from "./pages/CheckoutPage";
 
 const App = () => {

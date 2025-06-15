@@ -20,7 +20,7 @@ import {
     RefreshCw,
     AlertCircle,
 } from "lucide-react";
-import { useUserStore } from "@/stores/admin/userStore";
+import { useUserStore } from "@/stores/admin/adminUserStore";
 import { useAuthStore } from "@/stores/authStore";
 
 const UsersPage = () => {

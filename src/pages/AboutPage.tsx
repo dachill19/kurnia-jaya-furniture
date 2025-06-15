@@ -115,8 +115,9 @@ const AboutPage = () => {
                                     <span>
                                         <strong>Alamat</strong>
                                         <br />
-                                        Jl. Furniture No. 123, Jakarta Selatan,
-                                        Indonesia
+                                        JI. Raya Serang KM.15 No. 42-45,
+                                        Talagasari, Kec. Cikupa, Kab. Tangerang,
+                                        Banten, 15710
                                     </span>
                                 </li>
                                 <li className="flex items-center">
@@ -125,9 +126,9 @@ const AboutPage = () => {
                                         size={20}
                                     />
                                     <span>
-                                        <strong>Phone Number</strong>
+                                        <strong>Nomor Telepon</strong>
                                         <br />
-                                        +62 123 4567 890
+                                        +62 822-9852-8428
                                     </span>
                                 </li>
                                 <li className="flex items-center">
@@ -138,7 +139,7 @@ const AboutPage = () => {
                                     <span>
                                         <strong>Email:</strong>
                                         <br />
-                                        info@kurniajaya.com
+                                        kurniajaya.furniture1688@gmail.com
                                     </span>
                                 </li>
                                 <li className="flex items-center">
@@ -170,7 +171,7 @@ const AboutPage = () => {
                                 >
                                     <iframe
                                         title="Location Map"
-                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3954.9810683847013!2d110.81299617592964!3d-7.577039074851862!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e7a167b9908bfe9%3A0x370194d43090d68d!2sEL&#39;S%20Computer%20Solo!5e0!3m2!1sen!2sid!4v1746669351916!5m2!1sen!2sid"
+                                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.266869669652!2d106.51759217573148!3d-6.2285042609996575!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e42074d1fcef9e7%3A0x2c99f055685aa943!2sYoeventius%20Kurnia%20Jaya!5e0!3m2!1sen!2sid!4v1750031109019!5m2!1sen!2sid"
                                         className="w-full h-full rounded-md"
                                         allowFullScreen
                                         loading="lazy"

@@ -145,7 +145,7 @@ const Footer = () => {
                                     className="text-kj-red mt-1 mr-3 flex-shrink-0"
                                 />
                                 <a
-                                    href="https://maps.app.goo.gl/vq1j9ZcE7HLffR8u9"
+                                    href="https://maps.app.goo.gl/5knrbMhwNBpTGkb46"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red"

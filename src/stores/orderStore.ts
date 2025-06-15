@@ -12,11 +12,50 @@ export interface OrderItem {
     product?: {
         id: string;
         name: string;
+        description?: string;
         product_image?: {
             image_url: string;
             is_main: boolean;
         }[];
     };
+}
+
+export interface Address {
+    id: string;
+    user_id: string;
+    recipient: string;
+    label: string;
+    province: string;
+    city: string;
+    subdistrict: string;
+    village: string;
+    full_address: string;
+    postal_code?: string;
+    is_default: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Payment {
+    id: string;
+    order_id: string;
+    amount: number;
+    method: string;
+    status: string;
+    transaction_id?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Shipping {
+    id: string;
+    order_id: string;
+    address_id: string;
+    estimated_delivery?: string;
+    status: string;
+    tracking_number?: string;
+    created_at: string;
+    updated_at: string;
 }
 
 export interface Order {
@@ -31,19 +70,27 @@ export interface Order {
         | "DELIVERED"
         | "CANCELLED";
     created_at: string;
+    updated_at?: string;
     order_items?: OrderItem[];
+    address?: Address;
+    payment?: Payment;
+    shipping?: Shipping;
 }
 
 interface OrderState {
     orders: Order[];
+    currentOrder: Order | null;
     isLoading: boolean;
     error: string | null;
     fetchUserOrders: () => Promise<void>;
+    fetchOrderDetail: (orderId: string) => Promise<void>;
     clearError: () => void;
+    clearCurrentOrder: () => void;
 }
 
-export const useOrderStore = create<OrderState>()((set) => ({
+export const useOrderStore = create<OrderState>()((set, get) => ({
     orders: [],
+    currentOrder: null,
     isLoading: false,
     error: null,
 
@@ -102,7 +149,76 @@ export const useOrderStore = create<OrderState>()((set) => ({
         }
     },
 
+    fetchOrderDetail: async (orderId: string) => {
+        const { startLoading, stopLoading } = useLoadingStore.getState();
+        const { user } = useAuthStore.getState();
+
+        if (!user) {
+            set({ error: "User not authenticated" });
+            return;
+        }
+
+        try {
+            set({ isLoading: true, error: null, currentOrder: null });
+            startLoading("order-detail-fetch");
+
+            const { data: order, error } = await supabase
+                .from("order")
+                .select(
+                    `
+                    *,
+                    order_items:order_item(
+                        id,
+                        order_id,
+                        product_id,
+                        quantity,
+                        price,
+                        product(
+                            id, 
+                            name,
+                            description,
+                            product_image(
+                                image_url,
+                                is_main
+                            )
+                        )
+                    ),
+                    address(*),
+                    payment(*),
+                    shipping(*)
+                `
+                )
+                .eq("id", orderId)
+                .eq("user_id", user.id)
+                .single();
+
+            if (error) {
+                if (error.code === "PGRST116") {
+                    throw new Error("Order not found");
+                }
+                throw new Error(
+                    `Failed to fetch order detail: ${error.message}`
+                );
+            }
+
+            set({ currentOrder: order, isLoading: false });
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to fetch order detail";
+            console.error("Fetch order detail error:", error);
+            set({ error: errorMessage, isLoading: false, currentOrder: null });
+        } finally {
+            stopLoading("order-detail-fetch");
+        }
+    },
+
     clearError: () => {
         set({ error: null });
+    },
+
+    clearCurrentOrder: () => {
+        set({ currentOrder: null });
     },
 }));

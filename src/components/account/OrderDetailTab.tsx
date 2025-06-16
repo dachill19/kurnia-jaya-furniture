@@ -12,9 +12,12 @@ import {
     AlertCircle,
     Star,
     Copy,
+    Trash,
 } from "lucide-react";
 import { useOrderStore } from "@/stores/orderStore";
+import { useReviewStore } from "@/stores/reviewStore";
 import { OrderDetailTabSkeleton } from "@/components/skeleton/OrderDetailTabSkeleton";
+import { useToast } from "@/components/ui/use-toast";
 
 interface OrderDetailTabProps {
     orderId?: string;
@@ -23,7 +26,6 @@ interface OrderDetailTabProps {
 
 const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
     const { id } = useParams<{ id: string }>();
-    // Prioritas: prop orderId > URL params > null
     const orderIdToUse = orderId || id;
 
     const {
@@ -34,11 +36,12 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
         clearError,
         clearCurrentOrder,
     } = useOrderStore();
-
+    const { getReviewByOrderItemId, deleteReview } = useReviewStore();
+    const { toast } = useToast();
     const [copiedTracking, setCopiedTracking] = useState(false);
+    const [reviews, setReviews] = useState<{ [key: string]: { exists: boolean; reviewId?: string } }>({});
 
     useEffect(() => {
-        // Debug logging
         console.log("OrderDetailTab mounted with:", {
             orderId,
             urlId: id,
@@ -58,6 +61,23 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
     }, [orderIdToUse, fetchOrderDetail, clearCurrentOrder]);
 
     useEffect(() => {
+        const checkReviews = async () => {
+            if (currentOrder?.order_items) {
+                const reviewStatus: { [key: string]: { exists: boolean; reviewId?: string } } = {};
+                for (const item of currentOrder.order_items) {
+                    const review = await getReviewByOrderItemId(item.id);
+                    reviewStatus[item.id] = {
+                        exists: !!review,
+                        reviewId: review?.id,
+                    };
+                }
+                setReviews(reviewStatus);
+            }
+        };
+        checkReviews();
+    }, [currentOrder, getReviewByOrderItemId]);
+
+    useEffect(() => {
         if (error) {
             console.error("Order detail error:", error);
             const timer = setTimeout(() => {
@@ -67,7 +87,30 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
         }
     }, [error, clearError]);
 
-    // Early return jika tidak ada order ID
+    const handleDeleteReview = async (reviewId: string, orderItemId: string) => {
+        if (!confirm("Apakah Anda yakin ingin menghapus ulasan ini?")) {
+            return;
+        }
+
+        try {
+            await deleteReview(reviewId);
+            setReviews((prev) => ({
+                ...prev,
+                [orderItemId]: { exists: false },
+            }));
+            toast({
+                title: "Success",
+                description: "Ulasan berhasil dihapus.",
+            });
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "Gagal menghapus ulasan.",
+                variant: "destructive",
+            });
+        }
+    };
+
     if (!orderIdToUse) {
         return (
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -90,12 +133,10 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
         );
     }
 
-    // Show skeleton while loading
     if (isLoading) {
         return <OrderDetailTabSkeleton />;
     }
 
-    // Show error state
     if (error || !currentOrder) {
         return (
             <div className="bg-white rounded-lg shadow-sm p-6">
@@ -226,7 +267,6 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
 
     return (
         <div className="space-y-6">
-            {/* Header */}
             <div className="bg-white rounded-lg shadow-sm p-6">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -264,9 +304,7 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6">
-                {/* Main Content */}
                 <div className="lg:col-span-2 space-y-6">
-                    {/* Order Items */}
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h2 className="text-lg font-medium mb-4 flex items-center">
                             <Package size={20} className="mr-2" />
@@ -336,21 +374,56 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                                     </div>
 
                                     {currentOrder.status === "DELIVERED" && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="ml-4 text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
-                                        >
-                                            <Star size={16} className="mr-1" />
-                                            Nilai
-                                        </Button>
+                                        <div className="flex gap-2 ml-4">
+                                            {reviews[item.id]?.exists && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
+                                                    onClick={() =>
+                                                        handleDeleteReview(
+                                                            reviews[item.id]
+                                                                .reviewId!,
+                                                            item.id
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash
+                                                        size={16}
+                                                        className="mr-1"
+                                                    />
+                                                    Hapus
+                                                </Button>
+                                            )}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
+                                                asChild
+                                            >
+                                                <Link
+                                                    to={
+                                                        reviews[item.id]?.exists
+                                                            ? `/edit-review/${reviews[item.id].reviewId}`
+                                                            : `/add-review/${item.id}/${item.product_id}`
+                                                    }
+                                                >
+                                                    <Star
+                                                        size={16}
+                                                        className="mr-1"
+                                                    />
+                                                    {reviews[item.id]?.exists
+                                                        ? "Edit"
+                                                        : "Nilai"}
+                                                </Link>
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Order Timeline */}
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h2 className="text-lg font-medium mb-4">
                             Status Pesanan
@@ -471,9 +544,7 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                     </div>
                 </div>
 
-                {/* Sidebar */}
                 <div className="space-y-6">
-                    {/* Order Summary */}
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <h3 className="text-lg font-medium mb-4">
                             Ringkasan Pesanan
@@ -510,7 +581,6 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                         </div>
                     </div>
 
-                    {/* Shipping Information */}
                     {currentOrder.address && (
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-lg font-medium mb-4 flex items-center">
@@ -591,7 +661,6 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                         </div>
                     )}
 
-                    {/* Payment Information */}
                     {currentOrder.payment && (
                         <div className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-lg font-medium mb-4 flex items-center">
@@ -653,7 +722,6 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                         </div>
                     )}
 
-                    {/* Action Buttons */}
                     <div className="space-y-3">
                         {(currentOrder.status === "PROCESSING" ||
                             currentOrder.status === "SHIPPED") && (
@@ -668,13 +736,48 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                         )}
 
                         {currentOrder.status === "DELIVERED" && (
-                            <Button
-                                variant="outline"
-                                className="w-full text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
-                            >
-                                <Star size={16} className="mr-2" />
-                                Beri Penilaian
-                            </Button>
+                            <div className="flex flex-col gap-3">
+                                {reviews[currentOrder.order_items[0]?.id]
+                                    ?.exists && (
+                                    <Button
+                                        variant="outline"
+                                        className="w-full text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
+                                        onClick={() =>
+                                            handleDeleteReview(
+                                                reviews[
+                                                    currentOrder.order_items[0]
+                                                        .id
+                                                ].reviewId!,
+                                                currentOrder.order_items[0].id
+                                            )
+                                        }
+                                    >
+                                        <Trash size={16} className="mr-2" />
+                                        Hapus Penilaian
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    className="w-full text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
+                                    asChild
+                                >
+                                    <Link
+                                        to={
+                                            reviews[
+                                                currentOrder.order_items[0]?.id
+                                            ]?.exists
+                                                ? `/edit-review/${reviews[currentOrder.order_items[0].id].reviewId}`
+                                                : `/add-review/${currentOrder.order_items[0]?.id}/${currentOrder.order_items[0]?.product_id}`
+                                        }
+                                    >
+                                        <Star size={16} className="mr-2" />
+                                        {reviews[currentOrder.order_items[0]?.id]
+                                            ?.exists
+                                            ? "Edit Penilaian"
+                                            : "Beri Penilaian"}
+                                    </Link>
+                                </Button>
+                            </div>
                         )}
 
                         <Button variant="outline" className="w-full">

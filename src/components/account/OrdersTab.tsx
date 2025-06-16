@@ -8,21 +8,45 @@ import {
     Clock,
     Star,
     AlertCircle,
+    Trash,
 } from "lucide-react";
 import { useOrderStore } from "@/stores/orderStore";
+import { useReviewStore } from "@/stores/reviewStore";
 import { OrdersTabSkeleton } from "@/components/skeleton/AccountSkeletons";
+import { useToast } from "@/components/ui/use-toast";
 
 interface OrdersTabProps {
     onViewOrderDetail?: (orderId: string) => void;
 }
 
 const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
-    const { orders, isLoading, error, fetchUserOrders, clearError } =
-        useOrderStore();
+    const { orders, isLoading, error, fetchUserOrders, clearError } = useOrderStore();
+    const { getReviewByOrderItemId, deleteReview } = useReviewStore();
+    const { toast } = useToast();
+    const [reviews, setReviews] = useState<{ [key: string]: { exists: boolean; reviewId?: string } }>({});
 
     useEffect(() => {
         fetchUserOrders();
     }, [fetchUserOrders]);
+
+    useEffect(() => {
+        const checkReviews = async () => {
+            const reviewStatus: { [key: string]: { exists: boolean; reviewId?: string } } = {};
+            for (const order of orders) {
+                for (const item of order.order_items || []) {
+                    const review = await getReviewByOrderItemId(item.id);
+                    reviewStatus[item.id] = {
+                        exists: !!review,
+                        reviewId: review?.id,
+                    };
+                }
+            }
+            setReviews(reviewStatus);
+        };
+        if (orders.length > 0) {
+            checkReviews();
+        }
+    }, [orders, getReviewByOrderItemId]);
 
     useEffect(() => {
         if (error) {
@@ -32,6 +56,30 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
             return () => clearTimeout(timer);
         }
     }, [error, clearError]);
+
+    const handleDeleteReview = async (reviewId: string, orderItemId: string) => {
+        if (!confirm("Apakah Anda yakin ingin menghapus ulasan ini?")) {
+            return;
+        }
+
+        try {
+            await deleteReview(reviewId);
+            setReviews((prev) => ({
+                ...prev,
+                [orderItemId]: { exists: false },
+            }));
+            toast({
+                title: "Success",
+                description: "Ulasan berhasil dihapus.",
+            });
+        } catch (error: any) {
+            toast({
+                title: "Error",
+                description: error.message || "Gagal menghapus ulasan.",
+                variant: "destructive",
+            });
+        }
+    };
 
     const getStatusLabel = (status: string) => {
         switch (status) {
@@ -146,7 +194,6 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
                                                 key={item.id}
                                                 className="flex items-center py-2"
                                             >
-                                                {/* Only show image if it exists */}
                                                 {item.product?.product_image &&
                                                     item.product.product_image
                                                         .length > 0 && (
@@ -201,17 +248,57 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
 
                                                 {order.status ===
                                                     "DELIVERED" && (
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
-                                                    >
-                                                        <Star
-                                                            size={16}
-                                                            className="mr-1"
-                                                        />
-                                                        Nilai
-                                                    </Button>
+                                                    <div className="flex gap-2">
+                                                        {reviews[item.id]
+                                                            ?.exists && (
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
+                                                                onClick={() =>
+                                                                    handleDeleteReview(
+                                                                        reviews[
+                                                                            item
+                                                                                .id
+                                                                        ]
+                                                                            .reviewId!,
+                                                                        item.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Trash
+                                                                    size={16}
+                                                                    className="mr-1"
+                                                                />
+                                                                Hapus
+                                                            </Button>
+                                                        )}
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
+                                                            asChild
+                                                        >
+                                                            <Link
+                                                                to={
+                                                                    reviews[
+                                                                        item.id
+                                                                    ]?.exists
+                                                                        ? `/edit-review/${reviews[item.id].reviewId}`
+                                                                        : `/add-review/${item.id}/${item.product_id}`
+                                                                }
+                                                            >
+                                                                <Star
+                                                                    size={16}
+                                                                    className="mr-1"
+                                                                />
+                                                                {reviews[item.id]
+                                                                    ?.exists
+                                                                    ? "Edit"
+                                                                    : "Nilai"}
+                                                            </Link>
+                                                        </Button>
+                                                    </div>
                                                 )}
                                             </div>
                                         ))}

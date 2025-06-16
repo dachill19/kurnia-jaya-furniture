@@ -185,46 +185,47 @@ export const useProductStore = create<ProductStore>()(
                 }
             },
 
-            getProductById: async (productId) => {
-                const { startLoading, stopLoading } =
-                    useLoadingStore.getState();
-                startLoading("product-detail");
+            getProductById: async (productId: string) => {
+                set({ error: null });
+                useLoadingStore.getState().startLoading("product-detail");
+                
                 try {
-                    set({ error: null });
                     const { data, error } = await supabase
-                        .from("product")
-                        .select(
-                            `
-              *,
-              category(*),
-              product_image(*),
-              reviews:review(
-                id,
-                rating,
-                comment,
-                created_at,
-                user_id,
-                review_image(
-                  id,
-                  image_url,
-                  created_at
-                )
-              )
-            `
+                    .from("product")
+                    .select(
+                        `
+                        *,
+                        category(id, name),
+                        product_image(id, image_url, is_main, created_at),
+                        reviews:review(
+                        id,
+                        user_id,
+                        rating,
+                        comment,
+                        created_at,
+                        updated_at,
+                        review_image(id, image_url, created_at),
+                        user!review_user_id_fkey(id, name, email)
                         )
-                        .eq("id", productId)
-                        .single();
+                    `
+                    )
+                    .eq("id", productId)
+                    .single();
 
-                    if (error) throw error;
+                    if (error) {
+                    if (error.code === "PGRST116") {
+                        set({ error: "Produk tidak ditemukan" });
+                    } else {
+                        set({ error: error.message });
+                    }
+                    return;
+                    }
+
                     set({ productDetail: data });
                 } catch (error: any) {
-                    console.error("Error fetching product detail:", error);
-                    set({
-                        error:
-                            error.message || "Failed to fetch product details",
-                    });
+                    set({ error: error.message || "Gagal mengambil detail produk" });
                 } finally {
-                    stopLoading("product-detail");
+                    useLoadingStore.getState().stopLoading("product-detail");
                 }
             },
 

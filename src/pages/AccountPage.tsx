@@ -18,6 +18,7 @@ import WishlistTab from "@/components/account/WishlistTab";
 import EditAddressTab from "@/components/account/EditAddressTab";
 import AddAddressTab from "@/components/account/AddAddressTab";
 import SettingsTab from "@/components/account/SettingsTab";
+import OrderDetailTab from "@/components/account/OrderDetailTab";
 import { Address } from "@/stores/addressStore";
 
 const AccountPage: React.FC = () => {
@@ -26,6 +27,7 @@ const AccountPage: React.FC = () => {
     const [selectedAddress, setSelectedAddress] = useState<Address | null>(
         null
     );
+    const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
     // Handler untuk edit alamat
     const handleEditAddress = (address: Address) => {
@@ -42,6 +44,18 @@ const AccountPage: React.FC = () => {
     const handleBackToAddresses = () => {
         setSelectedAddress(null);
         setActiveTab("addresses");
+    };
+
+    // Handler untuk view order detail
+    const handleViewOrderDetail = (orderId: string) => {
+        setSelectedOrderId(orderId);
+        setActiveTab("orderDetail");
+    };
+
+    // Handler untuk kembali dari order detail
+    const handleBackToOrders = () => {
+        setSelectedOrderId(null);
+        setActiveTab("orders");
     };
 
     // Handler untuk logout
@@ -100,77 +114,96 @@ const AccountPage: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Sidebar Navigation */}
-                    <div className="lg:w-1/4">
-                        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                            <div className="p-4 border-b">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-12 h-12 bg-kj-red rounded-full flex items-center justify-center text-white font-medium">
-                                        {user?.name?.charAt(0)?.toUpperCase() ||
-                                            user?.email
+                    {/* Sidebar Navigation - Hide when viewing order detail */}
+                    {activeTab !== "orderDetail" && (
+                        <div className="lg:w-1/4">
+                            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+                                <div className="p-4 border-b">
+                                    <div className="flex items-center space-x-3">
+                                        <div className="w-12 h-12 bg-kj-red rounded-full flex items-center justify-center text-white font-medium">
+                                            {user?.name
                                                 ?.charAt(0)
                                                 ?.toUpperCase() ||
-                                            "U"}
-                                    </div>
-                                    <div>
-                                        <h3 className="font-medium text-gray-900">
-                                            {user?.name || "User"}
-                                        </h3>
-                                        <p className="text-sm text-gray-500">
-                                            {user?.email}
-                                        </p>
+                                                user?.email
+                                                    ?.charAt(0)
+                                                    ?.toUpperCase() ||
+                                                "U"}
+                                        </div>
+                                        <div>
+                                            <h3 className="font-medium text-gray-900">
+                                                {user?.name || "User"}
+                                            </h3>
+                                            <p className="text-sm text-gray-500">
+                                                {user?.email}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <nav className="p-2">
-                                {/* Menu items */}
-                                {menuItems.map((item) => {
-                                    const Icon = item.icon;
-                                    const isActive =
-                                        activeTab === item.id ||
-                                        (item.id === "addresses" &&
-                                            (activeTab === "editAddress" ||
-                                                activeTab === "addAddress"));
+                                <nav className="p-2">
+                                    {/* Menu items */}
+                                    {menuItems.map((item) => {
+                                        const Icon = item.icon;
+                                        const isActive =
+                                            activeTab === item.id ||
+                                            (item.id === "addresses" &&
+                                                (activeTab === "editAddress" ||
+                                                    activeTab ===
+                                                        "addAddress")) ||
+                                            (item.id === "orders" &&
+                                                activeTab === "orderDetail");
 
-                                    return (
+                                        return (
+                                            <Button
+                                                key={item.id}
+                                                variant={
+                                                    isActive
+                                                        ? "default"
+                                                        : "ghost"
+                                                }
+                                                className={`w-full justify-start mb-1 ${
+                                                    isActive
+                                                        ? "bg-kj-red hover:bg-kj-darkred"
+                                                        : "text-gray-600 "
+                                                }`}
+                                                onClick={() =>
+                                                    setActiveTab(item.id)
+                                                }
+                                            >
+                                                <Icon
+                                                    size={16}
+                                                    className="mr-3"
+                                                />
+                                                {item.label}
+                                            </Button>
+                                        );
+                                    })}
+
+                                    {/* Logout Button */}
+                                    <div className="mt-1 pt-2 border-t">
                                         <Button
-                                            key={item.id}
-                                            variant={
-                                                isActive ? "default" : "ghost"
-                                            }
-                                            className={`w-full justify-start mb-1 ${
-                                                isActive
-                                                    ? "bg-kj-red hover:bg-kj-darkred"
-                                                    : "text-gray-600 "
-                                            }`}
-                                            onClick={() =>
-                                                setActiveTab(item.id)
-                                            }
+                                            variant="ghost"
+                                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                                            onClick={handleLogout}
                                         >
-                                            <Icon size={16} className="mr-3" />
-                                            {item.label}
+                                            <LogOut
+                                                size={16}
+                                                className="mr-3"
+                                            />
+                                            Logout
                                         </Button>
-                                    );
-                                })}
-
-                                {/* Logout Button */}
-                                <div className="mt-1 pt-2 border-t">
-                                    <Button
-                                        variant="ghost"
-                                        className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-                                        onClick={handleLogout}
-                                    >
-                                        <LogOut size={16} className="mr-3" />
-                                        Logout
-                                    </Button>
-                                </div>
-                            </nav>
+                                    </div>
+                                </nav>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Main Content */}
-                    <div className="lg:w-3/4">
+                    <div
+                        className={`${
+                            activeTab === "orderDetail" ? "w-full" : "lg:w-3/4"
+                        }`}
+                    >
                         {/* Profile Tab */}
                         {activeTab === "profile" && <ProfileTab />}
 
@@ -183,7 +216,19 @@ const AccountPage: React.FC = () => {
                         )}
 
                         {/* Orders Tab */}
-                        {activeTab === "orders" && <OrdersTab />}
+                        {activeTab === "orders" && (
+                            <OrdersTab
+                                onViewOrderDetail={handleViewOrderDetail}
+                            />
+                        )}
+
+                        {/* Order Detail Tab */}
+                        {activeTab === "orderDetail" && selectedOrderId && (
+                            <OrderDetailTab
+                                orderId={selectedOrderId}
+                                onBack={handleBackToOrders}
+                            />
+                        )}
 
                         {/* Wishlist Tab */}
                         {activeTab === "wishlist" && <WishlistTab />}

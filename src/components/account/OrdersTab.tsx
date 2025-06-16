@@ -12,7 +12,11 @@ import {
 import { useOrderStore } from "@/stores/orderStore";
 import { OrdersTabSkeleton } from "@/components/skeleton/AccountSkeletons";
 
-const OrdersTab = () => {
+interface OrdersTabProps {
+    onViewOrderDetail?: (orderId: string) => void;
+}
+
+const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
     const { orders, isLoading, error, fetchUserOrders, clearError } =
         useOrderStore();
 
@@ -79,6 +83,12 @@ const OrdersTab = () => {
             month: "long",
             day: "numeric",
         });
+    };
+
+    const handleViewDetail = (orderId: string) => {
+        if (onViewOrderDetail) {
+            onViewOrderDetail(orderId);
+        }
     };
 
     if (isLoading) {
@@ -209,10 +219,12 @@ const OrdersTab = () => {
                                 )}
 
                             <div className="flex justify-between mt-4">
-                                <Button variant="outline" size="sm" asChild>
-                                    <Link to={`/account/orders/${order.id}`}>
-                                        Detail Pesanan
-                                    </Link>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleViewDetail(order.id)}
+                                >
+                                    Detail Pesanan
                                 </Button>
 
                                 {(order.status === "PROCESSING" ||

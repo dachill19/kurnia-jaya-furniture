@@ -183,9 +183,11 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
                             )
                         )
                     ),
-                    address(*),
                     payment(*),
-                    shipping(*)
+                    shipping(
+                        *,
+                        address(*)
+                    )
                 `
                 )
                 .eq("id", orderId)
@@ -201,7 +203,13 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
                 );
             }
 
-            set({ currentOrder: order, isLoading: false });
+            // Transform data to match expected structure
+            const transformedOrder = {
+                ...order,
+                address: order.shipping?.address || null,
+            };
+
+            set({ currentOrder: transformedOrder, isLoading: false });
         } catch (error) {
             const errorMessage =
                 error instanceof Error

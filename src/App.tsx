@@ -26,6 +26,7 @@ import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import AddCategoryPage from "./pages/admin/AddCategoryPage"; // Import AddCategoryPage
 import EditCategoryPage from "./pages/admin/EditCategoryPage"; // Import EditCategoryPage
+import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -83,10 +84,7 @@ const App = () => {
                         path="categories/:categoryId/edit"
                         element={<EditCategoryPage />}
                     />
-                    <Route
-                        path="orders"
-                        element={<div>Orders Page (TBD)</div>}
-                    />
+                    <Route path="orders" element={<AdminOrdersPage />} />
                     <Route
                         path="notifications"
                         element={<div>Notifications Page (TBD)</div>}

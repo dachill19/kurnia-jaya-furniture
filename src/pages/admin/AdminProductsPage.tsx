@@ -100,7 +100,7 @@ const AdminProductsPage = () => {
     // Stats calculation with type safety
     const stats = {
         totalProducts: products.length,
-        lowStock: products.filter((p) => p.stock <= 10).length,
+        lowStock: products.filter((p) => p.stock <= 5).length,
         topSelling:
             products.length > 0
                 ? products.reduce((max, p) => {

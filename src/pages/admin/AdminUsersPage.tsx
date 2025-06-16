@@ -23,7 +23,7 @@ import {
 import { useUserStore } from "@/stores/admin/adminUserStore";
 import { useAuthStore } from "@/stores/authStore";
 
-const UsersPage = () => {
+const AdminUsersPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
 
     const {
@@ -66,6 +66,11 @@ const UsersPage = () => {
             hour: "2-digit",
             minute: "2-digit",
         });
+    };
+
+    const formatLastSignIn = (lastSignIn?: string) => {
+        if (!lastSignIn) return "Belum pernah";
+        return formatDate(lastSignIn);
     };
 
     const handleRefresh = () => {
@@ -159,7 +164,7 @@ const UsersPage = () => {
                         <div className="flex items-center justify-between">
                             <div className="min-w-0 flex-1">
                                 <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
-                                    Aktif Hari Ini
+                                    Sign In Hari Ini
                                 </p>
                                 <h3 className="text-lg sm:text-2xl font-bold">
                                     {isLoading
@@ -261,7 +266,7 @@ const UsersPage = () => {
                                             Tanggal Bergabung
                                         </TableHead>
                                         <TableHead className="min-w-[150px]">
-                                            Terakhir Diperbarui
+                                            Terakhir Sign In
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -303,7 +308,9 @@ const UsersPage = () => {
                                                 {formatDate(user.created_at)}
                                             </TableCell>
                                             <TableCell className="text-sm">
-                                                {formatDate(user.updated_at)}
+                                                {formatLastSignIn(
+                                                    user.last_sign_in
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     ))}
@@ -317,4 +324,4 @@ const UsersPage = () => {
     );
 };
 
-export default UsersPage;
+export default AdminUsersPage;

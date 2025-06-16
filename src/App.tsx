@@ -22,7 +22,7 @@ import AdminProductsPage from "./pages/admin/AdminProductsPage";
 import AddProductPage from "./pages/admin/AddProductPage";
 import EditProductPage from "./pages/admin/EditProductPage";
 import AdminProductDetailPage from "./pages/admin/ProductDetailPage";
-import UsersPage from "./pages/admin/AdminUsersPage";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import AddCategoryPage from "./pages/admin/AddCategoryPage"; // Import AddCategoryPage
 import EditCategoryPage from "./pages/admin/EditCategoryPage"; // Import EditCategoryPage
@@ -60,7 +60,7 @@ const App = () => {
                     }
                 >
                     <Route index element={<Dashboard />} />
-                    <Route path="users" element={<UsersPage />} />
+                    <Route path="users" element={<AdminUsersPage />} />
                     <Route path="products" element={<AdminProductsPage />} />
                     <Route path="products/add" element={<AddProductPage />} />
                     <Route

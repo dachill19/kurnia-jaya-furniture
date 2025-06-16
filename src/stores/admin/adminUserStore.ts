@@ -9,7 +9,7 @@ type User = {
     phone?: string;
     role: "USER" | "ADMIN";
     created_at: string;
-    updated_at: string;
+    last_sign_in?: string;
 };
 
 type UserStats = {
@@ -48,14 +48,28 @@ export const useUserStore = create<UserStore>((set, get) => ({
         set({ isLoading: true, error: null });
 
         try {
-            const { data, error } = await supabase
+            // First get users from user table
+            const { data: userData, error: userError } = await supabase
                 .from("user")
                 .select("*")
                 .order("created_at", { ascending: false });
 
-            if (error) throw error;
+            if (userError) throw userError;
 
-            set({ users: data || [] });
+            // Then get auth data for each user
+            const usersWithAuth = await Promise.all(
+                (userData || []).map(async (user) => {
+                    const { data: authData, error: authError } =
+                        await supabase.auth.admin.getUserById(user.id);
+
+                    return {
+                        ...user,
+                        last_sign_in: authData?.user?.last_sign_in_at || null,
+                    };
+                })
+            );
+
+            set({ users: usersWithAuth });
         } catch (error) {
             console.error("Error fetching users:", error);
             set({
@@ -97,7 +111,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
             if (monthError) throw monthError;
 
-            // Get users updated today (as proxy for active today)
+            // Get users who signed in today
             const today = new Date();
             const startOfDay = new Date(
                 today.getFullYear(),
@@ -105,17 +119,42 @@ export const useUserStore = create<UserStore>((set, get) => ({
                 today.getDate()
             );
 
-            const { count: activeToday, error: todayError } = await supabase
+            // Get all users first
+            const { data: allUsers, error: usersError } = await supabase
                 .from("user")
-                .select("*", { count: "exact", head: true })
-                .gte("updated_at", startOfDay.toISOString());
+                .select("id");
 
-            if (todayError) throw todayError;
+            if (usersError) throw usersError;
+
+            // Check each user's last sign in from auth
+            let activeToday = 0;
+            if (allUsers) {
+                const activeChecks = await Promise.all(
+                    allUsers.map(async (user) => {
+                        try {
+                            const { data: authData } =
+                                await supabase.auth.admin.getUserById(user.id);
+                            const lastSignIn = authData?.user?.last_sign_in_at;
+
+                            if (
+                                lastSignIn &&
+                                new Date(lastSignIn) >= startOfDay
+                            ) {
+                                return true;
+                            }
+                            return false;
+                        } catch {
+                            return false;
+                        }
+                    })
+                );
+                activeToday = activeChecks.filter(Boolean).length;
+            }
 
             set({
                 stats: {
                     totalUsers: totalUsers || 0,
-                    activeToday: activeToday || 0,
+                    activeToday,
                     newThisMonth: newThisMonth || 0,
                 },
             });
@@ -155,7 +194,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
             "Telepon",
             "Role",
             "Tanggal Bergabung",
-            "Terakhir Diperbarui",
+            "Terakhir Sign In",
         ];
         const csvContent = [
             headers.join(","),
@@ -167,7 +206,11 @@ export const useUserStore = create<UserStore>((set, get) => ({
                     user.phone || "",
                     user.role,
                     new Date(user.created_at).toLocaleDateString("id-ID"),
-                    new Date(user.updated_at).toLocaleDateString("id-ID"),
+                    user.last_sign_in
+                        ? new Date(user.last_sign_in).toLocaleDateString(
+                              "id-ID"
+                          )
+                        : "Belum pernah",
                 ].join(",")
             ),
         ].join("\n");

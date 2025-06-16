@@ -118,6 +118,34 @@ const AdminProductsPage = () => {
         ),
     };
 
+    const productStats = [
+        {
+            title: "Total Produk",
+            value: stats.totalProducts,
+            icon: Package,
+            color: "text-blue-600",
+        },
+        {
+            title: "Stok Rendah",
+            value: stats.lowStock,
+            icon: AlertTriangle,
+            color: "text-red-600",
+        },
+        {
+            title: "Produk Terlaris",
+            value: stats.topSelling?.reviews?.length || 0,
+            trend: stats.topSelling?.name || "N/A",
+            icon: TrendingUp,
+            color: "text-green-600",
+        },
+        {
+            title: "Total Reviews",
+            value: stats.totalReviews,
+            icon: Eye,
+            color: "text-purple-600",
+        },
+    ];
+
     return (
         <div className="space-y-6">
             {/* Header Section */}
@@ -135,81 +163,32 @@ const AdminProductsPage = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 sm:p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">
-                                    Total Produk
-                                </p>
-                                <h3 className="text-lg sm:text-2xl font-bold text-gray-800">
-                                    {stats.totalProducts}
-                                </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {productStats.map((stat, index) => (
+                    <Card
+                        key={index}
+                        className="border-none shadow-sm hover:shadow-md transition-shadow"
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs text-gray-500">
+                                        {stat.title}
+                                    </p>
+                                    <p className="text-xl font-bold text-gray-900">
+                                        {stat.value}
+                                    </p>
+                                    <p className={`text-xs ${stat.color}`}>
+                                        {stat.trend}
+                                    </p>
+                                </div>
+                                <stat.icon
+                                    className={`h-8 w-8 ${stat.color}`}
+                                />
                             </div>
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                                <Package className="h-6 w-6 text-blue-600" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 sm:p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">
-                                    Stok Rendah
-                                </p>
-                                <h3 className="text-lg sm:text-2xl font-bold text-red-600">
-                                    {stats.lowStock}
-                                </h3>
-                            </div>
-                            <div className="p-2 bg-red-50 rounded-lg">
-                                <AlertTriangle className="h-6 w-6 text-red-600" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 sm:p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">
-                                    Produk Terlaris
-                                </p>
-                                <h3 className="text-lg sm:text-2xl font-bold text-green-600">
-                                    {stats.topSelling?.reviews?.length || 0}
-                                </h3>
-                                <p className="text-xs text-gray-500 truncate max-w-24">
-                                    {stats.topSelling?.name || "N/A"}
-                                </p>
-                            </div>
-                            <div className="p-2 bg-green-50 rounded-lg">
-                                <TrendingUp className="h-6 w-6 text-green-600" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
-                    <CardContent className="p-4 sm:p-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-xs sm:text-sm font-medium text-gray-500 mb-1">
-                                    Total Reviews
-                                </p>
-                                <h3 className="text-lg sm:text-2xl font-bold text-purple-600">
-                                    {stats.totalReviews}
-                                </h3>
-                            </div>
-                            <div className="p-2 bg-purple-50 rounded-lg">
-                                <Eye className="h-6 w-6 text-purple-600" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
 
             {/* Products Grid */}

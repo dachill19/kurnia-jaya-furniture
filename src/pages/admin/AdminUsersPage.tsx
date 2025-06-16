@@ -140,64 +140,64 @@ const AdminUsersPage = () => {
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Card className="border-none shadow-sm">
-                    <CardContent className="p-4 sm:p-6">
+                    <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                            <div className="min-w-0 flex-1">
-                                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                            <div>
+                                <p className="text-sm text-gray-600">
                                     Total Pengguna
                                 </p>
-                                <h3 className="text-lg sm:text-2xl font-bold">
+                                <p className="text-xl font-bold text-gray-900">
                                     {isLoading
                                         ? "..."
                                         : stats.totalUsers.toLocaleString(
                                               "id-ID"
                                           )}
-                                </h3>
+                                </p>
                             </div>
-                            <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 flex-shrink-0" />
+                            <Users className="h-8 w-8 text-blue-600" />
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-none shadow-sm">
-                    <CardContent className="p-4 sm:p-6">
+                    <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                            <div className="min-w-0 flex-1">
-                                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                            <div>
+                                <p className="text-sm text-gray-600">
                                     Sign In Hari Ini
                                 </p>
-                                <h3 className="text-lg sm:text-2xl font-bold">
+                                <p className="text-xl font-bold text-gray-900">
                                     {isLoading
                                         ? "..."
                                         : stats.activeToday.toLocaleString(
                                               "id-ID"
                                           )}
-                                </h3>
+                                </p>
                             </div>
-                            <div className="h-5 w-5 sm:h-6 sm:w-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                <div className="h-2 w-2 sm:h-3 sm:w-3 bg-green-600 rounded-full"></div>
+                            <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <div className="h-3 w-3 bg-green-600 rounded-full" />
                             </div>
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-none shadow-sm">
-                    <CardContent className="p-4 sm:p-6">
+                    <CardContent className="p-4">
                         <div className="flex items-center justify-between">
-                            <div className="min-w-0 flex-1">
-                                <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                            <div>
+                                <p className="text-sm text-gray-600">
                                     Bergabung Bulan Ini
                                 </p>
-                                <h3 className="text-lg sm:text-2xl font-bold">
+                                <p className="text-xl font-bold text-gray-900">
                                     {isLoading
                                         ? "..."
                                         : stats.newThisMonth.toLocaleString(
                                               "id-ID"
                                           )}
-                                </h3>
+                                </p>
                             </div>
-                            <div className="h-5 w-5 sm:h-6 sm:w-6 bg-kj-red/10 rounded-full flex items-center justify-center flex-shrink-0">
-                                <div className="h-2 w-2 sm:h-3 sm:w-3 bg-kj-red rounded-full"></div>
+                            <div className="h-8 w-8 bg-kj-red/10 rounded-full flex items-center justify-center">
+                                <div className="h-3 w-3 bg-kj-red rounded-full" />
                             </div>
                         </div>
                     </CardContent>

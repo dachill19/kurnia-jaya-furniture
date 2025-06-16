@@ -188,25 +188,28 @@ const AdminOrdersPage = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {statsCards.map((stat, index) => (
-                    <Card key={index} className="border-none shadow-sm">
-                        <CardContent className="p-4 sm:p-6">
+                    <Card
+                        key={index}
+                        className="border-none shadow-sm hover:shadow-md transition-shadow"
+                    >
+                        <CardContent className="p-4">
                             <div className="flex items-center justify-between">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                                <div>
+                                    <p className="text-sm text-gray-600">
                                         {stat.title}
                                     </p>
-                                    <h3 className="text-lg sm:text-2xl font-bold truncate">
+                                    <p className="text-xl font-bold text-gray-900">
                                         {isLoading ? (
                                             <Loader2 className="h-5 w-5 animate-spin" />
                                         ) : (
                                             stat.value
                                         )}
-                                    </h3>
+                                    </p>
                                 </div>
                                 <stat.icon
-                                    className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color} flex-shrink-0`}
+                                    className={`h-8 w-8 ${stat.color}`}
                                 />
                             </div>
                         </CardContent>

@@ -207,7 +207,10 @@ const AdminPaymentsPage = () => {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {paymentStats.map((stat, index) => (
-                    <Card key={index} className="border-none shadow-sm">
+                    <Card
+                        key={index}
+                        className="border-none shadow-sm hover:shadow-md transition-shadow"
+                    >
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -245,13 +248,13 @@ const AdminPaymentsPage = () => {
                 <TabsContent value={activeTab} className="space-y-4">
                     <Card className="border-none shadow-sm">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <CreditCard className="h-5 w-5" />
-                                Riwayat Pembayaran
-                            </CardTitle>
-                            <div className="flex flex-col sm:flex-row gap-2">
-                                <div className="relative flex-1">
-                                    <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                                    <CreditCard className="h-5 w-5" />
+                                    Riwayat Pembayaran
+                                </CardTitle>
+                                <div className="relative w-full sm:w-80">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                                     <Input
                                         placeholder="Cari pembayaran..."
                                         value={searchTerm}
@@ -263,6 +266,7 @@ const AdminPaymentsPage = () => {
                                 </div>
                             </div>
                         </CardHeader>
+
                         <CardContent>
                             {isLoading ? (
                                 <div className="flex items-center justify-center py-8">

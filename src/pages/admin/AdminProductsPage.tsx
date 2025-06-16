@@ -64,7 +64,10 @@ const AdminProductsPage = () => {
 
     const filteredProducts = products.filter((product) => {
         // Category filter
-        if (categoryFilter !== "ALL" && product.category?.name !== categoryFilter) {
+        if (
+            categoryFilter !== "ALL" &&
+            product.category?.name !== categoryFilter
+        ) {
             return false;
         }
 
@@ -109,7 +112,7 @@ const AdminProductsPage = () => {
                       return pReviews > maxReviews ? p : max;
                   }, products[0])
                 : null,
-        totalViews: products.reduce(
+        totalReviews: products.reduce(
             (sum, p) => sum + (p.reviews?.length || 0),
             0
         ),
@@ -198,7 +201,7 @@ const AdminProductsPage = () => {
                                     Total Reviews
                                 </p>
                                 <h3 className="text-lg sm:text-2xl font-bold text-purple-600">
-                                    {stats.totalViews}
+                                    {stats.totalReviews}
                                 </h3>
                             </div>
                             <div className="p-2 bg-purple-50 rounded-lg">
@@ -231,7 +234,10 @@ const AdminProductsPage = () => {
                                         Semua Kategori
                                     </SelectItem>
                                     {categories.map((category) => (
-                                        <SelectItem key={category} value={category}>
+                                        <SelectItem
+                                            key={category}
+                                            value={category}
+                                        >
                                             {category}
                                         </SelectItem>
                                     ))}
@@ -242,7 +248,9 @@ const AdminProductsPage = () => {
                                 <Input
                                     placeholder="Cari produk..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onChange={(e) =>
+                                        setSearchTerm(e.target.value)
+                                    }
                                     className="pl-10 border-gray-200 focus:border-kj-red focus:ring-kj-red"
                                 />
                             </div>

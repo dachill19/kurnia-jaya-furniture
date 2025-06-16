@@ -19,6 +19,8 @@ import {
     Download,
     RefreshCw,
     AlertCircle,
+    UserPlus,
+    Activity,
 } from "lucide-react";
 import { useUserStore } from "@/stores/admin/adminUserStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -47,6 +49,31 @@ const AdminUsersPage = () => {
             refreshData();
         }
     }, [isAdmin, refreshData]);
+
+    // Stats configuration
+    const userStats = [
+        {
+            title: "Total Pengguna",
+            value: stats.totalUsers,
+            icon: Users,
+            color: "text-blue-600",
+            bgColor: "bg-blue-100",
+        },
+        {
+            title: "Sign In Hari Ini",
+            value: stats.activeToday,
+            icon: Activity,
+            color: "text-green-600",
+            bgColor: "bg-green-100",
+        },
+        {
+            title: "Bergabung Bulan Ini",
+            value: stats.newThisMonth,
+            icon: UserPlus,
+            color: "text-red-600",
+            bgColor: "bg-red-100",
+        },
+    ];
 
     const getStatusBadge = (role: string) => {
         const colors = {
@@ -139,69 +166,32 @@ const AdminUsersPage = () => {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Card className="border-none shadow-sm">
-                    <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-gray-600">
-                                    Total Pengguna
-                                </p>
-                                <p className="text-xl font-bold text-gray-900">
-                                    {isLoading
-                                        ? "..."
-                                        : stats.totalUsers.toLocaleString(
-                                              "id-ID"
-                                          )}
-                                </p>
+                {userStats.map((stat, index) => (
+                    <Card
+                        key={index}
+                        className="border-none shadow-sm hover:shadow-md transition-shadow"
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-600">
+                                        {stat.title}
+                                    </p>
+                                    <p className="text-xl font-bold text-gray-900">
+                                        {isLoading
+                                            ? "..."
+                                            : stat.value.toLocaleString(
+                                                  "id-ID"
+                                              )}
+                                    </p>
+                                </div>
+                                <stat.icon
+                                    className={`h-8 w-8 ${stat.color}`}
+                                />
                             </div>
-                            <Users className="h-8 w-8 text-blue-600" />
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm">
-                    <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-gray-600">
-                                    Sign In Hari Ini
-                                </p>
-                                <p className="text-xl font-bold text-gray-900">
-                                    {isLoading
-                                        ? "..."
-                                        : stats.activeToday.toLocaleString(
-                                              "id-ID"
-                                          )}
-                                </p>
-                            </div>
-                            <div className="h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
-                                <div className="h-3 w-3 bg-green-600 rounded-full" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                <Card className="border-none shadow-sm">
-                    <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm text-gray-600">
-                                    Bergabung Bulan Ini
-                                </p>
-                                <p className="text-xl font-bold text-gray-900">
-                                    {isLoading
-                                        ? "..."
-                                        : stats.newThisMonth.toLocaleString(
-                                              "id-ID"
-                                          )}
-                                </p>
-                            </div>
-                            <div className="h-8 w-8 bg-kj-red/10 rounded-full flex items-center justify-center">
-                                <div className="h-3 w-3 bg-kj-red rounded-full" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                        </CardContent>
+                    </Card>
+                ))}
             </div>
 
             {/* Search and Filter */}

@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
     Package,
     Search,
     Eye,
@@ -21,6 +28,7 @@ import { useToast } from "@/components/ui/use-toast";
 const AdminProductsPage = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("ALL");
     const { products, getAllProducts, error: productError } = useProductStore();
     const {
         deleteProduct,
@@ -45,14 +53,33 @@ const AdminProductsPage = () => {
         }
     }, [productError, adminError, toast, clearError]);
 
-    const filteredProducts = products.filter(
-        (product) =>
-            product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            product.category?.name
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase())
-    );
+    // Get unique categories from products
+    const categories = Array.from(
+        new Set(
+            products
+                .filter((product) => product.category?.name)
+                .map((product) => product.category!.name)
+        )
+    ).sort();
+
+    const filteredProducts = products.filter((product) => {
+        // Category filter
+        if (categoryFilter !== "ALL" && product.category?.name !== categoryFilter) {
+            return false;
+        }
+
+        // Search filter
+        if (searchTerm) {
+            const searchLower = searchTerm.toLowerCase();
+            return (
+                product.name.toLowerCase().includes(searchLower) ||
+                product.id.toLowerCase().includes(searchLower) ||
+                product.category?.name.toLowerCase().includes(searchLower)
+            );
+        }
+
+        return true;
+    });
 
     const handleDelete = async (id: string, name: string) => {
         if (window.confirm(`Are you sure you want to delete ${name}?`)) {
@@ -187,16 +214,38 @@ const AdminProductsPage = () => {
                 <CardHeader className="pb-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <CardTitle className="text-xl font-semibold text-gray-800">
-                            Data Produk
+                            Data Produk ({filteredProducts.length})
                         </CardTitle>
-                        <div className="relative w-full sm:w-80">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                            <Input
-                                placeholder="Cari produk..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 border-gray-200 focus:border-kj-red focus:ring-kj-red"
-                            />
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <Select
+                                value={categoryFilter}
+                                onValueChange={(value: string) =>
+                                    setCategoryFilter(value)
+                                }
+                            >
+                                <SelectTrigger className="w-full sm:w-40">
+                                    <SelectValue placeholder="Filter Kategori" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="ALL">
+                                        Semua Kategori
+                                    </SelectItem>
+                                    {categories.map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                            {category}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <div className="relative w-full sm:w-80">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Input
+                                    placeholder="Cari produk..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10 border-gray-200 focus:border-kj-red focus:ring-kj-red"
+                                />
+                            </div>
                         </div>
                     </div>
                 </CardHeader>
@@ -209,8 +258,13 @@ const AdminProductsPage = () => {
                         </div>
                     ) : filteredProducts.length === 0 ? (
                         <div className="flex items-center justify-center py-12">
-                            <div className="text-gray-500">
-                                No products found.
+                            <div className="text-center">
+                                <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                <p className="text-gray-500">
+                                    {searchTerm || categoryFilter !== "ALL"
+                                        ? "Tidak ada produk yang sesuai dengan filter"
+                                        : "Belum ada produk"}
+                                </p>
                             </div>
                         </div>
                     ) : (

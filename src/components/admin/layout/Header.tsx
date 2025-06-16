@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,6 +10,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/authStore";
 
 const AdminHeader = () => {
     const [notifications, setNotifications] = useState([
@@ -27,6 +28,7 @@ const AdminHeader = () => {
     ]);
 
     const navigate = useNavigate();
+    const { logout } = useAuthStore();
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
 
@@ -34,6 +36,17 @@ const AdminHeader = () => {
         setNotifications(
             notifications.map((n) => (n.id === id ? { ...n, isRead: true } : n))
         );
+    };
+
+    // Handler untuk logout
+    const handleLogout = async () => {
+        try {
+            await logout();
+            // Redirect ke home page setelah logout berhasil
+            navigate("/");
+        } catch (error) {
+            console.error("Error logging out:", error);
+        }
     };
 
     return (
@@ -95,34 +108,16 @@ const AdminHeader = () => {
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="gap-2">
-                            <User className="h-5 w-5" />
-                            <span>Admin</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Akun Saya</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => navigate("/admin/profile")}
-                        >
-                            Profil
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                            onClick={() => navigate("/admin/settings")}
-                        >
-                            Pengaturan
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                            onClick={() => navigate("/admin/logout")}
-                        >
-                            Keluar
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Logout Button */}
+                <Button
+                    onClick={handleLogout}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+                >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                </Button>
             </div>
         </header>
     );

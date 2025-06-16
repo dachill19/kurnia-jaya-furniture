@@ -14,6 +14,7 @@ import {
     Copy,
 } from "lucide-react";
 import { useOrderStore } from "@/stores/orderStore";
+import { OrderDetailTabSkeleton } from "@/components/skeleton/OrderDetailTabSkeleton";
 
 interface OrderDetailTabProps {
     orderId?: string;
@@ -80,6 +81,50 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                     </h3>
                     <p className="text-gray-600 mb-4">
                         Tidak ada ID pesanan yang diberikan.
+                    </p>
+                    <Button onClick={onBack} variant="outline">
+                        Kembali ke Daftar Pesanan
+                    </Button>
+                </div>
+            </div>
+        );
+    }
+
+    // Show skeleton while loading
+    if (isLoading) {
+        return <OrderDetailTabSkeleton />;
+    }
+
+    // Show error state
+    if (error || !currentOrder) {
+        return (
+            <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="flex items-center mb-4">
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onBack}
+                        className="mr-2"
+                    >
+                        <ArrowLeft size={16} className="mr-1" />
+                        Kembali
+                    </Button>
+                </div>
+
+                <div className="text-center py-8">
+                    <AlertCircle
+                        size={48}
+                        className="mx-auto text-red-400 mb-4"
+                    />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        {error || "Pesanan tidak ditemukan"}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                        Pesanan yang Anda cari tidak dapat ditemukan atau sudah
+                        tidak tersedia.
+                    </p>
+                    <p className="text-sm text-gray-500 mb-4">
+                        Order ID: {orderIdToUse}
                     </p>
                     <Button onClick={onBack} variant="outline">
                         Kembali ke Daftar Pesanan
@@ -178,60 +223,6 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
             0
         );
     };
-
-    if (isLoading) {
-        return (
-            <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="animate-pulse">
-                    <div className="h-6 bg-gray-200 rounded w-1/4 mb-4"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2 mb-6"></div>
-                    <div className="space-y-4">
-                        <div className="h-20 bg-gray-200 rounded"></div>
-                        <div className="h-20 bg-gray-200 rounded"></div>
-                        <div className="h-20 bg-gray-200 rounded"></div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    if (error || !currentOrder) {
-        return (
-            <div className="bg-white rounded-lg shadow-sm p-6">
-                <div className="flex items-center mb-4">
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onBack}
-                        className="mr-2"
-                    >
-                        <ArrowLeft size={16} className="mr-1" />
-                        Kembali
-                    </Button>
-                </div>
-
-                <div className="text-center py-8">
-                    <AlertCircle
-                        size={48}
-                        className="mx-auto text-red-400 mb-4"
-                    />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        {error || "Pesanan tidak ditemukan"}
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                        Pesanan yang Anda cari tidak dapat ditemukan atau sudah
-                        tidak tersedia.
-                    </p>
-                    <p className="text-sm text-gray-500 mb-4">
-                        Order ID: {orderIdToUse}
-                    </p>
-                    <Button onClick={onBack} variant="outline">
-                        Kembali ke Daftar Pesanan
-                    </Button>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-6">

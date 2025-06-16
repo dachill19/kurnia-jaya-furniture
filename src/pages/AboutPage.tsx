@@ -205,7 +205,7 @@ const AboutPage = () => {
                         bagian dari perjalanan kami"
                     </blockquote>
                     <p className="font-semibold text-kj-brown">
-                        Ahmad Kurnia, Pendiri & CEO
+                        Frengky Cina, Pendiri & CEO
                     </p>
                 </div>
             </section>

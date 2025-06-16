@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,102 +16,160 @@ import {
     TrendingUp,
     AlertCircle,
     CheckCircle,
+    Loader2,
 } from "lucide-react";
+import { useAdminPaymentStore } from "@/stores/admin/adminPaymentStore";
 
 const AdminPaymentsPage = () => {
-    const [searchTerm, setSearchTerm] = useState("");
+    const {
+        payments,
+        stats,
+        isLoading,
+        error,
+        searchTerm,
+        statusFilter,
+        fetchAllPayments,
+        fetchPaymentStats,
+        setSearchTerm,
+        setStatusFilter,
+        getFilteredPayments,
+        exportPaymentsCSV,
+        clearError,
+    } = useAdminPaymentStore();
 
-    const paymentStats = [
-        {
-            title: "Total Pembayaran Hari Ini",
-            value: "Rp 45.750.000",
-            icon: DollarSign,
-            trend: "+12%",
-            color: "text-green-600",
-        },
-        {
-            title: "Pembayaran Pending",
-            value: "Rp 8.250.000",
-            icon: AlertCircle,
-            trend: "5 transaksi",
-            color: "text-yellow-600",
-        },
-        {
-            title: "Pembayaran Berhasil",
-            value: "Rp 125.500.000",
-            icon: CheckCircle,
-            trend: "+8% dari minggu lalu",
-            color: "text-green-600",
-        },
-        {
-            title: "Total Refund",
-            value: "Rp 2.100.000",
-            icon: RefreshCw,
-            trend: "3 refund",
-            color: "text-red-600",
-        },
-    ];
+    const [activeTab, setActiveTab] = useState("all");
 
-    const recentPayments = [
-        {
-            id: "PAY001",
-            orderId: "ORD001",
-            customer: "John Doe",
-            amount: "Rp 4.500.000",
-            method: "Transfer Bank",
-            status: "Berhasil",
-            date: "2024-01-15 10:30",
-            statusColor: "bg-green-100 text-green-800",
-        },
-        {
-            id: "PAY002",
-            orderId: "ORD002",
-            customer: "Jane Smith",
-            amount: "Rp 2.750.000",
-            method: "E-Wallet",
-            status: "Pending",
-            date: "2024-01-15 09:15",
-            statusColor: "bg-yellow-100 text-yellow-800",
-        },
-        {
-            id: "PAY003",
-            orderId: "ORD003",
-            customer: "Bob Wilson",
-            amount: "Rp 6.200.000",
-            method: "Kartu Kredit",
-            status: "Berhasil",
-            date: "2024-01-14 16:45",
-            statusColor: "bg-green-100 text-green-800",
-        },
-        {
-            id: "PAY004",
-            orderId: "ORD004",
-            customer: "Alice Brown",
-            amount: "Rp 1.850.000",
-            method: "Transfer Bank",
-            status: "Gagal",
-            date: "2024-01-14 14:20",
-            statusColor: "bg-red-100 text-red-800",
-        },
-    ];
+    useEffect(() => {
+        fetchAllPayments();
+        fetchPaymentStats();
+    }, [fetchAllPayments, fetchPaymentStats]);
 
-    const exportPayments = () => {
-        const csvContent = `ID Pembayaran,ID Pesanan,Pelanggan,Jumlah,Metode,Status,Tanggal
-${recentPayments
-    .map(
-        (payment) =>
-            `${payment.id},${payment.orderId},${payment.customer},${payment.amount},${payment.method},${payment.status},${payment.date}`
-    )
-    .join("\n")}`;
+    const filteredPayments = getFilteredPayments();
 
-        const blob = new Blob([csvContent], { type: "text/csv" });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "laporan-pembayaran.csv";
-        a.click();
-        window.URL.revokeObjectURL(url);
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        }).format(amount);
     };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleString("id-ID", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+        });
+    };
+
+    const getStatusBadgeColor = (status) => {
+        switch (status) {
+            case "SUCCESS":
+                return "bg-green-100 text-green-800";
+            case "PENDING":
+                return "bg-yellow-100 text-yellow-800";
+            case "FAILED":
+                return "bg-red-100 text-red-800";
+            case "REFUNDED":
+                return "bg-blue-100 text-blue-800";
+            default:
+                return "bg-gray-100 text-gray-800";
+        }
+    };
+
+    const getStatusText = (status) => {
+        switch (status) {
+            case "SUCCESS":
+                return "Berhasil";
+            case "PENDING":
+                return "Pending";
+            case "FAILED":
+                return "Gagal";
+            case "REFUNDED":
+                return "Refund";
+            default:
+                return status;
+        }
+    };
+
+    const getFilteredPaymentsByTab = () => {
+        let filtered = filteredPayments;
+
+        switch (activeTab) {
+            case "pending":
+                filtered = filtered.filter((p) => p.status === "PENDING");
+                break;
+            case "success":
+                filtered = filtered.filter((p) => p.status === "SUCCESS");
+                break;
+            case "failed":
+                filtered = filtered.filter((p) => p.status === "FAILED");
+                break;
+            default:
+                break;
+        }
+
+        return filtered;
+    };
+
+    const paymentStats = stats
+        ? [
+              {
+                  title: "Total Pembayaran Hari Ini",
+                  value: formatCurrency(stats.todayTotal),
+                  icon: DollarSign,
+                  trend: stats.weeklyGrowth,
+                  color: "text-green-600",
+              },
+              {
+                  title: "Pembayaran Pending",
+                  value: formatCurrency(stats.pendingAmount),
+                  icon: AlertCircle,
+                  trend: `${stats.pendingCount} transaksi`,
+                  color: "text-yellow-600",
+              },
+              {
+                  title: "Pembayaran Berhasil",
+                  value: formatCurrency(stats.successAmount),
+                  icon: CheckCircle,
+                  trend: stats.successGrowth,
+                  color: "text-green-600",
+              },
+              {
+                  title: "Total Refund",
+                  value: formatCurrency(stats.refundAmount),
+                  icon: RefreshCw,
+                  trend: `${stats.refundCount} refund`,
+                  color: "text-red-600",
+              },
+          ]
+        : [];
+
+    if (error) {
+        return (
+            <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 className="text-2xl sm:text-3xl font-serif font-bold text-gray-800">
+                        Manajemen Pembayaran
+                    </h2>
+                </div>
+                <Card className="border-none shadow-sm">
+                    <CardContent className="p-6 text-center">
+                        <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                        <h3 className="text-lg font-medium mb-2 text-red-600">
+                            Error
+                        </h3>
+                        <p className="text-gray-600 mb-4">{error}</p>
+                        <Button onClick={clearError} variant="outline">
+                            Tutup
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -119,13 +177,31 @@ ${recentPayments
                 <h2 className="text-2xl sm:text-3xl font-serif font-bold text-gray-800">
                     Manajemen Pembayaran
                 </h2>
-                <Button
-                    onClick={exportPayments}
-                    className="bg-kj-red hover:bg-kj-red/90"
-                >
-                    <Download className="h-4 w-4 mr-2" />
-                    Export Laporan
-                </Button>
+                <div className="flex gap-2">
+                    <Button
+                        onClick={() => {
+                            fetchAllPayments();
+                            fetchPaymentStats();
+                        }}
+                        variant="outline"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                        )}
+                        Refresh
+                    </Button>
+                    <Button
+                        onClick={exportPaymentsCSV}
+                        className="bg-kj-red hover:bg-kj-red/90"
+                        disabled={payments.length === 0}
+                    >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Laporan
+                    </Button>
+                </div>
             </div>
 
             {/* Stats Grid */}
@@ -154,7 +230,11 @@ ${recentPayments
                 ))}
             </div>
 
-            <Tabs defaultValue="all" className="space-y-4">
+            <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="space-y-4"
+            >
                 <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="all">Semua Pembayaran</TabsTrigger>
                     <TabsTrigger value="pending">Pending</TabsTrigger>
@@ -162,7 +242,7 @@ ${recentPayments
                     <TabsTrigger value="failed">Gagal</TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="all" className="space-y-4">
+                <TabsContent value={activeTab} className="space-y-4">
                     <Card className="border-none shadow-sm">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -181,120 +261,121 @@ ${recentPayments
                                         className="pl-10"
                                     />
                                 </div>
-                                <Button variant="outline">
-                                    <Filter className="h-4 w-4 mr-2" />
-                                    Filter
-                                </Button>
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="border-b">
-                                            <th className="text-left p-2">
-                                                ID Pembayaran
-                                            </th>
-                                            <th className="text-left p-2">
-                                                ID Pesanan
-                                            </th>
-                                            <th className="text-left p-2">
-                                                Pelanggan
-                                            </th>
-                                            <th className="text-left p-2">
-                                                Jumlah
-                                            </th>
-                                            <th className="text-left p-2">
-                                                Metode
-                                            </th>
-                                            <th className="text-left p-2">
-                                                Status
-                                            </th>
-                                            <th className="text-left p-2">
-                                                Tanggal
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {recentPayments.map((payment) => (
-                                            <tr
-                                                key={payment.id}
-                                                className="border-b hover:bg-gray-50"
-                                            >
-                                                <td className="p-2 font-medium">
-                                                    {payment.id}
-                                                </td>
-                                                <td className="p-2">
-                                                    {payment.orderId}
-                                                </td>
-                                                <td className="p-2">
-                                                    {payment.customer}
-                                                </td>
-                                                <td className="p-2 font-medium">
-                                                    {payment.amount}
-                                                </td>
-                                                <td className="p-2">
-                                                    {payment.method}
-                                                </td>
-                                                <td className="p-2">
-                                                    <Badge
-                                                        className={
-                                                            payment.statusColor
-                                                        }
-                                                    >
-                                                        {payment.status}
-                                                    </Badge>
-                                                </td>
-                                                <td className="p-2 text-gray-600">
-                                                    {payment.date}
-                                                </td>
+                            {isLoading ? (
+                                <div className="flex items-center justify-center py-8">
+                                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                                    <span className="ml-2 text-gray-600">
+                                        Memuat data pembayaran...
+                                    </span>
+                                </div>
+                            ) : getFilteredPaymentsByTab().length === 0 ? (
+                                <div className="text-center py-8">
+                                    <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                    <h3 className="text-lg font-medium mb-2">
+                                        Tidak ada data pembayaran
+                                    </h3>
+                                    <p className="text-gray-600">
+                                        {activeTab === "all"
+                                            ? "Belum ada pembayaran yang tercatat"
+                                            : `Tidak ada pembayaran dengan status ${getStatusText(
+                                                  activeTab.toUpperCase()
+                                              )}`}
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b">
+                                                <th className="text-left p-2">
+                                                    ID Pembayaran
+                                                </th>
+                                                <th className="text-left p-2">
+                                                    ID Pesanan
+                                                </th>
+                                                <th className="text-left p-2">
+                                                    Pelanggan
+                                                </th>
+                                                <th className="text-left p-2">
+                                                    Jumlah
+                                                </th>
+                                                <th className="text-left p-2">
+                                                    Metode
+                                                </th>
+                                                <th className="text-left p-2">
+                                                    Status
+                                                </th>
+                                                <th className="text-left p-2">
+                                                    Tanggal
+                                                </th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="pending">
-                    <Card className="border-none shadow-sm">
-                        <CardContent className="p-6 text-center">
-                            <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium mb-2">
-                                Pembayaran Pending
-                            </h3>
-                            <p className="text-gray-600">
-                                Menampilkan hanya pembayaran yang masih pending
-                            </p>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="success">
-                    <Card className="border-none shadow-sm">
-                        <CardContent className="p-6 text-center">
-                            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium mb-2">
-                                Pembayaran Berhasil
-                            </h3>
-                            <p className="text-gray-600">
-                                Menampilkan hanya pembayaran yang berhasil
-                            </p>
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="failed">
-                    <Card className="border-none shadow-sm">
-                        <CardContent className="p-6 text-center">
-                            <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium mb-2">
-                                Pembayaran Gagal
-                            </h3>
-                            <p className="text-gray-600">
-                                Menampilkan hanya pembayaran yang gagal
-                            </p>
+                                        </thead>
+                                        <tbody>
+                                            {getFilteredPaymentsByTab().map(
+                                                (payment) => (
+                                                    <tr
+                                                        key={payment.id}
+                                                        className="border-b hover:bg-gray-50 cursor-pointer"
+                                                    >
+                                                        <td className="p-2 font-medium">
+                                                            {payment.id}
+                                                        </td>
+                                                        <td className="p-2">
+                                                            {payment.order
+                                                                ?.id || "-"}
+                                                        </td>
+                                                        <td className="p-2">
+                                                            <div>
+                                                                <div className="font-medium">
+                                                                    {payment
+                                                                        .order
+                                                                        ?.user
+                                                                        ?.name ||
+                                                                        "N/A"}
+                                                                </div>
+                                                                <div className="text-gray-500 text-xs">
+                                                                    {payment
+                                                                        .order
+                                                                        ?.user
+                                                                        ?.email ||
+                                                                        ""}
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-2 font-medium">
+                                                            {formatCurrency(
+                                                                payment.amount
+                                                            )}
+                                                        </td>
+                                                        <td className="p-2">
+                                                            {payment.method}
+                                                        </td>
+                                                        <td className="p-2">
+                                                            <Badge
+                                                                className={getStatusBadgeColor(
+                                                                    payment.status
+                                                                )}
+                                                            >
+                                                                {getStatusText(
+                                                                    payment.status
+                                                                )}
+                                                            </Badge>
+                                                        </td>
+                                                        <td className="p-2 text-gray-600">
+                                                            {formatDate(
+                                                                payment.created_at
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>

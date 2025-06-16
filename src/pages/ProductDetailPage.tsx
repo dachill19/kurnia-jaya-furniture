@@ -15,6 +15,7 @@ import {
     MessageSquare,
     ChevronRight,
     HeartOff,
+    User,
 } from "lucide-react";
 import { useLoadingStore } from "@/stores/loadingStore";
 import { ProductDetailPageSkeleton } from "@/components/skeleton/ProductDetailPageSkeleton";
@@ -206,6 +207,19 @@ const ProductDetailPage = () => {
                 });
             }
         }
+    };
+
+    // Helper function to get display name
+    const getDisplayName = (review: any) => {
+        if (review.user?.name) {
+            return review.user.name;
+        }
+        // Fallback to email if name is not available
+        if (review.user?.email) {
+            return review.user.email.split('@')[0];
+        }
+        // Last fallback to shortened user ID
+        return `User ${review.user_id.slice(0, 8)}...`;
     };
 
     return (
@@ -441,24 +455,31 @@ const ProductDetailPage = () => {
                             <div key={review.id} className="border-b pb-6">
                                 <div className="flex justify-between items-start mb-3">
                                     <div>
-                                        <h4 className="font-semibold text-gray-900">
-                                            User {review.user_id.slice(0, 8)}...
-                                        </h4>
-                                        <div className="flex items-center mt-1">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star
-                                                    key={i}
-                                                    size={16}
-                                                    className={
-                                                        i < review.rating
-                                                            ? "text-yellow-500 fill-yellow-500"
-                                                            : "text-gray-300"
-                                                    }
-                                                />
-                                            ))}
-                                            <span className="ml-2 text-sm text-gray-600">
-                                                {review.rating}/5
-                                            </span>
+                                        <div className="flex items-center mb-2">
+                                            <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full mr-3">
+                                                <User size={16} className="text-gray-600" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-semibold text-gray-900">
+                                                    {getDisplayName(review)}
+                                                </h4>
+                                                <div className="flex items-center mt-1">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star
+                                                            key={i}
+                                                            size={16}
+                                                            className={
+                                                                i < review.rating
+                                                                    ? "text-yellow-500 fill-yellow-500"
+                                                                    : "text-gray-300"
+                                                            }
+                                                        />
+                                                    ))}
+                                                    <span className="ml-2 text-sm text-gray-600">
+                                                        {review.rating}/5
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                     <span className="text-sm text-gray-500">
@@ -472,14 +493,14 @@ const ProductDetailPage = () => {
                                     </span>
                                 </div>
 
-                                <p className="text-gray-700 mb-3 leading-relaxed">
+                                <p className="text-gray-700 mb-3 leading-relaxed ml-11">
                                     {review.comment}
                                 </p>
 
                                 {/* Review Images */}
                                 {review.review_image &&
                                     review.review_image.length > 0 && (
-                                        <div className="flex space-x-2 flex-wrap gap-2">
+                                        <div className="flex space-x-2 flex-wrap gap-2 ml-11">
                                             {review.review_image.map(
                                                 (image, index) => (
                                                     <div

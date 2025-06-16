@@ -24,10 +24,12 @@ import EditProductPage from "./pages/admin/EditProductPage";
 import AdminProductDetailPage from "./pages/admin/ProductDetailPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import CheckoutPage from "./pages/CheckoutPage";
-import AddCategoryPage from "./pages/admin/AddCategoryPage"; // Import AddCategoryPage
-import EditCategoryPage from "./pages/admin/EditCategoryPage"; // Import EditCategoryPage
+import AddCategoryPage from "./pages/admin/AddCategoryPage";
+import EditCategoryPage from "./pages/admin/EditCategoryPage";
 import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 import AdminOrderDetailPage from "./pages/admin/AdminOrderDetailPage";
+import AddReviewPage from "./pages/AddReviewPage";
+import EditReviewPage from "./pages/EditReviewPage";
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -113,6 +115,14 @@ const App = () => {
                     />
                     <Route path="cart" element={<CartPage />} />
                     <Route path="checkout" element={<CheckoutPage />} />
+                    <Route
+                        path="add-review/:orderItemId/:productId"
+                        element={<AddReviewPage />}
+                    />
+                    <Route
+                        path="edit-review/:reviewId"
+                        element={<EditReviewPage />}
+                    />
                     <Route path="*" element={<NotFound />} />
                 </Route>
             </Routes>

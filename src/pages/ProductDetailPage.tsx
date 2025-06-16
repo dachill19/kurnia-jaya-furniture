@@ -222,6 +222,15 @@ const ProductDetailPage = () => {
         return `User ${review.user_id.slice(0, 8)}...`;
     };
 
+    // Helper function to format date
+    const formatDate = (dateString: string) => {
+        return new Date(dateString).toLocaleDateString("id-ID", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+        });
+    };
+
     return (
         <div className="container-custom py-8">
             {/* Breadcrumb */}
@@ -483,13 +492,14 @@ const ProductDetailPage = () => {
                                         </div>
                                     </div>
                                     <span className="text-sm text-gray-500">
-                                        {new Date(
-                                            review.created_at
-                                        ).toLocaleDateString("id-ID", {
-                                            year: "numeric",
-                                            month: "long",
-                                            day: "numeric",
-                                        })}
+                                        {formatDate(review.created_at)}
+                                        {review.updated_at &&
+                                            new Date(review.updated_at).getTime() !==
+                                            new Date(review.created_at).getTime() && (
+                                                <span className="ml-1">
+                                                    (diedit pada {formatDate(review.updated_at)})
+                                                </span>
+                                            )}
                                     </span>
                                 </div>
 
@@ -516,7 +526,6 @@ const ProductDetailPage = () => {
                                                             }`}
                                                             className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
                                                             onClick={() => {
-                                                                // Optional: Add modal to view full image
                                                                 window.open(
                                                                     image.image_url,
                                                                     "_blank"

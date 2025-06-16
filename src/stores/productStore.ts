@@ -32,7 +32,13 @@ type Review = {
     rating: number;
     comment: string;
     created_at: string;
+    updated_at: string; // Added to fix TypeScript error
     review_image?: ReviewImage[];
+    user?: {
+        id: string;
+        name: string | null;
+        email: string;
+    };
 };
 
 type Product = {

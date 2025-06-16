@@ -1,5 +1,12 @@
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Users, Package, ShoppingCart, ChartBar, Bell } from "lucide-react";
+import {
+    Users,
+    Package,
+    ShoppingCart,
+    ChartBar,
+    Bell,
+    CreditCard,
+} from "lucide-react";
 import {
     Sidebar,
     SidebarContent,
@@ -33,6 +40,7 @@ const AdminLayout = () => {
         { title: "Pengguna", path: "/admin/users", icon: Users },
         { title: "Produk", path: "/admin/products", icon: Package },
         { title: "Pesanan", path: "/admin/orders", icon: ShoppingCart },
+        { title: "Pembayaran", path: "/admin/payments", icon: CreditCard },
         { title: "Notifikasi", path: "/admin/notifications", icon: Bell },
     ];
 

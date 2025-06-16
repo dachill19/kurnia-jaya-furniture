@@ -103,7 +103,7 @@ const AdminOrderDetailPage = () => {
             {
                 status: "Payment Confirmation",
                 date: currentOrder.payment?.created_at || "Pending",
-                completed: currentOrder.payment?.status === "PAID",
+                completed: currentOrder.payment?.status === "SUCCESS",
             },
             {
                 status: "Processing",

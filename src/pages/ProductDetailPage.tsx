@@ -16,6 +16,7 @@ import {
     ChevronRight,
     HeartOff,
     User,
+    AlertTriangle,
 } from "lucide-react";
 import { useLoadingStore } from "@/stores/loadingStore";
 import { ProductDetailPageSkeleton } from "@/components/skeleton/ProductDetailPageSkeleton";
@@ -99,12 +100,36 @@ const ProductDetailPage = () => {
     const increaseQuantity = () => {
         if (quantity < product.stock) {
             setQuantity(quantity + 1);
+        } else {
+            toast({
+                title: "Stok tidak mencukupi",
+                description: `Stok maksimal: ${product.stock} unit`,
+                variant: "destructive",
+            });
         }
     };
 
     const decreaseQuantity = () => {
         if (quantity > 1) {
             setQuantity(quantity - 1);
+        }
+    };
+
+    const handleQuantityInputChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const value = parseInt(e.target.value);
+        if (isNaN(value) || value < 1) {
+            setQuantity(1);
+        } else if (value > product.stock) {
+            setQuantity(product.stock);
+            toast({
+                title: "Stok tidak mencukupi",
+                description: `Stok maksimal: ${product.stock} unit`,
+                variant: "destructive",
+            });
+        } else {
+            setQuantity(value);
         }
     };
 
@@ -118,31 +143,51 @@ const ProductDetailPage = () => {
             return;
         }
 
+        if (product.stock === 0) {
+            toast({
+                title: "Stok habis",
+                description: "Produk ini sedang tidak tersedia",
+                variant: "destructive",
+            });
+            return;
+        }
+
         try {
             const mainImage =
                 product.product_image?.find((img) => img.is_main)?.image_url ||
                 product.product_image?.[0]?.image_url ||
                 "";
 
-            await addToCart(
+            const result = await addToCart(
                 {
                     id: product.id,
                     name: product.name,
                     price: product.price,
                     discount_price: product.discount_price,
                     image: mainImage,
+                    stock: product.stock, // Pass stock info to cart store
                 },
                 quantity
             );
 
-            toast({
-                title: "Produk ditambahkan ke keranjang",
-                description: product.name,
-            });
+            if (result.success) {
+                toast({
+                    title: "Produk ditambahkan ke keranjang",
+                    description: `${product.name} (${quantity} unit)`,
+                });
+                // Reset quantity to 1 after successful add
+                setQuantity(1);
+            } else {
+                toast({
+                    title: "Gagal menambahkan ke keranjang",
+                    description: result.message || "Silakan coba lagi",
+                    variant: "destructive",
+                });
+            }
         } catch (error) {
             toast({
                 title: "Gagal menambahkan ke keranjang",
-                description: "Silakan coba lagi",
+                description: "Terjadi kesalahan sistem, silakan coba lagi",
                 variant: "destructive",
             });
         }
@@ -196,9 +241,10 @@ const ProductDetailPage = () => {
             // fallback: salin ke clipboard
             try {
                 await navigator.clipboard.writeText(window.location.href);
-                alert(
-                    "Link disalin ke clipboard karena fitur share tidak tersedia."
-                );
+                toast({
+                    title: "Link disalin",
+                    description: "Link produk telah disalin ke clipboard",
+                });
             } catch (error) {
                 toast({
                     title: "Gagal menyalin link",
@@ -216,7 +262,7 @@ const ProductDetailPage = () => {
         }
         // Fallback to email if name is not available
         if (review.user?.email) {
-            return review.user.email.split('@')[0];
+            return review.user.email.split("@")[0];
         }
         // Last fallback to shortened user ID
         return `User ${review.user_id.slice(0, 8)}...`;
@@ -230,6 +276,38 @@ const ProductDetailPage = () => {
             day: "numeric",
         });
     };
+
+    // Get stock status
+    const getStockStatus = () => {
+        if (product.stock === 0) {
+            return {
+                status: "out-of-stock",
+                message: "Stok habis",
+                color: "text-red-600",
+                bgColor: "bg-red-50",
+                icon: AlertTriangle,
+            };
+        } else if (product.stock <= 5) {
+            return {
+                status: "low-stock",
+                message: `Stok terbatas: ${product.stock} unit`,
+                color: "text-orange-600",
+                bgColor: "bg-orange-50",
+                icon: AlertTriangle,
+            };
+        } else {
+            return {
+                status: "in-stock",
+                message: `Stok tersedia: ${product.stock} unit`,
+                color: "text-green-600",
+                bgColor: "bg-green-50",
+                icon: Check,
+            };
+        }
+    };
+
+    const stockStatus = getStockStatus();
+    const StockIcon = stockStatus.icon;
 
     return (
         <div className="container-custom py-8">
@@ -355,37 +433,58 @@ const ProductDetailPage = () => {
                         <p className="text-gray-700 mb-4">
                             {product.description}
                         </p>
-                        <div className="flex items-center text-gray-600 mb-2">
-                            <Check size={18} className="text-green-500 mr-2" />
-                            <span>
-                                {"Stok tersedia:"} {product.stock} {"unit"}
+
+                        {/* Stock Status with improved styling */}
+                        <div
+                            className={`flex items-center p-3 rounded-lg ${stockStatus.bgColor} mb-4`}
+                        >
+                            <StockIcon
+                                size={18}
+                                className={`${stockStatus.color} mr-2`}
+                            />
+                            <span
+                                className={`font-medium ${stockStatus.color}`}
+                            >
+                                {stockStatus.message}
                             </span>
                         </div>
                     </div>
 
-                    {/* Quantity Selector */}
-                    <div className="mb-6">
-                        <h3 className="font-medium text-gray-900 mb-3">
-                            Jumlah
-                        </h3>
-                        <div className="flex">
-                            <button
-                                className="px-3 py-1 border border-gray-300 rounded-l-md bg-gray-100 hover:bg-gray-200"
-                                onClick={decreaseQuantity}
-                            >
-                                -
-                            </button>
-                            <div className="w-12 px-3 py-1 text-center border-t border-b border-gray-300">
-                                {quantity}
+                    {/* Quantity Selector - Only show if stock is available */}
+                    {product.stock > 0 && (
+                        <div className="mb-6">
+                            <h3 className="font-medium text-gray-900 mb-3">
+                                Jumlah
+                            </h3>
+                            <div className="flex items-center">
+                                <button
+                                    className="px-3 py-2 border border-gray-300 rounded-l-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+                                    onClick={decreaseQuantity}
+                                    disabled={quantity <= 1}
+                                >
+                                    -
+                                </button>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={product.stock}
+                                    value={quantity}
+                                    onChange={handleQuantityInputChange}
+                                    className="w-16 px-3 py-2 text-center border-t border-b border-gray-300 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                />
+                                <button
+                                    className="px-3 py-2 border border-gray-300 rounded-r-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
+                                    onClick={increaseQuantity}
+                                    disabled={quantity >= product.stock}
+                                >
+                                    +
+                                </button>
+                                <span className="ml-3 text-sm text-gray-500">
+                                    Max: {product.stock} unit
+                                </span>
                             </div>
-                            <button
-                                className="px-3 py-1 border border-gray-300 rounded-r-md bg-gray-100 hover:bg-gray-200"
-                                onClick={increaseQuantity}
-                            >
-                                +
-                            </button>
                         </div>
-                    </div>
+                    )}
 
                     {/* Action Buttons */}
                     <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 mb-6">
@@ -393,10 +492,14 @@ const ProductDetailPage = () => {
                             variant="outline"
                             className="border-kj-red text-kj-red hover:bg-kj-red hover:text-white sm:flex-1"
                             onClick={handleAddToCart}
-                            disabled={product.stock === 0}
+                            disabled={
+                                product.stock === 0 || isLoadingKey("cart-add")
+                            }
                         >
                             <ShoppingCart size={18} className="mr-2" />
-                            {product.stock === 0
+                            {isLoadingKey("cart-add")
+                                ? "Menambahkan..."
+                                : product.stock === 0
                                 ? "Stok Habis"
                                 : "Tambah ke Keranjang"}
                         </Button>
@@ -405,8 +508,9 @@ const ProductDetailPage = () => {
                     {/* Extra Actions */}
                     <div className="flex space-x-4 text-gray-600">
                         <button
-                            className="flex items-center hover:text-kj-red"
+                            className="flex items-center hover:text-kj-red transition-colors"
                             onClick={handleToggleWishlist}
+                            disabled={isLoadingKey("wishlist")}
                         >
                             {inWishlist ? (
                                 <>
@@ -421,7 +525,7 @@ const ProductDetailPage = () => {
                             )}
                         </button>
                         <button
-                            className="flex items-center hover:text-kj-red"
+                            className="flex items-center hover:text-kj-red transition-colors"
                             onClick={handleWebShare}
                         >
                             <Share2 size={18} className="mr-1" />
@@ -466,24 +570,30 @@ const ProductDetailPage = () => {
                                     <div>
                                         <div className="flex items-center mb-2">
                                             <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full mr-3">
-                                                <User size={16} className="text-gray-600" />
+                                                <User
+                                                    size={16}
+                                                    className="text-gray-600"
+                                                />
                                             </div>
                                             <div>
                                                 <h4 className="font-semibold text-gray-900">
                                                     {getDisplayName(review)}
                                                 </h4>
                                                 <div className="flex items-center mt-1">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <Star
-                                                            key={i}
-                                                            size={16}
-                                                            className={
-                                                                i < review.rating
-                                                                    ? "text-yellow-500 fill-yellow-500"
-                                                                    : "text-gray-300"
-                                                            }
-                                                        />
-                                                    ))}
+                                                    {[...Array(5)].map(
+                                                        (_, i) => (
+                                                            <Star
+                                                                key={i}
+                                                                size={16}
+                                                                className={
+                                                                    i <
+                                                                    review.rating
+                                                                        ? "text-yellow-500 fill-yellow-500"
+                                                                        : "text-gray-300"
+                                                                }
+                                                            />
+                                                        )
+                                                    )}
                                                     <span className="ml-2 text-sm text-gray-600">
                                                         {review.rating}/5
                                                     </span>
@@ -494,10 +604,18 @@ const ProductDetailPage = () => {
                                     <span className="text-sm text-gray-500">
                                         {formatDate(review.created_at)}
                                         {review.updated_at &&
-                                            new Date(review.updated_at).getTime() !==
-                                            new Date(review.created_at).getTime() && (
+                                            new Date(
+                                                review.updated_at
+                                            ).getTime() !==
+                                                new Date(
+                                                    review.created_at
+                                                ).getTime() && (
                                                 <span className="ml-1">
-                                                    (diedit pada {formatDate(review.updated_at)})
+                                                    (diedit pada{" "}
+                                                    {formatDate(
+                                                        review.updated_at
+                                                    )}
+                                                    )
                                                 </span>
                                             )}
                                     </span>

@@ -11,7 +11,8 @@ export const CartItemSkeleton = () => {
             {/* Product Details Skeleton */}
             <div className="flex-grow sm:ml-4 sm:mr-4 text-center sm:text-left">
                 <Skeleton className="h-5 w-3/4 mb-2 mx-auto sm:mx-0" />
-                <Skeleton className="h-4 w-1/2 mx-auto sm:mx-0" />
+                <Skeleton className="h-4 w-1/2 mb-2 mx-auto sm:mx-0" />
+                <Skeleton className="h-4 w-1/3 mx-auto sm:mx-0" />
             </div>
 
             {/* Quantity Control Skeleton */}
@@ -62,19 +63,9 @@ export const OrderSummarySkeleton = () => {
 
             <div className="p-4">
                 {/* Price Summary Skeleton */}
-                <div className="space-y-3 mb-6">
-                    <div className="flex justify-between">
-                        <Skeleton className="h-4 w-16" />
-                        <Skeleton className="h-4 w-20" />
-                    </div>
-                    <div className="flex justify-between">
-                        <Skeleton className="h-4 w-20" />
-                        <Skeleton className="h-4 w-20" />
-                    </div>
-                    <div className="pt-3 border-t flex justify-between">
-                        <Skeleton className="h-5 w-12" />
-                        <Skeleton className="h-5 w-24" />
-                    </div>
+                <div className="pt-3 pb-3 flex justify-between">
+                    <Skeleton className="h-5 w-12" />
+                    <Skeleton className="h-5 w-24" />
                 </div>
 
                 {/* Checkout Button Skeleton */}

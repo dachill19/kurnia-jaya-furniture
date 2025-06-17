@@ -73,7 +73,7 @@ const AdminOrderDetailPage = () => {
             case "SHIPPED":
                 return "Dikirim";
             case "DELIVERED":
-                return "Terkirim";
+                return "Diterima";
             case "CANCELLED":
                 return "Dibatalkan";
             default:
@@ -94,50 +94,45 @@ const AdminOrderDetailPage = () => {
     const getTimeline = () => {
         if (!currentOrder) return [];
 
-        const timeline = [
-            {
-                status: "Order Placed",
-                date: currentOrder.created_at,
-                completed: true,
-            },
-            {
-                status: "Payment Confirmation",
-                date: currentOrder.payment?.created_at || "Pending",
-                completed: currentOrder.payment?.status === "SUCCESS",
-            },
-            {
-                status: "Processing",
-                date:
-                    currentOrder.status === "PROCESSING" ||
-                    currentOrder.status === "SHIPPED" ||
-                    currentOrder.status === "DELIVERED"
-                        ? currentOrder.updated_at || currentOrder.created_at
-                        : "Pending",
-                completed:
-                    currentOrder.status === "PROCESSING" ||
-                    currentOrder.status === "SHIPPED" ||
-                    currentOrder.status === "DELIVERED",
-            },
-            {
-                status: "Shipped",
-                date:
-                    currentOrder.status === "SHIPPED" ||
-                    currentOrder.status === "DELIVERED"
-                        ? currentOrder.updated_at || currentOrder.created_at
-                        : "Pending",
-                completed:
-                    currentOrder.status === "SHIPPED" ||
-                    currentOrder.status === "DELIVERED",
-            },
-            {
-                status: "Delivered",
-                date:
-                    currentOrder.status === "DELIVERED"
-                        ? currentOrder.updated_at || currentOrder.created_at
-                        : "Pending",
-                completed: currentOrder.status === "DELIVERED",
-            },
+        // Get actual status history from order_status_history
+        const statusHistory = currentOrder.order_status_history || [];
+
+        // Create a map of status to date from history
+        const statusDateMap = statusHistory.reduce((acc, history) => {
+            acc[history.status] = history.created_at;
+            return acc;
+        }, {} as Record<string, string>);
+
+        // Define the expected order flow
+        const expectedStatuses = [
+            { status: "PENDING", label: "Pesanan Dibuat" },
+            { status: "CONFIRMED", label: "Pesanan Dikonfirmasi" },
+            { status: "PROCESSING", label: "Sedang Diproses" },
+            { status: "SHIPPED", label: "Pesanan Dikirim" },
+            { status: "DELIVERED", label: "Pesanan Diterima" },
         ];
+
+        const timeline = expectedStatuses.map(({ status, label }) => {
+            const hasStatus = statusDateMap[status];
+            const isCompleted = !!hasStatus;
+
+            return {
+                status: label,
+                date: hasStatus ? statusDateMap[status] : "Pending",
+                completed: isCompleted,
+                originalStatus: status,
+            };
+        });
+
+        // Handle cancelled status separately
+        if (statusDateMap["CANCELLED"]) {
+            timeline.push({
+                status: "Pesanan Dibatalkan",
+                date: statusDateMap["CANCELLED"],
+                completed: true,
+                originalStatus: "CANCELLED",
+            });
+        }
 
         return timeline;
     };
@@ -485,7 +480,9 @@ const AdminOrderDetailPage = () => {
                                     <Badge
                                         className={
                                             currentOrder.payment.status ===
-                                            "PAID"
+                                                "PAID" ||
+                                            currentOrder.payment.status ===
+                                                "SUCCESS"
                                                 ? "bg-green-100 text-green-700"
                                                 : "bg-yellow-100 text-yellow-700"
                                         }
@@ -540,7 +537,10 @@ const AdminOrderDetailPage = () => {
                                         <div
                                             className={`w-3 h-3 rounded-full mt-1 ${
                                                 item.completed
-                                                    ? "bg-green-500"
+                                                    ? item.originalStatus ===
+                                                      "CANCELLED"
+                                                        ? "bg-red-500"
+                                                        : "bg-green-500"
                                                     : "bg-gray-300"
                                             }`}
                                         />
@@ -548,7 +548,10 @@ const AdminOrderDetailPage = () => {
                                             <p
                                                 className={`text-sm font-medium ${
                                                     item.completed
-                                                        ? "text-gray-900"
+                                                        ? item.originalStatus ===
+                                                          "CANCELLED"
+                                                            ? "text-red-700"
+                                                            : "text-gray-900"
                                                         : "text-gray-500"
                                                 }`}
                                             >
@@ -613,7 +616,7 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Tandai Terkirim
+                                    Tandai Diterima
                                 </Button>
                             )}
                             <Button variant="outline" className="w-full">

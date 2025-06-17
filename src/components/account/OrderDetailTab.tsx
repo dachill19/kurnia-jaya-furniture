@@ -39,7 +39,9 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
     const { getReviewByOrderItemId, deleteReview } = useReviewStore();
     const { toast } = useToast();
     const [copiedTracking, setCopiedTracking] = useState(false);
-    const [reviews, setReviews] = useState<{ [key: string]: { exists: boolean; reviewId?: string } }>({});
+    const [reviews, setReviews] = useState<{
+        [key: string]: { exists: boolean; reviewId?: string };
+    }>({});
 
     useEffect(() => {
         console.log("OrderDetailTab mounted with:", {
@@ -63,7 +65,9 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
     useEffect(() => {
         const checkReviews = async () => {
             if (currentOrder?.order_items) {
-                const reviewStatus: { [key: string]: { exists: boolean; reviewId?: string } } = {};
+                const reviewStatus: {
+                    [key: string]: { exists: boolean; reviewId?: string };
+                } = {};
                 for (const item of currentOrder.order_items) {
                     const review = await getReviewByOrderItemId(item.id);
                     reviewStatus[item.id] = {
@@ -87,7 +91,10 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
         }
     }, [error, clearError]);
 
-    const handleDeleteReview = async (reviewId: string, orderItemId: string) => {
+    const handleDeleteReview = async (
+        reviewId: string,
+        orderItemId: string
+    ) => {
         if (!confirm("Apakah Anda yakin ingin menghapus ulasan ini?")) {
             return;
         }
@@ -174,6 +181,15 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
             </div>
         );
     }
+
+    const getStatusDate = (status: string) => {
+        if (!currentOrder?.order_status_history) return null;
+
+        const statusEntry = currentOrder.order_status_history.find(
+            (history) => history.status === status
+        );
+        return statusEntry ? statusEntry.created_at : null;
+    };
 
     const getStatusLabel = (status: string) => {
         switch (status) {
@@ -404,7 +420,11 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                                                 <Link
                                                     to={
                                                         reviews[item.id]?.exists
-                                                            ? `/edit-review/${reviews[item.id].reviewId}`
+                                                            ? `/edit-review/${
+                                                                  reviews[
+                                                                      item.id
+                                                                  ].reviewId
+                                                              }`
                                                             : `/add-review/${item.id}/${item.product_id}`
                                                     }
                                                 >
@@ -442,104 +462,122 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                                         Pesanan Dibuat
                                     </p>
                                     <p className="text-sm text-gray-500">
-                                        {formatDate(currentOrder.created_at)}
+                                        {getStatusDate("PENDING")
+                                            ? formatDate(
+                                                  getStatusDate("PENDING")!
+                                              )
+                                            : "-"}
                                     </p>
                                 </div>
                             </div>
 
-                            {currentOrder.status !== "PENDING" && (
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                        <CheckCircle
-                                            size={16}
-                                            className="text-green-600"
-                                        />
+                            {currentOrder.status !== "PENDING" &&
+                                getStatusDate("CONFIRMED") && (
+                                    <div className="flex items-center">
+                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                            <CheckCircle
+                                                size={16}
+                                                className="text-green-600"
+                                            />
+                                        </div>
+                                        <div className="ml-3">
+                                            <p className="font-medium">
+                                                Pesanan Dikonfirmasi
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {getStatusDate("CONFIRMED")
+                                                    ? formatDate(
+                                                          getStatusDate(
+                                                              "CONFIRMED"
+                                                          )!
+                                                      )
+                                                    : "-"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="ml-3">
-                                        <p className="font-medium">
-                                            Pesanan Dikonfirmasi
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {currentOrder.updated_at
-                                                ? formatDate(
-                                                      currentOrder.updated_at
-                                                  )
-                                                : "-"}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                                )}
 
                             {["PROCESSING", "SHIPPED", "DELIVERED"].includes(
                                 currentOrder.status
-                            ) && (
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                        <CheckCircle
-                                            size={16}
-                                            className="text-green-600"
-                                        />
+                            ) &&
+                                getStatusDate("PROCESSING") && (
+                                    <div className="flex items-center">
+                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                            <CheckCircle
+                                                size={16}
+                                                className="text-green-600"
+                                            />
+                                        </div>
+                                        <div className="ml-3">
+                                            <p className="font-medium">
+                                                Pesanan Diproses
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {getStatusDate("PROCESSING")
+                                                    ? formatDate(
+                                                          getStatusDate(
+                                                              "PROCESSING"
+                                                          )!
+                                                      )
+                                                    : "-"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="ml-3">
-                                        <p className="font-medium">
-                                            Pesanan Diproses
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            -
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                                )}
 
                             {["SHIPPED", "DELIVERED"].includes(
                                 currentOrder.status
-                            ) && (
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                        <CheckCircle
-                                            size={16}
-                                            className="text-green-600"
-                                        />
+                            ) &&
+                                getStatusDate("SHIPPED") && (
+                                    <div className="flex items-center">
+                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                            <CheckCircle
+                                                size={16}
+                                                className="text-green-600"
+                                            />
+                                        </div>
+                                        <div className="ml-3">
+                                            <p className="font-medium">
+                                                Pesanan Dikirim
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {getStatusDate("SHIPPED")
+                                                    ? formatDate(
+                                                          getStatusDate(
+                                                              "SHIPPED"
+                                                          )!
+                                                      )
+                                                    : "-"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="ml-3">
-                                        <p className="font-medium">
-                                            Pesanan Dikirim
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {currentOrder.shipping?.created_at
-                                                ? formatDate(
-                                                      currentOrder.shipping
-                                                          .created_at
-                                                  )
-                                                : "-"}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                                )}
 
-                            {currentOrder.status === "DELIVERED" && (
-                                <div className="flex items-center">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                                        <CheckCircle
-                                            size={16}
-                                            className="text-green-600"
-                                        />
+                            {currentOrder.status === "DELIVERED" &&
+                                getStatusDate("DELIVERED") && (
+                                    <div className="flex items-center">
+                                        <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                                            <CheckCircle
+                                                size={16}
+                                                className="text-green-600"
+                                            />
+                                        </div>
+                                        <div className="ml-3">
+                                            <p className="font-medium">
+                                                Pesanan Diterima
+                                            </p>
+                                            <p className="text-sm text-gray-500">
+                                                {getStatusDate("DELIVERED")
+                                                    ? formatDate(
+                                                          getStatusDate(
+                                                              "DELIVERED"
+                                                          )!
+                                                      )
+                                                    : "-"}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="ml-3">
-                                        <p className="font-medium">
-                                            Pesanan Diterima
-                                        </p>
-                                        <p className="text-sm text-gray-500">
-                                            {currentOrder.shipping?.updated_at
-                                                ? formatDate(
-                                                      currentOrder.shipping
-                                                          .updated_at
-                                                  )
-                                                : "-"}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                                )}
                         </div>
                     </div>
                 </div>
@@ -723,18 +761,6 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                     )}
 
                     <div className="space-y-3">
-                        {(currentOrder.status === "PROCESSING" ||
-                            currentOrder.status === "SHIPPED") && (
-                            <Button className="w-full" asChild>
-                                <Link
-                                    to={`/account/orders/${currentOrder.id}/track`}
-                                >
-                                    <Truck size={16} className="mr-2" />
-                                    Lacak Pesanan
-                                </Link>
-                            </Button>
-                        )}
-
                         {currentOrder.status === "DELIVERED" && (
                             <div className="flex flex-col gap-3">
                                 {reviews[currentOrder.order_items[0]?.id]
@@ -766,13 +792,19 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                                             reviews[
                                                 currentOrder.order_items[0]?.id
                                             ]?.exists
-                                                ? `/edit-review/${reviews[currentOrder.order_items[0].id].reviewId}`
+                                                ? `/edit-review/${
+                                                      reviews[
+                                                          currentOrder
+                                                              .order_items[0].id
+                                                      ].reviewId
+                                                  }`
                                                 : `/add-review/${currentOrder.order_items[0]?.id}/${currentOrder.order_items[0]?.product_id}`
                                         }
                                     >
                                         <Star size={16} className="mr-2" />
-                                        {reviews[currentOrder.order_items[0]?.id]
-                                            ?.exists
+                                        {reviews[
+                                            currentOrder.order_items[0]?.id
+                                        ]?.exists
                                             ? "Edit Penilaian"
                                             : "Beri Penilaian"}
                                     </Link>
@@ -780,9 +812,7 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
                             </div>
                         )}
 
-                        <Button variant="outline" className="w-full">
-                            Hubungi Penjual
-                        </Button>
+                        <Button className="w-full">Hubungi Penjual</Button>
                     </div>
                 </div>
             </div>

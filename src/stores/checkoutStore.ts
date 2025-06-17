@@ -161,6 +161,35 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
                 );
             }
 
+            // 5. Create order status history record
+            const { error: statusHistoryError } = await supabase
+                .from("order_status_history")
+                .insert({
+                    order_id: newOrder.id,
+                    status: "PENDING",
+                    created_at: new Date().toISOString(),
+                });
+
+            if (statusHistoryError) {
+                // Rollback: delete order, shipping, order items, and payment
+                await supabase
+                    .from("payment")
+                    .delete()
+                    .eq("order_id", newOrder.id);
+                await supabase
+                    .from("order_item")
+                    .delete()
+                    .eq("order_id", newOrder.id);
+                await supabase
+                    .from("shipping")
+                    .delete()
+                    .eq("order_id", newOrder.id);
+                await supabase.from("order").delete().eq("id", newOrder.id);
+                throw new Error(
+                    `Failed to create order status history: ${statusHistoryError.message}`
+                );
+            }
+
             // Clear cart after successful order creation
             await clearCart();
 

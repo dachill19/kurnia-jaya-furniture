@@ -94,10 +94,6 @@ const App = () => {
                         element={<AdminOrderDetailPage />}
                     />
                     <Route path="payments" element={<AdminPaymentsPage />} />
-                    <Route
-                        path="notifications"
-                        element={<div>Notifications Page (TBD)</div>}
-                    />
                 </Route>
 
                 <Route path="/" element={<Layout />}>

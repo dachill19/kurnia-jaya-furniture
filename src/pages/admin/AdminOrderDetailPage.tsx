@@ -216,11 +216,6 @@ const AdminOrderDetailPage = () => {
         );
     }
 
-    const mainImage =
-        currentOrder.order_item?.[0]?.product?.product_image?.find(
-            (img) => img.is_main
-        )?.image_url;
-
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -260,65 +255,76 @@ const AdminOrderDetailPage = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {currentOrder.order_item?.map((item, index) => (
-                                    <div
-                                        key={item.id}
-                                        className="flex flex-col sm:flex-row gap-4"
-                                    >
-                                        <div className="w-full sm:w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                            {mainImage ? (
-                                                <img
-                                                    src={mainImage}
-                                                    alt={item.product?.name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <Package className="h-8 w-8 text-gray-400" />
-                                            )}
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-semibold text-lg">
-                                                {item.product?.name}
-                                            </h3>
-                                            <p className="text-sm text-gray-500">
-                                                ID: {item.product?.id}
-                                            </p>
-                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 gap-2">
-                                                <div>
-                                                    <p className="text-sm">
-                                                        Jumlah: {item.quantity}
-                                                    </p>
-                                                    <p className="text-lg font-bold text-kj-red">
-                                                        Rp{" "}
-                                                        {item.price.toLocaleString(
-                                                            "id-ID"
-                                                        )}
-                                                    </p>
+                                {currentOrder.order_item?.map((item, index) => {
+                                    // Pindahkan deklarasi mainImage ke dalam loop untuk setiap item
+                                    const mainImage =
+                                        item.product?.product_image?.find(
+                                            (img) => img.is_main
+                                        )?.image_url;
+
+                                    return (
+                                        <div key={item.id}>
+                                            <div className="flex flex-col sm:flex-row gap-4">
+                                                <div className="w-full sm:w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                                    {mainImage ? (
+                                                        <img
+                                                            src={mainImage}
+                                                            alt={
+                                                                item.product
+                                                                    ?.name
+                                                            }
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <Package className="h-8 w-8 text-gray-400" />
+                                                    )}
                                                 </div>
-                                                <div className="text-right">
+                                                <div className="flex-1">
+                                                    <h3 className="font-semibold text-lg">
+                                                        {item.product?.name}
+                                                    </h3>
                                                     <p className="text-sm text-gray-500">
-                                                        Subtotal
+                                                        ID: {item.product?.id}
                                                     </p>
-                                                    <p className="text-xl font-bold">
-                                                        Rp{" "}
-                                                        {(
-                                                            item.price *
-                                                            item.quantity
-                                                        ).toLocaleString(
-                                                            "id-ID"
-                                                        )}
-                                                    </p>
+                                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 gap-2">
+                                                        <div>
+                                                            <p className="text-sm">
+                                                                Jumlah:{" "}
+                                                                {item.quantity}
+                                                            </p>
+                                                            <p className="text-lg font-bold text-kj-red">
+                                                                Rp{" "}
+                                                                {item.price.toLocaleString(
+                                                                    "id-ID"
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-sm text-gray-500">
+                                                                Subtotal
+                                                            </p>
+                                                            <p className="text-xl font-bold">
+                                                                Rp{" "}
+                                                                {(
+                                                                    item.price *
+                                                                    item.quantity
+                                                                ).toLocaleString(
+                                                                    "id-ID"
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            {index <
+                                                (currentOrder.order_item
+                                                    ?.length || 0) -
+                                                    1 && (
+                                                <Separator className="my-4" />
+                                            )}
                                         </div>
-                                        {index <
-                                            (currentOrder.order_item?.length ||
-                                                0) -
-                                                1 && (
-                                            <Separator className="my-4" />
-                                        )}
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 <Separator />
                                 <div className="flex justify-between items-center">
                                     <span className="text-lg font-semibold">

@@ -41,7 +41,6 @@ const AdminLayout = () => {
         { title: "Produk", path: "/admin/products", icon: Package },
         { title: "Pesanan", path: "/admin/orders", icon: ShoppingCart },
         { title: "Pembayaran", path: "/admin/payments", icon: CreditCard },
-        { title: "Notifikasi", path: "/admin/notifications", icon: Bell },
     ];
 
     return (

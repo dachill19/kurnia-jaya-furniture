@@ -76,6 +76,20 @@ export interface OrderUser {
     updated_at?: string;
 }
 
+// New interface for order status history
+export interface OrderStatusHistory {
+    id: string;
+    order_id: string;
+    status:
+        | "PENDING"
+        | "CONFIRMED"
+        | "PROCESSING"
+        | "SHIPPED"
+        | "DELIVERED"
+        | "CANCELLED";
+    created_at: string;
+}
+
 export interface Order {
     id: string;
     user_id: string;
@@ -93,6 +107,7 @@ export interface Order {
     payment?: Payment;
     shipping?: Shipping;
     user?: OrderUser;
+    order_status_history?: OrderStatusHistory[]; // New field
 }
 
 export interface OrderStatusUpdate {
@@ -126,10 +141,12 @@ interface OrderState {
     fetchOrderDetail: (orderId: string) => Promise<void>;
     updateOrderStatus: (updateData: OrderStatusUpdate) => Promise<void>;
     fetchOrderStats: () => Promise<void>;
+    fetchOrderStatusHistory: (orderId: string) => Promise<OrderStatusHistory[]>; // New action
     setSearchTerm: (term: string) => void;
     setStatusFilter: (status: Order["status"] | "ALL") => void;
     clearError: () => void;
     clearCurrentOrder: () => void;
+    refreshData: () => Promise<void>;
 
     // Computed
     getFilteredOrders: () => Order[];
@@ -199,6 +216,12 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                         role,
                         created_at,
                         updated_at
+                    ),
+                    order_status_history(
+                        id,
+                        order_id,
+                        status,
+                        created_at
                     )
                 `
                 )
@@ -276,6 +299,12 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                         role,
                         created_at,
                         updated_at
+                    ),
+                    order_status_history(
+                        id,
+                        order_id,
+                        status,
+                        created_at
                     )
                 `
                 )
@@ -330,6 +359,23 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                 throw new Error(
                     `Failed to update order status: ${orderError.message}`
                 );
+            }
+
+            // Insert new status history record
+            const { error: historyError } = await supabase
+                .from("order_status_history")
+                .insert({
+                    order_id: updateData.orderId,
+                    status: updateData.newStatus,
+                    created_at: new Date().toISOString(),
+                });
+
+            if (historyError) {
+                console.warn(
+                    "Failed to create status history:",
+                    historyError.message
+                );
+                // Don't throw error here as the main status update succeeded
             }
 
             // Update shipping info if provided
@@ -487,6 +533,43 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
         }
     },
 
+    // New function to fetch order status history
+    fetchOrderStatusHistory: async (orderId: string) => {
+        const { startLoading, stopLoading } = useLoadingStore.getState();
+        const { user } = useAuthStore.getState();
+
+        if (!user) {
+            throw new Error("User not authenticated");
+        }
+
+        try {
+            startLoading("admin-order-history-fetch");
+
+            const { data: history, error } = await supabase
+                .from("order_status_history")
+                .select("*")
+                .eq("order_id", orderId)
+                .order("created_at", { ascending: true });
+
+            if (error) {
+                throw new Error(
+                    `Failed to fetch order status history: ${error.message}`
+                );
+            }
+
+            return history || [];
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error
+                    ? error.message
+                    : "Failed to fetch order status history";
+            console.error("Admin fetch order status history error:", error);
+            throw new Error(errorMessage);
+        } finally {
+            stopLoading("admin-order-history-fetch");
+        }
+    },
+
     setSearchTerm: (term: string) => {
         set({ searchTerm: term });
     },
@@ -527,5 +610,9 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
 
     clearCurrentOrder: () => {
         set({ currentOrder: null });
+    },
+
+    refreshData: async () => {
+        await Promise.all([get().fetchAllOrders(), get().fetchOrderStats()]);
     },
 }));

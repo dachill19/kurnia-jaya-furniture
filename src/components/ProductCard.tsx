@@ -24,6 +24,7 @@ interface ProductCardProps {
     name: string;
     price: number;
     discountPrice?: number;
+    stock: number; // Added stock prop
     images: ProductImage[];
     reviews?: Review[];
     category: Category;
@@ -35,6 +36,7 @@ const ProductCard = ({
     name,
     price,
     discountPrice,
+    stock = 0, // Default stock to 0
     images = [],
     reviews = [],
     category,
@@ -56,6 +58,9 @@ const ProductCard = ({
               ""
             : "";
 
+    // Check if product is out of stock
+    const isOutOfStock = stock <= 0;
+
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
@@ -70,19 +75,40 @@ const ProductCard = ({
             return;
         }
 
+        // Check if product is out of stock
+        if (isOutOfStock) {
+            toast({
+                title: "Stok habis",
+                description: "Produk ini sedang tidak tersedia",
+                variant: "destructive",
+            });
+            return;
+        }
+
         try {
-            await addToCart({
+            const result = await addToCart({
                 id,
                 name,
                 price: price,
-                discount_price: discountPrice,
+                discount_price: discountPrice || null,
                 image: imageUrl,
+                stock, // Include stock in the item
             });
 
-            toast({
-                title: "Produk ditambahkan ke keranjang",
-                description: name,
-            });
+            if (result.success) {
+                toast({
+                    title: "Produk ditambahkan ke keranjang",
+                    description: name,
+                });
+            } else {
+                toast({
+                    title: "Gagal menambahkan ke keranjang",
+                    description:
+                        result.message ||
+                        "Terjadi kesalahan, silakan coba lagi",
+                    variant: "destructive",
+                });
+            }
         } catch (error) {
             toast({
                 title: "Gagal menambahkan ke keranjang",
@@ -113,7 +139,15 @@ const ProductCard = ({
                             <span className="text-gray-400">No Image</span>
                         </div>
                     )}
-                    {isHot && (
+                    {/* Stock overlay for out of stock items */}
+                    {isOutOfStock && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                            <span className="text-white font-semibold text-lg">
+                                STOK HABIS
+                            </span>
+                        </div>
+                    )}
+                    {isHot && !isOutOfStock && (
                         <div className="absolute top-2 right-2 bg-kj-red text-white text-xs font-bold px-2 py-1 rounded-full">
                             HOT
                         </div>
@@ -142,6 +176,24 @@ const ProductCard = ({
                             ({avgRating.toFixed(1)})
                         </span>
                     </div>
+
+                    {/* Stock indicator */}
+                    <div className="mb-2">
+                        {isOutOfStock ? (
+                            <span className="text-sm text-red-500 font-medium">
+                                Stok habis
+                            </span>
+                        ) : stock <= 5 ? (
+                            <span className="text-sm text-orange-500 font-medium">
+                                Stok terbatas ({stock} tersisa)
+                            </span>
+                        ) : (
+                            <span className="text-sm text-green-600">
+                                Stok tersedia
+                            </span>
+                        )}
+                    </div>
+
                     <div className="flex items-center justify-between">
                         <div className="text-kj-red font-bold">
                             {discountPrice ? (
@@ -171,9 +223,18 @@ const ProductCard = ({
                         <Button
                             variant="outline"
                             size="sm"
-                            className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white disabled:opacity-50"
+                            className={`text-kj-red border-kj-red hover:bg-kj-red hover:text-white disabled:opacity-50 ${
+                                isOutOfStock
+                                    ? "cursor-not-allowed bg-gray-100 text-gray-400 border-gray-300 hover:bg-gray-100 hover:text-gray-400"
+                                    : ""
+                            }`}
                             onClick={handleAddToCart}
-                            disabled={isAddingToCart}
+                            disabled={isAddingToCart || isOutOfStock}
+                            title={
+                                isOutOfStock
+                                    ? "Stok habis"
+                                    : "Tambah ke keranjang"
+                            }
                         >
                             {isAddingToCart ? (
                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>

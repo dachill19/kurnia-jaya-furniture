@@ -58,6 +58,14 @@ export interface Shipping {
     updated_at: string;
 }
 
+// New interface for order status history
+export interface OrderStatusHistory {
+    id: string;
+    order_id: string;
+    status: string;
+    created_at: string;
+}
+
 export interface Order {
     id: string;
     user_id: string;
@@ -75,6 +83,7 @@ export interface Order {
     address?: Address;
     payment?: Payment;
     shipping?: Shipping;
+    order_status_history?: OrderStatusHistory[];
 }
 
 interface OrderState {
@@ -126,6 +135,12 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
                                 is_main
                             )
                         )
+                    ),
+                    order_status_history(
+                        id,
+                        order_id,
+                        status,
+                        created_at
                     )
                 `
                 )
@@ -187,6 +202,12 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
                     shipping(
                         *,
                         address(*)
+                    ),
+                    order_status_history(
+                        id,
+                        order_id,
+                        status,
+                        created_at
                     )
                 `
                 )
@@ -207,6 +228,13 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
             const transformedOrder = {
                 ...order,
                 address: order.shipping?.address || null,
+                // Sort status history by created_at descending (newest first)
+                order_status_history:
+                    order.order_status_history?.sort(
+                        (a: OrderStatusHistory, b: OrderStatusHistory) =>
+                            new Date(b.created_at).getTime() -
+                            new Date(a.created_at).getTime()
+                    ) || [],
             };
 
             set({ currentOrder: transformedOrder, isLoading: false });

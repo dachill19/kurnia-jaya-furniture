@@ -28,6 +28,7 @@ import {
     Clock,
     AlertCircle,
     Loader2,
+    RefreshCw,
 } from "lucide-react";
 import { useAdminOrderStore } from "@/stores/admin/adminOrderStore";
 
@@ -46,12 +47,12 @@ const AdminOrdersPage = () => {
         setStatusFilter,
         getFilteredOrders,
         clearError,
+        refreshData,
     } = useAdminOrderStore();
 
     useEffect(() => {
-        fetchAllOrders();
-        fetchOrderStats();
-    }, [fetchAllOrders, fetchOrderStats]);
+        refreshData();
+    }, [refreshData]);
 
     const filteredOrders = getFilteredOrders();
 
@@ -62,9 +63,9 @@ const AdminOrdersPage = () => {
             case "CONFIRMED":
                 return "bg-blue-100 text-blue-700";
             case "PROCESSING":
-                return "bg-indigo-100 text-indigo-700";
-            case "SHIPPED":
                 return "bg-purple-100 text-purple-700";
+            case "SHIPPED":
+                return "bg-indigo-100 text-indigo-700";
             case "DELIVERED":
                 return "bg-green-100 text-green-700";
             case "CANCELLED":
@@ -85,7 +86,7 @@ const AdminOrdersPage = () => {
             case "SHIPPED":
                 return "Dikirim";
             case "DELIVERED":
-                return "Terkirim";
+                return "Diterima";
             case "CANCELLED":
                 return "Dibatalkan";
             default:
@@ -109,6 +110,10 @@ const AdminOrdersPage = () => {
             hour: "2-digit",
             minute: "2-digit",
         });
+    };
+
+    const handleRefresh = () => {
+        refreshData();
     };
 
     const statsCards = [
@@ -177,36 +182,49 @@ const AdminOrdersPage = () => {
                     Pesanan
                 </h2>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button
+                        onClick={handleRefresh}
+                        variant="outline"
+                        className="flex-1 sm:flex-none"
+                        disabled={isLoading}
+                    >
+                        <RefreshCw
+                            className={`h-4 w-4 mr-2 ${
+                                isLoading ? "animate-spin" : ""
+                            }`}
+                        />
+                        Refresh
+                    </Button>
                     <Button variant="outline" className="w-full sm:w-auto">
                         <Package className="h-4 w-4 mr-2" />
                         Export Pesanan
-                    </Button>
-                    <Button className="bg-kj-red hover:bg-kj-red/90 w-full sm:w-auto">
-                        + Buat Pesanan
                     </Button>
                 </div>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {statsCards.map((stat, index) => (
-                    <Card key={index} className="border-none shadow-sm">
-                        <CardContent className="p-4 sm:p-6">
+                    <Card
+                        key={index}
+                        className="border-none shadow-sm hover:shadow-md transition-shadow"
+                    >
+                        <CardContent className="p-4">
                             <div className="flex items-center justify-between">
-                                <div className="min-w-0 flex-1">
-                                    <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">
+                                <div>
+                                    <p className="text-sm text-gray-600">
                                         {stat.title}
                                     </p>
-                                    <h3 className="text-lg sm:text-2xl font-bold truncate">
+                                    <p className="text-xl font-bold text-gray-900">
                                         {isLoading ? (
                                             <Loader2 className="h-5 w-5 animate-spin" />
                                         ) : (
                                             stat.value
                                         )}
-                                    </h3>
+                                    </p>
                                 </div>
                                 <stat.icon
-                                    className={`h-5 w-5 sm:h-6 sm:w-6 ${stat.color} flex-shrink-0`}
+                                    className={`h-8 w-8 ${stat.color}`}
                                 />
                             </div>
                         </CardContent>

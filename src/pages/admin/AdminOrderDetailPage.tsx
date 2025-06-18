@@ -73,7 +73,7 @@ const AdminOrderDetailPage = () => {
             case "SHIPPED":
                 return "Dikirim";
             case "DELIVERED":
-                return "Terkirim";
+                return "Diterima";
             case "CANCELLED":
                 return "Dibatalkan";
             default:
@@ -94,50 +94,45 @@ const AdminOrderDetailPage = () => {
     const getTimeline = () => {
         if (!currentOrder) return [];
 
-        const timeline = [
-            {
-                status: "Order Placed",
-                date: currentOrder.created_at,
-                completed: true,
-            },
-            {
-                status: "Payment Confirmation",
-                date: currentOrder.payment?.created_at || "Pending",
-                completed: currentOrder.payment?.status === "PAID",
-            },
-            {
-                status: "Processing",
-                date:
-                    currentOrder.status === "PROCESSING" ||
-                    currentOrder.status === "SHIPPED" ||
-                    currentOrder.status === "DELIVERED"
-                        ? currentOrder.updated_at || currentOrder.created_at
-                        : "Pending",
-                completed:
-                    currentOrder.status === "PROCESSING" ||
-                    currentOrder.status === "SHIPPED" ||
-                    currentOrder.status === "DELIVERED",
-            },
-            {
-                status: "Shipped",
-                date:
-                    currentOrder.status === "SHIPPED" ||
-                    currentOrder.status === "DELIVERED"
-                        ? currentOrder.updated_at || currentOrder.created_at
-                        : "Pending",
-                completed:
-                    currentOrder.status === "SHIPPED" ||
-                    currentOrder.status === "DELIVERED",
-            },
-            {
-                status: "Delivered",
-                date:
-                    currentOrder.status === "DELIVERED"
-                        ? currentOrder.updated_at || currentOrder.created_at
-                        : "Pending",
-                completed: currentOrder.status === "DELIVERED",
-            },
+        // Get actual status history from order_status_history
+        const statusHistory = currentOrder.order_status_history || [];
+
+        // Create a map of status to date from history
+        const statusDateMap = statusHistory.reduce((acc, history) => {
+            acc[history.status] = history.created_at;
+            return acc;
+        }, {} as Record<string, string>);
+
+        // Define the expected order flow
+        const expectedStatuses = [
+            { status: "PENDING", label: "Pesanan Dibuat" },
+            { status: "CONFIRMED", label: "Pesanan Dikonfirmasi" },
+            { status: "PROCESSING", label: "Sedang Diproses" },
+            { status: "SHIPPED", label: "Pesanan Dikirim" },
+            { status: "DELIVERED", label: "Pesanan Diterima" },
         ];
+
+        const timeline = expectedStatuses.map(({ status, label }) => {
+            const hasStatus = statusDateMap[status];
+            const isCompleted = !!hasStatus;
+
+            return {
+                status: label,
+                date: hasStatus ? statusDateMap[status] : "Pending",
+                completed: isCompleted,
+                originalStatus: status,
+            };
+        });
+
+        // Handle cancelled status separately
+        if (statusDateMap["CANCELLED"]) {
+            timeline.push({
+                status: "Pesanan Dibatalkan",
+                date: statusDateMap["CANCELLED"],
+                completed: true,
+                originalStatus: "CANCELLED",
+            });
+        }
 
         return timeline;
     };
@@ -146,10 +141,14 @@ const AdminOrderDetailPage = () => {
         if (!currentOrder) return;
 
         try {
+            // Update the status
             await updateOrderStatus({
                 orderId: currentOrder.id,
                 newStatus: newStatus,
             });
+
+            // Fetch fresh data after successful update
+            await fetchOrderDetail(currentOrder.id);
         } catch (error) {
             console.error("Error updating order status:", error);
         }
@@ -221,11 +220,6 @@ const AdminOrderDetailPage = () => {
         );
     }
 
-    const mainImage =
-        currentOrder.order_item?.[0]?.product?.product_image?.find(
-            (img) => img.is_main
-        )?.image_url;
-
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
@@ -265,65 +259,76 @@ const AdminOrderDetailPage = () => {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {currentOrder.order_item?.map((item, index) => (
-                                    <div
-                                        key={item.id}
-                                        className="flex flex-col sm:flex-row gap-4"
-                                    >
-                                        <div className="w-full sm:w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                            {mainImage ? (
-                                                <img
-                                                    src={mainImage}
-                                                    alt={item.product?.name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <Package className="h-8 w-8 text-gray-400" />
-                                            )}
-                                        </div>
-                                        <div className="flex-1">
-                                            <h3 className="font-semibold text-lg">
-                                                {item.product?.name}
-                                            </h3>
-                                            <p className="text-sm text-gray-500">
-                                                ID: {item.product?.id}
-                                            </p>
-                                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 gap-2">
-                                                <div>
-                                                    <p className="text-sm">
-                                                        Jumlah: {item.quantity}
-                                                    </p>
-                                                    <p className="text-lg font-bold text-kj-red">
-                                                        Rp{" "}
-                                                        {item.price.toLocaleString(
-                                                            "id-ID"
-                                                        )}
-                                                    </p>
+                                {currentOrder.order_item?.map((item, index) => {
+                                    // Pindahkan deklarasi mainImage ke dalam loop untuk setiap item
+                                    const mainImage =
+                                        item.product?.product_image?.find(
+                                            (img) => img.is_main
+                                        )?.image_url;
+
+                                    return (
+                                        <div key={item.id}>
+                                            <div className="flex flex-col sm:flex-row gap-4">
+                                                <div className="w-full sm:w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                                    {mainImage ? (
+                                                        <img
+                                                            src={mainImage}
+                                                            alt={
+                                                                item.product
+                                                                    ?.name
+                                                            }
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <Package className="h-8 w-8 text-gray-400" />
+                                                    )}
                                                 </div>
-                                                <div className="text-right">
+                                                <div className="flex-1">
+                                                    <h3 className="font-semibold text-lg">
+                                                        {item.product?.name}
+                                                    </h3>
                                                     <p className="text-sm text-gray-500">
-                                                        Subtotal
+                                                        ID: {item.product?.id}
                                                     </p>
-                                                    <p className="text-xl font-bold">
-                                                        Rp{" "}
-                                                        {(
-                                                            item.price *
-                                                            item.quantity
-                                                        ).toLocaleString(
-                                                            "id-ID"
-                                                        )}
-                                                    </p>
+                                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 gap-2">
+                                                        <div>
+                                                            <p className="text-sm">
+                                                                Jumlah:{" "}
+                                                                {item.quantity}
+                                                            </p>
+                                                            <p className="text-lg font-bold text-kj-red">
+                                                                Rp{" "}
+                                                                {item.price.toLocaleString(
+                                                                    "id-ID"
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-sm text-gray-500">
+                                                                Subtotal
+                                                            </p>
+                                                            <p className="text-xl font-bold">
+                                                                Rp{" "}
+                                                                {(
+                                                                    item.price *
+                                                                    item.quantity
+                                                                ).toLocaleString(
+                                                                    "id-ID"
+                                                                )}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
+                                            {index <
+                                                (currentOrder.order_item
+                                                    ?.length || 0) -
+                                                    1 && (
+                                                <Separator className="my-4" />
+                                            )}
                                         </div>
-                                        {index <
-                                            (currentOrder.order_item?.length ||
-                                                0) -
-                                                1 && (
-                                            <Separator className="my-4" />
-                                        )}
-                                    </div>
-                                ))}
+                                    );
+                                })}
                                 <Separator />
                                 <div className="flex justify-between items-center">
                                     <span className="text-lg font-semibold">
@@ -368,23 +373,23 @@ const AdminOrderDetailPage = () => {
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="flex items-center gap-2">
-                                    <Mail className="h-4 w-4 text-gray-400" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500">
-                                            Email
-                                        </p>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">
+                                        Email
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Mail className="h-4 w-4 text-gray-400" />
                                         <p className="text-sm">
                                             {currentOrder.user?.email || "N/A"}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Phone className="h-4 w-4 text-gray-400" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500">
-                                            Telepon
-                                        </p>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">
+                                        Telepon
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Phone className="h-4 w-4 text-gray-400" />
                                         <p className="text-sm">
                                             {currentOrder.user?.phone || "N/A"}
                                         </p>
@@ -485,7 +490,10 @@ const AdminOrderDetailPage = () => {
                                     <Badge
                                         className={
                                             currentOrder.payment.status ===
-                                            "PAID"
+                                            "FAILED"
+                                                ? "bg-red-100 text-red-700"
+                                                : currentOrder.payment
+                                                      .status === "SUCCESS"
                                                 ? "bg-green-100 text-green-700"
                                                 : "bg-yellow-100 text-yellow-700"
                                         }
@@ -540,7 +548,10 @@ const AdminOrderDetailPage = () => {
                                         <div
                                             className={`w-3 h-3 rounded-full mt-1 ${
                                                 item.completed
-                                                    ? "bg-green-500"
+                                                    ? item.originalStatus ===
+                                                      "CANCELLED"
+                                                        ? "bg-red-500"
+                                                        : "bg-green-500"
                                                     : "bg-gray-300"
                                             }`}
                                         />
@@ -548,7 +559,10 @@ const AdminOrderDetailPage = () => {
                                             <p
                                                 className={`text-sm font-medium ${
                                                     item.completed
-                                                        ? "text-gray-900"
+                                                        ? item.originalStatus ===
+                                                          "CANCELLED"
+                                                            ? "text-red-700"
+                                                            : "text-gray-900"
                                                         : "text-gray-500"
                                                 }`}
                                             >
@@ -580,7 +594,14 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Konfirmasi Pesanan
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Konfirmasi Pesanan"
+                                    )}
                                 </Button>
                             )}
                             {currentOrder.status === "CONFIRMED" && (
@@ -591,7 +612,14 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Mulai Proses
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Mulai Proses"
+                                    )}
                                 </Button>
                             )}
                             {currentOrder.status === "PROCESSING" && (
@@ -602,7 +630,14 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Kirim Pesanan
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Kirim Pesanan"
+                                    )}
                                 </Button>
                             )}
                             {currentOrder.status === "SHIPPED" && (
@@ -613,12 +648,16 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Tandai Terkirim
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Tandai Diterima"
+                                    )}
                                 </Button>
                             )}
-                            <Button variant="outline" className="w-full">
-                                Cetak Invoice
-                            </Button>
                             <Button variant="outline" className="w-full">
                                 Hubungi Pelanggan
                             </Button>
@@ -632,7 +671,14 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Batalkan Pesanan
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Batalkan Pesanan"
+                                    )}
                                 </Button>
                             )}
                         </CardContent>

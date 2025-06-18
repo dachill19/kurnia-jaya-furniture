@@ -2,8 +2,16 @@ import { Link } from "react-router-dom";
 import { useCartStore } from "@/stores/cartStore";
 import { useLoadingStore } from "@/stores/loadingStore";
 import { Button } from "@/components/ui/button";
-import { Trash2, ShoppingCart, ChevronLeft, Plus, Minus } from "lucide-react";
-import { useEffect } from "react";
+import {
+    Trash2,
+    ShoppingCart,
+    ChevronLeft,
+    Plus,
+    Minus,
+    AlertCircle,
+    Loader2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { CartPageSkeleton } from "@/components/skeleton/CartPageSkeleton";
 
 const CartPage = () => {
@@ -19,13 +27,64 @@ const CartPage = () => {
     } = useCartStore();
 
     const { isLoadingKey } = useLoadingStore();
+    const [errorMessages, setErrorMessages] = useState<{
+        [key: string]: string;
+    }>({});
+
+    // State untuk tracking loading per item
+    const [loadingQuantity, setLoadingQuantity] = useState<{
+        [key: string]: boolean;
+    }>({});
 
     // Fetch cart data when component mounts
     useEffect(() => {
         fetchCart();
     }, [fetchCart]);
 
-    // Show skeleton while loading
+    // Handle quantity update with validation
+    const handleQuantityUpdate = async (
+        productId: string,
+        newQuantity: number
+    ) => {
+        // Set loading untuk item ini
+        setLoadingQuantity((prev) => ({
+            ...prev,
+            [productId]: true,
+        }));
+
+        const result = await updateQuantity(productId, newQuantity);
+
+        // Remove loading untuk item ini
+        setLoadingQuantity((prev) => {
+            const newLoading = { ...prev };
+            delete newLoading[productId];
+            return newLoading;
+        });
+
+        if (!result.success && result.message) {
+            setErrorMessages((prev) => ({
+                ...prev,
+                [productId]: result.message,
+            }));
+            // Clear error message after 3 seconds
+            setTimeout(() => {
+                setErrorMessages((prev) => {
+                    const newErrors = { ...prev };
+                    delete newErrors[productId];
+                    return newErrors;
+                });
+            }, 3000);
+        } else {
+            // Clear any existing error for this product
+            setErrorMessages((prev) => {
+                const newErrors = { ...prev };
+                delete newErrors[productId];
+                return newErrors;
+            });
+        }
+    };
+
+    // Show skeleton while loading cart data (initial fetch only)
     if (isLoadingKey("cart-fetch")) {
         return <CartPageSkeleton />;
     }
@@ -90,19 +149,41 @@ const CartPage = () => {
                                 const hasDiscount =
                                     item.discount_price &&
                                     item.discount_price > 0;
+                                const isOutOfStock = item.stock <= 0;
+                                const isQuantityExceedsStock =
+                                    item.quantity > item.stock;
+                                const errorMessage = errorMessages[item.id];
+                                const isLoadingThisItem =
+                                    loadingQuantity[item.id];
 
                                 return (
                                     <div
                                         key={item.id}
-                                        className="p-4 border-b flex flex-col sm:flex-row items-center"
+                                        className={`p-4 border-b flex flex-col sm:flex-row items-center ${
+                                            isOutOfStock ||
+                                            isQuantityExceedsStock
+                                                ? "bg-red-50"
+                                                : ""
+                                        }`}
                                     >
                                         {/* Product Image */}
-                                        <div className="w-24 h-24 flex-shrink-0 mb-4 sm:mb-0">
+                                        <div className="w-24 h-24 flex-shrink-0 mb-4 sm:mb-0 relative">
                                             <img
                                                 src={item.image}
                                                 alt={item.name}
-                                                className="w-full h-full object-cover rounded-md"
+                                                className={`w-full h-full object-cover rounded-md ${
+                                                    isOutOfStock
+                                                        ? "opacity-50"
+                                                        : ""
+                                                }`}
                                             />
+                                            {isOutOfStock && (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-md">
+                                                    <span className="text-white text-xs font-bold">
+                                                        HABIS
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Product Details */}
@@ -135,6 +216,47 @@ const CartPage = () => {
                                                     </span>
                                                 )}
                                             </div>
+                                            {/* Stock Information */}
+                                            <div className="mt-1 text-sm">
+                                                <span
+                                                    className={`${
+                                                        item.stock <= 5
+                                                            ? "text-red-600"
+                                                            : "text-gray-500"
+                                                    }`}
+                                                >
+                                                    Stok: {item.stock}
+                                                </span>
+                                                {item.stock <= 5 &&
+                                                    item.stock > 0 && (
+                                                        <span className="ml-1 text-red-600 font-medium">
+                                                            (Terbatas!)
+                                                        </span>
+                                                    )}
+                                            </div>
+
+                                            {/* Error Message */}
+                                            {errorMessage && (
+                                                <div className="mt-2 flex items-center text-red-600 text-sm">
+                                                    <AlertCircle
+                                                        size={16}
+                                                        className="mr-1"
+                                                    />
+                                                    {errorMessage}
+                                                </div>
+                                            )}
+
+                                            {/* Stock Warning */}
+                                            {isQuantityExceedsStock && (
+                                                <div className="mt-2 flex items-center text-red-600 text-sm">
+                                                    <AlertCircle
+                                                        size={16}
+                                                        className="mr-1"
+                                                    />
+                                                    Jumlah melebihi stok yang
+                                                    tersedia
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Quantity Control */}
@@ -144,26 +266,52 @@ const CartPage = () => {
                                                 size="sm"
                                                 className="w-8 h-8 p-0 rounded-l-md rounded-r-none"
                                                 onClick={() =>
-                                                    updateQuantity(
+                                                    handleQuantityUpdate(
                                                         item.id,
                                                         item.quantity - 1
                                                     )
                                                 }
+                                                disabled={
+                                                    isOutOfStock ||
+                                                    isLoadingThisItem
+                                                }
                                             >
                                                 <Minus size={16} />
                                             </Button>
-                                            <div className="w-10 h-8 flex items-center justify-center border-t border-b border-gray-300 bg-white">
-                                                {item.quantity}
+
+                                            {/* Quantity Display dengan Spinner */}
+                                            <div
+                                                className={`w-10 h-8 flex items-center justify-center border-t border-b border-gray-300 bg-white ${
+                                                    isQuantityExceedsStock
+                                                        ? "text-red-600 font-bold"
+                                                        : ""
+                                                }`}
+                                            >
+                                                {isLoadingThisItem ? (
+                                                    <Loader2
+                                                        size={14}
+                                                        className="animate-spin text-gray-500"
+                                                    />
+                                                ) : (
+                                                    item.quantity
+                                                )}
                                             </div>
+
                                             <Button
                                                 variant="outline"
                                                 size="sm"
                                                 className="w-8 h-8 p-0 rounded-r-md rounded-l-none"
                                                 onClick={() =>
-                                                    updateQuantity(
+                                                    handleQuantityUpdate(
                                                         item.id,
                                                         item.quantity + 1
                                                     )
+                                                }
+                                                disabled={
+                                                    isOutOfStock ||
+                                                    item.quantity >=
+                                                        item.stock ||
+                                                    isLoadingThisItem
                                                 }
                                             >
                                                 <Plus size={16} />
@@ -188,6 +336,7 @@ const CartPage = () => {
                                                 onClick={() =>
                                                     removeFromCart(item.id)
                                                 }
+                                                disabled={isLoadingThisItem}
                                             >
                                                 <Trash2 size={18} />
                                             </Button>
@@ -224,6 +373,29 @@ const CartPage = () => {
                         </div>
 
                         <div className="p-4">
+                            {/* Stock Warning for Checkout */}
+                            {cart.some(
+                                (item) =>
+                                    item.stock <= 0 ||
+                                    item.quantity > item.stock
+                            ) && (
+                                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                                    <div className="flex items-center text-red-800 text-sm">
+                                        <AlertCircle
+                                            size={16}
+                                            className="mr-2"
+                                        />
+                                        <span className="font-medium">
+                                            Beberapa produk tidak dapat dipesan
+                                        </span>
+                                    </div>
+                                    <p className="text-red-700 text-xs mt-1">
+                                        Periksa dan sesuaikan jumlah sebelum
+                                        melanjutkan
+                                    </p>
+                                </div>
+                            )}
+
                             {/* Price Summary */}
                             <div className="mb-4 flex justify-between">
                                 <span className="font-medium">Total</span>
@@ -236,12 +408,31 @@ const CartPage = () => {
                             </div>
                             {/* Checkout Button */}
                             <Button
-                                className="w-full bg-kj-red hover:bg-kj-darkred text-white"
-                                asChild
+                                className="w-full bg-kj-red hover:bg-kj-darkred text-white disabled:bg-gray-400"
+                                asChild={
+                                    !cart.some(
+                                        (item) =>
+                                            item.stock <= 0 ||
+                                            item.quantity > item.stock
+                                    )
+                                }
+                                disabled={cart.some(
+                                    (item) =>
+                                        item.stock <= 0 ||
+                                        item.quantity > item.stock
+                                )}
                             >
-                                <Link to="/checkout">
-                                    Lanjutkan ke Pembayaran
-                                </Link>
+                                {cart.some(
+                                    (item) =>
+                                        item.stock <= 0 ||
+                                        item.quantity > item.stock
+                                ) ? (
+                                    <span>Sesuaikan Produk</span>
+                                ) : (
+                                    <Link to="/checkout">
+                                        Lanjutkan ke Pembayaran
+                                    </Link>
+                                )}
                             </Button>
                         </div>
                     </div>

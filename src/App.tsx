@@ -30,6 +30,7 @@ import AdminOrdersPage from "./pages/admin/AdminOrdersPage";
 import AdminOrderDetailPage from "./pages/admin/AdminOrderDetailPage";
 import AddReviewPage from "./pages/AddReviewPage";
 import EditReviewPage from "./pages/EditReviewPage";
+import AdminPaymentsPage from "./pages/admin/AdminPaymentsPage";
 
 const App = () => {
     const { initialize, isInitialized } = useAuthStore();
@@ -92,10 +93,7 @@ const App = () => {
                         path="orders/:orderId"
                         element={<AdminOrderDetailPage />}
                     />
-                    <Route
-                        path="notifications"
-                        element={<div>Notifications Page (TBD)</div>}
-                    />
+                    <Route path="payments" element={<AdminPaymentsPage />} />
                 </Route>
 
                 <Route path="/" element={<Layout />}>

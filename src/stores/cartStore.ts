@@ -11,6 +11,7 @@ export interface CartItem {
     discount_price: number | null;
     image: string;
     quantity: number;
+    stock: number; // Added stock field
 }
 
 interface CartState {
@@ -22,11 +23,18 @@ interface CartState {
     addToCart: (
         item: Omit<CartItem, "quantity">,
         quantity?: number
-    ) => Promise<void>;
-    updateQuantity: (productId: string, quantity: number) => Promise<void>;
+    ) => Promise<{ success: boolean; message?: string }>;
+    updateQuantity: (
+        productId: string,
+        quantity: number
+    ) => Promise<{ success: boolean; message?: string }>;
     removeFromCart: (productId: string) => Promise<void>;
     clearCart: () => Promise<void>;
     getDisplayPrice: (item: CartItem) => number;
+    validateQuantity: (
+        stock: number,
+        requestedQuantity: number
+    ) => { isValid: boolean; message?: string };
 }
 
 export const useCartStore = create<CartState>()(
@@ -41,6 +49,23 @@ export const useCartStore = create<CartState>()(
                 return item.discount_price && item.discount_price > 0
                     ? item.discount_price
                     : item.price;
+            },
+
+            // Helper function to validate quantity against stock
+            validateQuantity: (stock: number, requestedQuantity: number) => {
+                if (requestedQuantity <= 0) {
+                    return {
+                        isValid: false,
+                        message: "Jumlah harus lebih dari 0",
+                    };
+                }
+                if (requestedQuantity > stock) {
+                    return {
+                        isValid: false,
+                        message: `Stok tidak mencukupi. Stok tersedia: ${stock}`,
+                    };
+                }
+                return { isValid: true };
             },
 
             fetchCart: async () => {
@@ -62,6 +87,7 @@ export const useCartStore = create<CartState>()(
                                 name, 
                                 price,
                                 discount_price,
+                                stock,
                                 product_image(
                                     image_url,
                                     is_main
@@ -82,6 +108,7 @@ export const useCartStore = create<CartState>()(
                         name: item.product.name,
                         price: item.product.price,
                         discount_price: item.product.discount_price,
+                        stock: item.product.stock || 0, // Added stock mapping
                         image:
                             item.product.product_image?.find(
                                 (img: any) => img.is_main
@@ -121,7 +148,18 @@ export const useCartStore = create<CartState>()(
                     startLoading("cart-add");
 
                     const { user } = useAuthStore.getState();
-                    if (!user) return;
+                    if (!user)
+                        return {
+                            success: false,
+                            message: "User tidak terautentikasi",
+                        };
+
+                    // Validate quantity against stock
+                    const { validateQuantity } = get();
+                    const validation = validateQuantity(item.stock, quantity);
+                    if (!validation.isValid) {
+                        return { success: false, message: validation.message };
+                    }
 
                     const { data: existing } = await supabase
                         .from("cart")
@@ -131,10 +169,23 @@ export const useCartStore = create<CartState>()(
                         .single();
 
                     if (existing) {
-                        await get().updateQuantity(
-                            item.id,
-                            existing.quantity + quantity
+                        const newQuantity = existing.quantity + quantity;
+                        const quantityValidation = validateQuantity(
+                            item.stock,
+                            newQuantity
                         );
+                        if (!quantityValidation.isValid) {
+                            return {
+                                success: false,
+                                message: quantityValidation.message,
+                            };
+                        }
+
+                        const result = await get().updateQuantity(
+                            item.id,
+                            newQuantity
+                        );
+                        return result;
                     } else {
                         await supabase.from("cart").insert({
                             user_id: user.id,
@@ -142,9 +193,14 @@ export const useCartStore = create<CartState>()(
                             quantity,
                         });
                         await get().fetchCart();
+                        return { success: true };
                     }
                 } catch (error) {
                     console.error("Add to cart error:", error);
+                    return {
+                        success: false,
+                        message: "Gagal menambahkan ke keranjang",
+                    };
                 } finally {
                     stopLoading("cart-add");
                 }
@@ -158,11 +214,32 @@ export const useCartStore = create<CartState>()(
                     startLoading(`${"cart-update"}_${productId}`);
 
                     const { user } = useAuthStore.getState();
-                    if (!user) return;
+                    if (!user)
+                        return {
+                            success: false,
+                            message: "User tidak terautentikasi",
+                        };
 
                     if (quantity <= 0) {
                         await get().removeFromCart(productId);
-                        return;
+                        return { success: true };
+                    }
+
+                    // Find the item in cart to get stock info
+                    const { cart, validateQuantity } = get();
+                    const cartItem = cart.find((item) => item.id === productId);
+
+                    if (cartItem) {
+                        const validation = validateQuantity(
+                            cartItem.stock,
+                            quantity
+                        );
+                        if (!validation.isValid) {
+                            return {
+                                success: false,
+                                message: validation.message,
+                            };
+                        }
                     }
 
                     await supabase
@@ -172,8 +249,13 @@ export const useCartStore = create<CartState>()(
                         .eq("product_id", productId);
 
                     await get().fetchCart();
+                    return { success: true };
                 } catch (error) {
                     console.error("Update quantity error:", error);
+                    return {
+                        success: false,
+                        message: "Gagal mengupdate jumlah",
+                    };
                 } finally {
                     stopLoading(`${"cart-update"}_${productId}`);
                 }

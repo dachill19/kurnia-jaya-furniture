@@ -9,6 +9,9 @@ import {
     Star,
     AlertCircle,
     Trash,
+    Loader,
+    PackageCheck,
+    XCircle,
 } from "lucide-react";
 import { useOrderStore } from "@/stores/orderStore";
 import { useReviewStore } from "@/stores/reviewStore";
@@ -20,10 +23,13 @@ interface OrdersTabProps {
 }
 
 const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
-    const { orders, isLoading, error, fetchUserOrders, clearError } = useOrderStore();
+    const { orders, isLoading, error, fetchUserOrders, clearError } =
+        useOrderStore();
     const { getReviewByOrderItemId, deleteReview } = useReviewStore();
     const { toast } = useToast();
-    const [reviews, setReviews] = useState<{ [key: string]: { exists: boolean; reviewId?: string } }>({});
+    const [reviews, setReviews] = useState<{
+        [key: string]: { exists: boolean; reviewId?: string };
+    }>({});
 
     useEffect(() => {
         fetchUserOrders();
@@ -31,7 +37,9 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
 
     useEffect(() => {
         const checkReviews = async () => {
-            const reviewStatus: { [key: string]: { exists: boolean; reviewId?: string } } = {};
+            const reviewStatus: {
+                [key: string]: { exists: boolean; reviewId?: string };
+            } = {};
             for (const order of orders) {
                 for (const item of order.order_items || []) {
                     const review = await getReviewByOrderItemId(item.id);
@@ -57,7 +65,10 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
         }
     }, [error, clearError]);
 
-    const handleDeleteReview = async (reviewId: string, orderItemId: string) => {
+    const handleDeleteReview = async (
+        reviewId: string,
+        orderItemId: string
+    ) => {
         if (!confirm("Apakah Anda yakin ingin menghapus ulasan ini?")) {
             return;
         }
@@ -103,18 +114,25 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case "PENDING":
+                return <Clock className="text-yellow-700" size={18} />;
+
             case "CONFIRMED":
-                return <Clock className="text-yellow-500" size={18} />;
+                return <CheckCircle className="text-blue-700" size={18} />;
+
             case "PROCESSING":
-                return <Clock className="text-orange-500" size={18} />;
+                return <Loader className="text-purple-700" size={18} />;
+
             case "SHIPPED":
-                return <Truck className="text-blue-500" size={18} />;
+                return <Truck className="text-indigo-700" size={18} />;
+
             case "DELIVERED":
-                return <CheckCircle className="text-green-500" size={18} />;
+                return <PackageCheck className="text-green-700" size={18} />;
+
             case "CANCELLED":
-                return <AlertCircle className="text-red-500" size={18} />;
+                return <XCircle className="text-red-700" size={18} />;
+
             default:
-                return <Clock size={18} />;
+                return <Clock className="text-gray-700" size={18} />;
         }
     };
 
@@ -284,7 +302,13 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
                                                                     reviews[
                                                                         item.id
                                                                     ]?.exists
-                                                                        ? `/edit-review/${reviews[item.id].reviewId}`
+                                                                        ? `/edit-review/${
+                                                                              reviews[
+                                                                                  item
+                                                                                      .id
+                                                                              ]
+                                                                                  .reviewId
+                                                                          }`
                                                                         : `/add-review/${item.id}/${item.product_id}`
                                                                 }
                                                             >
@@ -292,8 +316,9 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
                                                                     size={16}
                                                                     className="mr-1"
                                                                 />
-                                                                {reviews[item.id]
-                                                                    ?.exists
+                                                                {reviews[
+                                                                    item.id
+                                                                ]?.exists
                                                                     ? "Edit"
                                                                     : "Nilai"}
                                                             </Link>
@@ -305,7 +330,7 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
                                     </div>
                                 )}
 
-                            <div className="flex justify-between mt-4">
+                            <div className="flex justify-end mt-4">
                                 <Button
                                     variant="outline"
                                     size="sm"
@@ -313,22 +338,6 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
                                 >
                                     Detail Pesanan
                                 </Button>
-
-                                {(order.status === "PROCESSING" ||
-                                    order.status === "SHIPPED") && (
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-kj-red border-kj-red hover:bg-kj-red hover:text-white"
-                                        asChild
-                                    >
-                                        <Link
-                                            to={`/account/orders/${order.id}/track`}
-                                        >
-                                            Lacak Pesanan
-                                        </Link>
-                                    </Button>
-                                )}
                             </div>
                         </div>
                     ))}

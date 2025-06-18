@@ -24,6 +24,9 @@ export const ProductCardSkeleton = () => {
                         <Skeleton className="h-4 w-8" />
                     </div>
 
+                    {/* Stock */}
+                    <Skeleton className="h-4 w-20 mb-3" />
+
                     {/* Price and button */}
                     <div className="flex items-center justify-between">
                         <div className="flex flex-col">

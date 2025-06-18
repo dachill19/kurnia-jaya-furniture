@@ -10,51 +10,13 @@ const SettingsTab = () => {
             </div>
 
             <div className="p-4">
-                <Tabs defaultValue="account">
+                <Tabs defaultValue="notifications">
                     <TabsList className="mb-4">
-                        <TabsTrigger value="account">Akun</TabsTrigger>
                         <TabsTrigger value="notifications">
                             Notifikasi
                         </TabsTrigger>
                         <TabsTrigger value="security">Keamanan</TabsTrigger>
                     </TabsList>
-
-                    <TabsContent value="account">
-                        <div className="space-y-4">
-                            <div>
-                                <h3 className="text-lg font-medium mb-2">
-                                    Bahasa
-                                </h3>
-                                <div className="flex space-x-2">
-                                    <Button
-                                        variant={"default"}
-                                        className="bg-kj-red"
-                                    >
-                                        Indonesia
-                                    </Button>
-                                    <Button
-                                        variant={"default"}
-                                        className="bg-kj-red"
-                                    >
-                                        English
-                                    </Button>
-                                </div>
-                            </div>
-
-                            <div>
-                                <h3 className="text-lg font-medium mb-2">
-                                    Hapus Akun
-                                </h3>
-                                <p className="text-gray-600 mb-2">
-                                    Menghapus akun akan menghapus semua data dan
-                                    tidak dapat dipulihkan.
-                                </p>
-                                <Button variant="destructive">
-                                    Hapus Akun
-                                </Button>
-                            </div>
-                        </div>
-                    </TabsContent>
 
                     <TabsContent value="notifications">
                         <div className="space-y-4">

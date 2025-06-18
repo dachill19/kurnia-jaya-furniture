@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Card,
@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Users,
     Package,
@@ -21,6 +22,7 @@ import {
     Calendar,
     ArrowUpRight,
     ArrowDownRight,
+    RefreshCw,
 } from "lucide-react";
 import {
     BarChart,
@@ -34,103 +36,245 @@ import {
     Line,
 } from "recharts";
 
+// Import stores
+import { useAdminOrderStore } from "@/stores/admin/adminOrderStore";
+import { useUserStore } from "@/stores/admin/adminUserStore";
+import { useProductStore } from "@/stores/productStore";
+import { useLoadingStore } from "@/stores/loadingStore";
+
 const Dashboard = () => {
     const navigate = useNavigate();
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-    // Mock data
+    // Store states
+    const {
+        orders,
+        stats: orderStats,
+        fetchAllOrders,
+        fetchOrderStats,
+        getFilteredOrders,
+    } = useAdminOrderStore();
+
+    const {
+        users,
+        stats: userStats,
+        fetchUsers,
+        fetchUserStats,
+    } = useUserStore();
+
+    const {
+        products,
+        categories,
+        fetchProducts,
+        fetchCategories,
+    } = useProductStore();
+
+    const { isLoadingKey } = useLoadingStore();
+
+    // Load all data on component mount
+    useEffect(() => {
+        const loadDashboardData = async () => {
+            await Promise.all([
+                fetchAllOrders(),
+                fetchOrderStats(),
+                fetchUsers(),
+                fetchUserStats(),
+                fetchProducts(),
+                fetchCategories(),
+            ]);
+        };
+
+        loadDashboardData();
+    }, [
+        fetchAllOrders,
+        fetchOrderStats,
+        fetchUsers,
+        fetchUserStats,
+        fetchProducts,
+        fetchCategories,
+    ]);
+
+    // Refresh all data
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await Promise.all([
+                fetchAllOrders(),
+                fetchOrderStats(),
+                fetchUsers(),
+                fetchUserStats(),
+                fetchProducts(),
+                fetchCategories(),
+            ]);
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
+    // Calculate revenue data for the last 6 months
+    const getRevenueData = () => {
+        const months = [];
+        const currentDate = new Date();
+        
+        for (let i = 5; i >= 0; i--) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            const monthName = date.toLocaleDateString("id-ID", { month: "short" });
+            
+            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            
+            const monthOrders = orders.filter(order => {
+                const orderDate = new Date(order.created_at);
+                return orderDate >= monthStart && orderDate <= monthEnd && 
+                       ['DELIVERED', 'SHIPPED'].includes(order.status);
+            });
+            
+            const revenue = monthOrders.reduce((sum, order) => sum + order.total_amount, 0);
+            
+            months.push({
+                month: monthName,
+                revenue: revenue,
+            });
+        }
+        
+        return months;
+    };
+
+    // Calculate customer growth data
+    const getCustomerData = () => {
+        const months = [];
+        const currentDate = new Date();
+        
+        for (let i = 5; i >= 0; i--) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+            const monthName = date.toLocaleDateString("id-ID", { month: "short" });
+            
+            const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
+            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+            
+            const newCustomers = users.filter(user => {
+                const userDate = new Date(user.created_at);
+                return userDate >= monthStart && userDate <= monthEnd;
+            });
+            
+            months.push({
+                month: monthName,
+                customers: newCustomers.length,
+            });
+        }
+        
+        return months;
+    };
+
+    // Get low stock products
+    const getLowStockProducts = () => {
+        return products
+            .filter(product => product.stock <= 10) // Consider stock <= 10 as low
+            .sort((a, b) => a.stock - b.stock)
+            .slice(0, 6)
+            .map(product => ({
+                id: product.id,
+                name: product.name,
+                stock: product.stock,
+                minStock: 10, // Define minimum stock threshold
+                category: product.category?.name || 'Tanpa Kategori',
+            }));
+    };
+
+    // Get recent orders (last 5)
+    const getRecentOrders = () => {
+        return orders
+            .slice(0, 5)
+            .map(order => ({
+                id: order.id,
+                customer: order.user?.name || order.user?.email || 'Unknown',
+                product: order.order_item?.[0]?.product?.name || 'Multiple Items',
+                total: `Rp ${order.total_amount.toLocaleString('id-ID')}`,
+                status: order.status.toLowerCase(),
+                date: order.created_at,
+                itemCount: order.order_item?.length || 0,
+            }));
+    };
+
+    // Calculate percentage changes (mock calculation for demo)
+    const calculateChange = (current: number, previous: number) => {
+        if (previous === 0) return "+100%";
+        const change = ((current - previous) / previous) * 100;
+        return `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
+    };
+
+    // Stats data
     const stats = [
         {
             title: "Total Pengguna",
-            value: "1,234",
+            value: userStats?.totalUsers?.toLocaleString('id-ID') || "0",
             icon: Users,
-            change: "+12%",
-            trend: "up",
+            change: "+12%", // You could calculate this based on previous period
+            trend: "up" as const,
         },
         {
             title: "Total Produk",
-            value: "567",
+            value: products.length.toLocaleString('id-ID'),
             icon: Package,
             change: "+8%",
-            trend: "up",
+            trend: "up" as const,
         },
         {
             title: "Pesanan Hari Ini",
-            value: "89",
+            value: orderStats?.todayOrders?.toLocaleString('id-ID') || "0",
             icon: ShoppingCart,
             change: "+23%",
-            trend: "up",
+            trend: "up" as const,
         },
         {
-            title: "Pendapatan Bulan Ini",
-            value: "Rp 45.6M",
+            title: "Pendapatan Hari Ini",
+            value: `Rp ${(orderStats?.todayRevenue || 0).toLocaleString('id-ID')}`,
             icon: DollarSign,
             change: "+15%",
-            trend: "up",
+            trend: "up" as const,
         },
     ];
 
-    const revenueData = [
-        { month: "Jan", revenue: 12000000 },
-        { month: "Feb", revenue: 15000000 },
-        { month: "Mar", revenue: 18000000 },
-        { month: "Apr", revenue: 22000000 },
-        { month: "Mei", revenue: 25000000 },
-        { month: "Jun", revenue: 28000000 },
-    ];
-
-    const customerData = [
-        { month: "Jan", customers: 120 },
-        { month: "Feb", customers: 150 },
-        { month: "Mar", customers: 180 },
-        { month: "Apr", customers: 220 },
-        { month: "Mei", customers: 250 },
-        { month: "Jun", customers: 280 },
-    ];
-
-    const lowStockProducts = [
-        { id: 1, name: "Kursi Kantor Executive", stock: 3, minStock: 10 },
-        { id: 2, name: "Meja Makan Kayu Jati", stock: 1, minStock: 5 },
-        { id: 3, name: "Sofa 3 Dudukan", stock: 2, minStock: 8 },
-        { id: 4, name: "Lemari Pakaian 4 Pintu", stock: 0, minStock: 3 },
-    ];
-
-    const recentOrders = [
-        {
-            id: "ORD-001",
-            customer: "Ahmad Santoso",
-            product: "Kursi Kantor Executive",
-            total: "Rp 2,500,000",
-            status: "pending",
-            date: "2024-01-15",
-        },
-        {
-            id: "ORD-002",
-            customer: "Siti Nurhaliza",
-            product: "Meja Makan Set",
-            total: "Rp 8,500,000",
-            status: "shipped",
-            date: "2024-01-15",
-        },
-        {
-            id: "ORD-003",
-            customer: "Budi Prakoso",
-            product: "Sofa L-Shape",
-            total: "Rp 12,000,000",
-            status: "delivered",
-            date: "2024-01-14",
-        },
-    ];
+    const revenueData = getRevenueData();
+    const customerData = getCustomerData();
+    const lowStockProducts = getLowStockProducts();
+    const recentOrders = getRecentOrders();
 
     const getStatusColor = (status: string) => {
         switch (status) {
             case "pending":
                 return "bg-yellow-100 text-yellow-800";
-            case "shipped":
+            case "confirmed":
                 return "bg-blue-100 text-blue-800";
+            case "processing":
+                return "bg-purple-100 text-purple-800";
+            case "shipped":
+                return "bg-indigo-100 text-indigo-800";
             case "delivered":
                 return "bg-green-100 text-green-800";
+            case "cancelled":
+                return "bg-red-100 text-red-800";
             default:
                 return "bg-gray-100 text-gray-800";
+        }
+    };
+
+    const getStatusText = (status: string) => {
+        switch (status) {
+            case "pending":
+                return "Menunggu";
+            case "confirmed":
+                return "Dikonfirmasi";
+            case "processing":
+                return "Diproses";
+            case "shipped":
+                return "Dikirim";
+            case "delivered":
+                return "Selesai";
+            case "cancelled":
+                return "Dibatal";
+            default:
+                return status;
         }
     };
 
@@ -144,19 +288,73 @@ const Dashboard = () => {
         return { label: "Normal", color: "bg-green-100 text-green-800" };
     };
 
+    // Loading skeleton
+    if (isLoadingKey('admin-orders-fetch') || isLoadingKey('fetch-users') || isLoadingKey('fetch-products')) {
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <Skeleton className="h-8 w-48" />
+                    <Skeleton className="h-6 w-64" />
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                        <Card key={i}>
+                            <CardContent className="p-4">
+                                <Skeleton className="h-20 w-full" />
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-6 w-48" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-64 w-full" />
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <Skeleton className="h-6 w-48" />
+                        </CardHeader>
+                        <CardContent>
+                            <Skeleton className="h-64 w-full" />
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
 
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <Calendar className="h-4 w-4" />
-                    {new Date().toLocaleDateString("id-ID", {
-                        weekday: "long",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                    })}
+                <div className="flex items-center gap-4">
+                    <Button
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </Button>
+                    
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <Calendar className="h-4 w-4" />
+                        {new Date().toLocaleDateString("id-ID", {
+                            weekday: "long",
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                        })}
+                    </div>
                 </div>
             </div>
 
@@ -292,49 +490,55 @@ const Dashboard = () => {
                             </CardDescription>
                         </div>
                         <Button
-                            onClick={() => navigate("/admin/restock")}
+                            onClick={() => navigate("/admin/products")}
                             size="sm"
                             className="bg-kj-red hover:bg-kj-darkred"
                         >
-                            Restock
+                            Kelola Produk
                         </Button>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {lowStockProducts.map((product) => {
-                            const stockStatus = getStockStatus(
-                                product.stock,
-                                product.minStock
-                            );
-                            const stockPercentage = Math.min(
-                                (product.stock / product.minStock) * 100,
-                                100
-                            );
+                        {lowStockProducts.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500">
+                                <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">Semua produk memiliki stok yang cukup</p>
+                            </div>
+                        ) : (
+                            lowStockProducts.map((product) => {
+                                const stockStatus = getStockStatus(
+                                    product.stock,
+                                    product.minStock
+                                );
+                                const stockPercentage = Math.min(
+                                    (product.stock / product.minStock) * 100,
+                                    100
+                                );
 
-                            return (
-                                <div key={product.id} className="space-y-2">
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                                        <div className="min-w-0 flex-1">
-                                            <p className="font-medium text-sm truncate">
-                                                {product.name}
-                                            </p>
-                                            <p className="text-xs text-gray-500">
-                                                Stok: {product.stock} / Min:{" "}
-                                                {product.minStock}
-                                            </p>
+                                return (
+                                    <div key={product.id} className="space-y-2">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="font-medium text-sm truncate">
+                                                    {product.name}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {product.category} • Stok: {product.stock}
+                                                </p>
+                                            </div>
+                                            <Badge
+                                                className={`text-xs whitespace-nowrap ${stockStatus.color}`}
+                                            >
+                                                {stockStatus.label}
+                                            </Badge>
                                         </div>
-                                        <Badge
-                                            className={`text-xs whitespace-nowrap ${stockStatus.color}`}
-                                        >
-                                            {stockStatus.label}
-                                        </Badge>
+                                        <Progress
+                                            value={stockPercentage}
+                                            className="h-2"
+                                        />
                                     </div>
-                                    <Progress
-                                        value={stockPercentage}
-                                        className="h-2"
-                                    />
-                                </div>
-                            );
-                        })}
+                                );
+                            })
+                        )}
                     </CardContent>
                 </Card>
 
@@ -347,7 +551,7 @@ const Dashboard = () => {
                                 Pesanan Terbaru
                             </CardTitle>
                             <CardDescription>
-                                Pesanan yang masuk hari ini
+                                Pesanan yang masuk terbaru
                             </CardDescription>
                         </div>
                         <Button
@@ -361,50 +565,60 @@ const Dashboard = () => {
                         </Button>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        {recentOrders.map((order) => (
-                            <div
-                                key={order.id}
-                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
-                            >
-                                <div className="min-w-0 flex-1">
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                        <p className="font-medium text-sm">
-                                            {order.id}
-                                        </p>
-                                        <Badge
-                                            className={`text-xs w-fit ${getStatusColor(
-                                                order.status
-                                            )}`}
-                                        >
-                                            {order.status}
-                                        </Badge>
-                                    </div>
-                                    <p className="text-xs text-gray-600 truncate">
-                                        {order.customer}
-                                    </p>
-                                    <p className="text-xs text-gray-500 truncate">
-                                        {order.product}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="font-semibold text-sm">
-                                        {order.total}
-                                    </p>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() =>
-                                            navigate(
-                                                `/admin/orders/${order.id}`
-                                            )
-                                        }
-                                        className="text-xs h-auto p-1 text-kj-red hover:text-kj-darkred"
-                                    >
-                                        Detail
-                                    </Button>
-                                </div>
+                        {recentOrders.length === 0 ? (
+                            <div className="text-center py-4 text-gray-500">
+                                <ShoppingCart className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">Belum ada pesanan</p>
                             </div>
-                        ))}
+                        ) : (
+                            recentOrders.map((order) => (
+                                <div
+                                    key={order.id}
+                                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                            <p className="font-medium text-sm truncate">
+                                                {order.id.slice(0, 8)}...
+                                            </p>
+                                            <Badge
+                                                className={`text-xs w-fit ${getStatusColor(
+                                                    order.status
+                                                )}`}
+                                            >
+                                                {getStatusText(order.status)}
+                                            </Badge>
+                                        </div>
+                                        <p className="text-xs text-gray-600 truncate">
+                                            {order.customer}
+                                        </p>
+                                        <p className="text-xs text-gray-500 truncate">
+                                            {order.itemCount > 1 
+                                                ? `${order.product} +${order.itemCount - 1} item lain`
+                                                : order.product
+                                            }
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-semibold text-sm">
+                                            {order.total}
+                                        </p>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/admin/orders/${order.id}`
+                                                )
+                                            }
+                                            className="text-xs h-auto p-1 text-kj-red hover:text-kj-darkred"
+                                        >
+                                            Detail
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </CardContent>
                 </Card>
             </div>

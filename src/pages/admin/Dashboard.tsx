@@ -66,8 +66,8 @@ const Dashboard = () => {
     const {
         products,
         categories,
-        fetchProducts,
-        fetchCategories,
+        getAllProducts, // Change from fetchProducts to getAllProducts to match AdminProductsPage
+        error: productError,
     } = useProductStore();
 
     const {
@@ -81,15 +81,18 @@ const Dashboard = () => {
     // Load all data on component mount
     useEffect(() => {
         const loadDashboardData = async () => {
-            await Promise.all([
-                fetchAllOrders(),
-                fetchOrderStats(),
-                fetchUsers(),
-                fetchUserStats(),
-                fetchProducts(),
-                fetchCategories(),
-                refreshPaymentData(),
-            ]);
+            try {
+                await Promise.all([
+                    fetchAllOrders(),
+                    fetchOrderStats(),
+                    fetchUsers(),
+                    fetchUserStats(),
+                    getAllProducts(), // Use getAllProducts instead of fetchProducts
+                    refreshPaymentData(),
+                ]);
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
         };
 
         loadDashboardData();
@@ -98,8 +101,7 @@ const Dashboard = () => {
         fetchOrderStats,
         fetchUsers,
         fetchUserStats,
-        fetchProducts,
-        fetchCategories,
+        getAllProducts, // Updated dependency
         refreshPaymentData,
     ]);
 
@@ -112,10 +114,11 @@ const Dashboard = () => {
                 fetchOrderStats(),
                 fetchUsers(),
                 fetchUserStats(),
-                fetchProducts(),
-                fetchCategories(),
+                getAllProducts(), // Use getAllProducts instead of fetchProducts
                 refreshPaymentData(),
             ]);
+        } catch (error) {
+            console.error('Error refreshing dashboard data:', error);
         } finally {
             setIsRefreshing(false);
         }
@@ -249,7 +252,7 @@ const Dashboard = () => {
     const todayRevenue = getTodayRevenue();
     const todayOrdersCount = getTodayOrdersCount();
 
-    // Stats data
+    // Stats data - Make sure to handle the products array properly
     const stats = [
         {
             title: "Total Pengguna",
@@ -260,7 +263,7 @@ const Dashboard = () => {
         },
         {
             title: "Total Produk",
-            value: products.length.toLocaleString('id-ID'),
+            value: (products?.length || 0).toLocaleString('id-ID'), // Ensure products is an array and handle null/undefined
             icon: Package,
             change: "+8%",
             trend: "up" as const,
@@ -334,8 +337,11 @@ const Dashboard = () => {
         return { label: "Normal", color: "bg-green-100 text-green-800" };
     };
 
-    // Loading skeleton
-    if (isLoadingKey('admin-orders-fetch') || isLoadingKey('fetch-users') || isLoadingKey('fetch-products')) {
+    // Loading skeleton - Update loading check to include product loading
+    if (isLoadingKey('admin-orders-fetch') || 
+        isLoadingKey('fetch-users') || 
+        isLoadingKey('all-products') || // Check for products loading state
+        isLoadingKey('fetch-products')) {
         return (
             <div className="space-y-6">
                 <div className="flex items-center justify-between">

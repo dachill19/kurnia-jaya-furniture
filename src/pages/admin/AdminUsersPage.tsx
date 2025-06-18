@@ -41,17 +41,14 @@ const AdminUsersPage = () => {
 
     const { isAdmin } = useAuthStore();
 
-    // Filter users based on search term
     const filteredUsers = searchUsers(searchTerm);
 
-    // Load data on component mount
     useEffect(() => {
         if (isAdmin()) {
             refreshData();
         }
     }, [isAdmin, refreshData]);
 
-    // Stats configuration
     const userStats = [
         {
             title: "Total Pengguna",
@@ -105,7 +102,6 @@ const AdminUsersPage = () => {
         refreshData();
     };
 
-    // Check if user is admin
     if (!isAdmin()) {
         return (
             <div className="flex items-center justify-center h-64">
@@ -256,9 +252,6 @@ const AdminUsersPage = () => {
                                         <TableHead className="min-w-[150px]">
                                             Tanggal Bergabung
                                         </TableHead>
-                                        {/* <TableHead className="min-w-[150px]">
-                                            Terakhir Sign In
-                                        </TableHead> */}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -298,11 +291,6 @@ const AdminUsersPage = () => {
                                             <TableCell className="text-sm">
                                                 {formatDate(user.created_at)}
                                             </TableCell>
-                                            {/* <TableCell className="text-sm">
-                                                {formatLastSignIn(
-                                                    user.last_sign_in
-                                                )}
-                                            </TableCell> */}
                                         </TableRow>
                                     ))}
                                 </TableBody>

@@ -59,7 +59,6 @@ interface PaymentState {
     searchTerm: string;
     statusFilter: Payment["status"] | "ALL";
 
-    // Actions
     fetchAllPayments: () => Promise<void>;
     fetchPaymentDetail: (paymentId: string) => Promise<void>;
     fetchPaymentStats: () => Promise<void>;
@@ -68,7 +67,6 @@ interface PaymentState {
     clearCurrentPayment: () => void;
     refreshData: () => Promise<void>;
 
-    // Computed
     getFilteredPayments: () => Payment[];
     exportPaymentsCSV: () => void;
 }
@@ -227,7 +225,6 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
                 today.getTime() - 7 * 24 * 60 * 60 * 1000
             ).toISOString();
 
-            // Fetch all payments for stats calculation
             const { data: allPayments, error: allPaymentsError } =
                 await supabase
                     .from("payment")
@@ -239,7 +236,6 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
                 );
             }
 
-            // Fetch today's payments
             const { data: todayPayments, error: todayPaymentsError } =
                 await supabase
                     .from("payment")
@@ -253,7 +249,6 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
                 );
             }
 
-            // Fetch monthly payments
             const { data: monthlyPayments, error: monthlyPaymentsError } =
                 await supabase
                     .from("payment")
@@ -266,7 +261,6 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
                 );
             }
 
-            // Fetch last week's payments for growth calculation
             const { data: lastWeekPayments, error: lastWeekPaymentsError } =
                 await supabase
                     .from("payment")
@@ -281,7 +275,6 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
                 );
             }
 
-            // Calculate stats
             const todaySuccessPayments =
                 todayPayments?.filter((p) => p.status === "SUCCESS") || [];
             const pendingPayments =
@@ -353,12 +346,10 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
         const { payments, searchTerm, statusFilter } = get();
 
         return payments.filter((payment) => {
-            // Status filter
             if (statusFilter !== "ALL" && payment.status !== statusFilter) {
                 return false;
             }
 
-            // Search filter
             if (searchTerm) {
                 const searchLower = searchTerm.toLowerCase();
                 return (
@@ -384,7 +375,6 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
     exportPaymentsCSV: () => {
         const { payments } = get();
 
-        // Create CSV headers
         const headers = [
             "ID Pembayaran",
             "ID Pesanan",
@@ -398,7 +388,6 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
             "Tanggal Update",
         ];
 
-        // Create CSV content
         const csvContent = [
             headers.join(","),
             ...payments.map((payment) =>
@@ -421,7 +410,6 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
             ),
         ].join("\n");
 
-        // Create and download file
         const blob = new Blob([csvContent], {
             type: "text/csv;charset=utf-8;",
         });

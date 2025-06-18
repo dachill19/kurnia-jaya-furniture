@@ -33,13 +33,11 @@ const CheckoutPage = () => {
     const [isOrderPlaced, setIsOrderPlaced] = useState(false);
     const [orderId, setOrderId] = useState<string>("");
 
-    // Shipping costs
     const shippingCosts = {
         regular: 50000,
         express: 100000,
     };
 
-    // Total to pay
     const totalToPay =
         totalPrice +
         (shippingMethod === "regular"
@@ -56,7 +54,6 @@ const CheckoutPage = () => {
         }
     }, [defaultAddress, selectedAddressId]);
 
-    // Show error toast when checkout error occurs
     useEffect(() => {
         if (error) {
             toast({
@@ -68,7 +65,6 @@ const CheckoutPage = () => {
     }, [error, toast]);
 
     const handlePlaceOrder = async () => {
-        // Basic validation
         if (!selectedAddressId) {
             toast({
                 title: "Alamat belum dipilih",
@@ -103,12 +99,11 @@ const CheckoutPage = () => {
         const currentTotal = totalToPay;
         setPaidAmount(currentTotal);
 
-        // Prepare order data dengan address_id reference
         const orderData = {
             total_amount: currentTotal,
             status: "PENDING" as const,
             shipping_data: {
-                address_id: selectedAddressId, // Reference ke address table
+                address_id: selectedAddressId,
                 estimated_delivery: calculateEstimatedDelivery(),
             },
             order_items: cart.map((item) => ({
@@ -144,7 +139,7 @@ const CheckoutPage = () => {
         const days = shippingMethod === "regular" ? 7 : 2;
         const deliveryDate = new Date();
         deliveryDate.setDate(deliveryDate.getDate() + days);
-        return deliveryDate.toISOString().split("T")[0]; // YYYY-MM-DD format
+        return deliveryDate.toISOString().split("T")[0];
     };
 
     const getPaymentMethodName = () => {
@@ -164,7 +159,6 @@ const CheckoutPage = () => {
         (addr) => addr.id === selectedAddressId
     );
 
-    // If cart is empty and not after order placement, redirect to cart page
     if (cart.length === 0 && !isOrderPlaced) {
         return (
             <div className="container-custom py-16 text-center">
@@ -191,7 +185,6 @@ const CheckoutPage = () => {
         );
     }
 
-    // If order has been placed
     if (isOrderPlaced) {
         return (
             <div className="container-custom py-16 max-w-2xl mx-auto text-center">

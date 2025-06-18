@@ -29,10 +29,8 @@ const LoginForm = () => {
         try {
             await login(email, password);
 
-            // Get updated user state after login
             const { user } = useAuthStore.getState();
 
-            // Redirect based on role
             if (user?.role === "ADMIN") {
                 navigate("/admin");
             } else {

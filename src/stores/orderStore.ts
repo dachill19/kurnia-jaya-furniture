@@ -58,7 +58,6 @@ export interface Shipping {
     updated_at: string;
 }
 
-// New interface for order status history
 export interface OrderStatusHistory {
     id: string;
     order_id: string;
@@ -224,11 +223,9 @@ export const useOrderStore = create<OrderState>()((set, get) => ({
                 );
             }
 
-            // Transform data to match expected structure
             const transformedOrder = {
                 ...order,
                 address: order.shipping?.address || null,
-                // Sort status history by created_at descending (newest first)
                 order_status_history:
                     order.order_status_history?.sort(
                         (a: OrderStatusHistory, b: OrderStatusHistory) =>

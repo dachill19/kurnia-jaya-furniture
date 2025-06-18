@@ -67,6 +67,7 @@ const WishlistTab: React.FC = () => {
                 price: product.price,
                 discount_price: product.discount_price,
                 image: mainImage?.image_url || "",
+                stock: 1,
             };
 
             await addToCart(cartItem, 1);

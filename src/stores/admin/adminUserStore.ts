@@ -24,7 +24,6 @@ type UserStore = {
     isLoading: boolean;
     error: string | null;
 
-    // Actions
     fetchUsers: () => Promise<void>;
     fetchUserStats: () => Promise<void>;
     searchUsers: (searchTerm: string) => User[];
@@ -48,7 +47,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
         set({ isLoading: true, error: null });
 
         try {
-            // First get users from user table
             const { data: userData, error: userError } = await supabase
                 .from("user")
                 .select("*")
@@ -56,7 +54,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
             if (userError) throw userError;
 
-            // Then get auth data for each user
             const usersWithAuth = await Promise.all(
                 (userData || []).map(async (user) => {
                     const { data: authData, error: authError } =
@@ -89,14 +86,12 @@ export const useUserStore = create<UserStore>((set, get) => ({
         startLoading("fetch-user-stats");
 
         try {
-            // Get total users
             const { count: totalUsers, error: totalError } = await supabase
                 .from("user")
                 .select("*", { count: "exact", head: true });
 
             if (totalError) throw totalError;
 
-            // Get users created this month
             const currentMonth = new Date();
             const firstDayOfMonth = new Date(
                 currentMonth.getFullYear(),
@@ -111,7 +106,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
 
             if (monthError) throw monthError;
 
-            // Get users who signed in today
             const today = new Date();
             const startOfDay = new Date(
                 today.getFullYear(),
@@ -119,14 +113,12 @@ export const useUserStore = create<UserStore>((set, get) => ({
                 today.getDate()
             );
 
-            // Get all users first
             const { data: allUsers, error: usersError } = await supabase
                 .from("user")
                 .select("id");
 
             if (usersError) throw usersError;
 
-            // Check each user's last sign in from auth
             let activeToday = 0;
             if (allUsers) {
                 const activeChecks = await Promise.all(
@@ -186,7 +178,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
     exportUsers: () => {
         const { users } = get();
 
-        // Create CSV content
         const headers = [
             "User ID",
             "Nama",
@@ -215,7 +206,6 @@ export const useUserStore = create<UserStore>((set, get) => ({
             ),
         ].join("\n");
 
-        // Create and download file
         const blob = new Blob([csvContent], {
             type: "text/csv;charset=utf-8;",
         });

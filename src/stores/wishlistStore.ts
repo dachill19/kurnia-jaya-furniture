@@ -4,7 +4,6 @@ import { supabase } from "../lib/supabase";
 import { useLoadingStore } from "./loadingStore";
 import { useAuthStore } from "./authStore";
 
-// Separated Types - Single Object Version
 type WishlistCategory = {
     id: string;
     name: string;
@@ -35,7 +34,6 @@ type WishlistItem = {
     product?: WishlistProduct | null;
 };
 
-// Store Interface
 interface WishlistState {
     wishlist: WishlistItem[];
     error: string | null;
@@ -102,9 +100,7 @@ export const useWishlistStore = create<WishlistState>()(
 
                     if (error) throw error;
 
-                    // Transform data if needed
                     const transformedData = (data || []).map((item: any) => {
-                        // Handle if product is array, take first item
                         let product = null;
                         if (item.product) {
                             if (
@@ -162,7 +158,6 @@ export const useWishlistStore = create<WishlistState>()(
                         throw new Error("User not authenticated");
                     }
 
-                    // Check if already in wishlist
                     const { data: existing } = await supabase
                         .from("wishlist")
                         .select("id")
@@ -181,7 +176,6 @@ export const useWishlistStore = create<WishlistState>()(
 
                     if (error) throw error;
 
-                    // Refresh wishlist to get the complete data with relations
                     await get().fetchWishlist();
                 } catch (error: any) {
                     console.error("Error adding to wishlist:", error);
@@ -215,7 +209,6 @@ export const useWishlistStore = create<WishlistState>()(
 
                     if (error) throw error;
 
-                    // Update local state immediately
                     const currentWishlist = get().wishlist;
                     const updatedWishlist = currentWishlist.filter(
                         (item) => item.product_id !== productId
@@ -269,7 +262,6 @@ export const useWishlistStore = create<WishlistState>()(
             name: "wishlist-store",
             partialize: (state) => ({
                 wishlist: state.wishlist,
-                // Don't persist error as it should reset on page load
             }),
         }
     )

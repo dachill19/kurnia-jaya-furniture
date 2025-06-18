@@ -25,7 +25,6 @@ const ProductDetailPage = () => {
     const { productId } = useParams();
     const { toast } = useToast();
 
-    // Store hooks
     const { productDetail, getProductById, error } = useProductStore();
     const { addToCart } = useCartStore();
     const { addToWishlist, removeFromWishlist, isInWishlist } =
@@ -33,7 +32,6 @@ const ProductDetailPage = () => {
     const { user } = useAuthStore();
     const { isLoadingKey } = useLoadingStore();
 
-    // Local state
     const [quantity, setQuantity] = useState<number>(1);
     const [selectedImage, setSelectedImage] = useState(0);
 
@@ -43,7 +41,6 @@ const ProductDetailPage = () => {
         }
     }, [productId, getProductById]);
 
-    // Reset selected image when product changes
     useEffect(() => {
         if (productDetail?.product_image) {
             const mainImageIndex = productDetail.product_image.findIndex(
@@ -91,7 +88,6 @@ const ProductDetailPage = () => {
     const images = product.product_image?.map((img) => img.image_url) || [];
     const inWishlist = isInWishlist(product.id);
 
-    // Calculate average rating
     const rating = product.reviews?.length
         ? product.reviews.reduce((acc, curr) => acc + curr.rating, 0) /
           product.reviews.length
@@ -165,7 +161,7 @@ const ProductDetailPage = () => {
                     price: product.price,
                     discount_price: product.discount_price,
                     image: mainImage,
-                    stock: product.stock, // Pass stock info to cart store
+                    stock: product.stock,
                 },
                 quantity
             );
@@ -175,7 +171,6 @@ const ProductDetailPage = () => {
                     title: "Produk ditambahkan ke keranjang",
                     description: `${product.name} (${quantity} unit)`,
                 });
-                // Reset quantity to 1 after successful add
                 setQuantity(1);
             } else {
                 toast({
@@ -238,7 +233,6 @@ const ProductDetailPage = () => {
                 console.error("Gagal membagikan:", error);
             }
         } else {
-            // fallback: salin ke clipboard
             try {
                 await navigator.clipboard.writeText(window.location.href);
                 toast({
@@ -255,20 +249,16 @@ const ProductDetailPage = () => {
         }
     };
 
-    // Helper function to get display name
     const getDisplayName = (review: any) => {
         if (review.user?.name) {
             return review.user.name;
         }
-        // Fallback to email if name is not available
         if (review.user?.email) {
             return review.user.email.split("@")[0];
         }
-        // Last fallback to shortened user ID
         return `User ${review.user_id.slice(0, 8)}...`;
     };
 
-    // Helper function to format date
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString("id-ID", {
             year: "numeric",
@@ -277,7 +267,6 @@ const ProductDetailPage = () => {
         });
     };
 
-    // Get stock status
     const getStockStatus = () => {
         if (product.stock === 0) {
             return {
@@ -450,7 +439,7 @@ const ProductDetailPage = () => {
                         </div>
                     </div>
 
-                    {/* Quantity Selector - Only show if stock is available */}
+                    {/* Quantity Selector */}
                     {product.stock > 0 && (
                         <div className="mb-6">
                             <h3 className="font-medium text-gray-900 mb-3">

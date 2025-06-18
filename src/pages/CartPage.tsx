@@ -31,22 +31,18 @@ const CartPage = () => {
         [key: string]: string;
     }>({});
 
-    // State untuk tracking loading per item
     const [loadingQuantity, setLoadingQuantity] = useState<{
         [key: string]: boolean;
     }>({});
 
-    // Fetch cart data when component mounts
     useEffect(() => {
         fetchCart();
     }, [fetchCart]);
 
-    // Handle quantity update with validation
     const handleQuantityUpdate = async (
         productId: string,
         newQuantity: number
     ) => {
-        // Set loading untuk item ini
         setLoadingQuantity((prev) => ({
             ...prev,
             [productId]: true,
@@ -54,7 +50,6 @@ const CartPage = () => {
 
         const result = await updateQuantity(productId, newQuantity);
 
-        // Remove loading untuk item ini
         setLoadingQuantity((prev) => {
             const newLoading = { ...prev };
             delete newLoading[productId];
@@ -66,7 +61,6 @@ const CartPage = () => {
                 ...prev,
                 [productId]: result.message,
             }));
-            // Clear error message after 3 seconds
             setTimeout(() => {
                 setErrorMessages((prev) => {
                     const newErrors = { ...prev };
@@ -75,7 +69,6 @@ const CartPage = () => {
                 });
             }, 3000);
         } else {
-            // Clear any existing error for this product
             setErrorMessages((prev) => {
                 const newErrors = { ...prev };
                 delete newErrors[productId];
@@ -84,7 +77,6 @@ const CartPage = () => {
         }
     };
 
-    // Show skeleton while loading cart data (initial fetch only)
     if (isLoadingKey("cart-fetch")) {
         return <CartPageSkeleton />;
     }

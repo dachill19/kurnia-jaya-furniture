@@ -76,7 +76,6 @@ export interface OrderUser {
     updated_at?: string;
 }
 
-// New interface for order status history
 export interface OrderStatusHistory {
     id: string;
     order_id: string;
@@ -107,7 +106,7 @@ export interface Order {
     payment?: Payment;
     shipping?: Shipping;
     user?: OrderUser;
-    order_status_history?: OrderStatusHistory[]; // New field
+    order_status_history?: OrderStatusHistory[];
 }
 
 export interface OrderStatusUpdate {
@@ -136,19 +135,17 @@ interface OrderState {
     searchTerm: string;
     statusFilter: Order["status"] | "ALL";
 
-    // Actions
     fetchAllOrders: () => Promise<void>;
     fetchOrderDetail: (orderId: string) => Promise<void>;
     updateOrderStatus: (updateData: OrderStatusUpdate) => Promise<void>;
     fetchOrderStats: () => Promise<void>;
-    fetchOrderStatusHistory: (orderId: string) => Promise<OrderStatusHistory[]>; // New action
+    fetchOrderStatusHistory: (orderId: string) => Promise<OrderStatusHistory[]>;
     setSearchTerm: (term: string) => void;
     setStatusFilter: (status: Order["status"] | "ALL") => void;
     clearError: () => void;
     clearCurrentOrder: () => void;
     refreshData: () => Promise<void>;
 
-    // Computed
     getFilteredOrders: () => Order[];
 }
 
@@ -346,7 +343,6 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
             set({ isLoading: true, error: null });
             startLoading("admin-order-status-update");
 
-            // Update order status
             const { error: orderError } = await supabase
                 .from("order")
                 .update({
@@ -361,7 +357,6 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                 );
             }
 
-            // Insert new status history record
             const { error: historyError } = await supabase
                 .from("order_status_history")
                 .insert({
@@ -375,10 +370,8 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                     "Failed to create status history:",
                     historyError.message
                 );
-                // Don't throw error here as the main status update succeeded
             }
 
-            // Update shipping info if provided
             if (updateData.estimatedDelivery) {
                 const shippingUpdate: any = {};
 
@@ -408,10 +401,8 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                 }
             }
 
-            // Update local state
             const { orders, currentOrder } = get();
 
-            // Update orders list
             const updatedOrders = orders.map((order) =>
                 order.id === updateData.orderId
                     ? {
@@ -422,7 +413,6 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                     : order
             );
 
-            // Update current order if it's the one being updated
             const updatedCurrentOrder =
                 currentOrder?.id === updateData.orderId
                     ? {
@@ -469,7 +459,6 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                 today.setHours(23, 59, 59, 999)
             ).toISOString();
 
-            // Fetch all orders for stats calculation
             const { data: allOrders, error: allOrdersError } = await supabase
                 .from("order")
                 .select("id, total_amount, status, created_at");
@@ -480,7 +469,6 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                 );
             }
 
-            // Fetch today's orders
             const { data: todayOrders, error: todayOrdersError } =
                 await supabase
                     .from("order")
@@ -494,7 +482,6 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
                 );
             }
 
-            // Calculate stats
             const stats: OrderStats = {
                 totalOrders: allOrders?.length || 0,
                 todayOrders: todayOrders?.length || 0,
@@ -533,7 +520,6 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
         }
     },
 
-    // New function to fetch order status history
     fetchOrderStatusHistory: async (orderId: string) => {
         const { startLoading, stopLoading } = useLoadingStore.getState();
         const { user } = useAuthStore.getState();
@@ -582,12 +568,10 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
         const { orders, searchTerm, statusFilter } = get();
 
         return orders.filter((order) => {
-            // Status filter
             if (statusFilter !== "ALL" && order.status !== statusFilter) {
                 return false;
             }
 
-            // Search filter
             if (searchTerm) {
                 const searchLower = searchTerm.toLowerCase();
                 return (

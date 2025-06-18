@@ -24,7 +24,7 @@ interface ProductCardProps {
     name: string;
     price: number;
     discountPrice?: number;
-    stock: number; // Added stock prop
+    stock: number;
     images: ProductImage[];
     reviews?: Review[];
     category: Category;
@@ -36,7 +36,7 @@ const ProductCard = ({
     name,
     price,
     discountPrice,
-    stock = 0, // Default stock to 0
+    stock = 0,
     images = [],
     reviews = [],
     category,
@@ -47,10 +47,8 @@ const ProductCard = ({
     const { isLoadingKey } = useLoadingStore();
     const { toast } = useToast();
 
-    // Check if adding to cart is in progress
     const isAddingToCart = isLoadingKey("cart-add");
 
-    // Ambil gambar utama dengan safety check
     const imageUrl =
         images && images.length > 0
             ? images.find((img) => img.isMain)?.imageUrl ||
@@ -58,14 +56,12 @@ const ProductCard = ({
               ""
             : "";
 
-    // Check if product is out of stock
     const isOutOfStock = stock <= 0;
 
     const handleAddToCart = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // Check if user is authenticated
         if (!user) {
             toast({
                 title: "Akses ditolak",
@@ -75,7 +71,6 @@ const ProductCard = ({
             return;
         }
 
-        // Check if product is out of stock
         if (isOutOfStock) {
             toast({
                 title: "Stok habis",
@@ -92,7 +87,7 @@ const ProductCard = ({
                 price: price,
                 discount_price: discountPrice || null,
                 image: imageUrl,
-                stock, // Include stock in the item
+                stock,
             });
 
             if (result.success) {
@@ -118,7 +113,6 @@ const ProductCard = ({
         }
     };
 
-    // Hitung rata-rata rating
     const avgRating =
         reviews && reviews.length > 0
             ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
@@ -139,7 +133,6 @@ const ProductCard = ({
                             <span className="text-gray-400">No Image</span>
                         </div>
                     )}
-                    {/* Stock overlay for out of stock items */}
                     {isOutOfStock && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                             <span className="text-white font-semibold text-lg">

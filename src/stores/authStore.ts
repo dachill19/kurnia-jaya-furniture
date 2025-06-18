@@ -47,7 +47,6 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             initialize: async () => {
-                // Jangan jalankan initialize jika sudah di-initialized
                 if (get().isInitialized) return;
 
                 const { startLoading, stopLoading } =
@@ -61,7 +60,6 @@ export const useAuthStore = create<AuthStore>()(
                     } = await supabase.auth.getSession();
 
                     if (session?.user && !error) {
-                        // Fetch user profile to get role
                         const { data: profile, error: profileError } =
                             await supabase
                                 .from("user")
@@ -91,7 +89,6 @@ export const useAuthStore = create<AuthStore>()(
             },
 
             fetchProfile: async () => {
-                // Jangan fetch profile jika user sudah ada dan sudah di-initialized
                 const state = get();
                 if (state.user && state.isInitialized) return;
 
@@ -106,7 +103,6 @@ export const useAuthStore = create<AuthStore>()(
                     } = await supabase.auth.getUser();
 
                     if (user && !error) {
-                        // Fetch user profile to get role
                         const { data: profile, error: profileError } =
                             await supabase
                                 .from("user")
@@ -150,7 +146,6 @@ export const useAuthStore = create<AuthStore>()(
                     if (error) throw error;
 
                     if (data.user) {
-                        // Fetch user profile to get role
                         const { data: profile, error: profileError } =
                             await supabase
                                 .from("user")
@@ -218,7 +213,7 @@ export const useAuthStore = create<AuthStore>()(
                                 email: data.user.email || "",
                                 name: data.user.user_metadata?.name || name,
                                 phone: data.user.phone || phone || "",
-                                role: "USER", // Default role for new users
+                                role: "USER",
                             },
                             isInitialized: true,
                         });

@@ -18,23 +18,19 @@ import { Badge } from "@/components/ui/badge";
 import { ProductsPageSkeleton } from "@/components/skeleton/ProductsPageSkeleton";
 
 const ProductsPage = () => {
-    // Search and basic filters
     const [searchQuery, setSearchQuery] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("all");
     const [priceRange, setPriceRange] = useState([0, 10000000]);
     const [sortOrder, setSortOrder] = useState("featured");
     const [filterVisible, setFilterVisible] = useState(false);
 
-    // Advanced filters
     const [stockFilter, setStockFilter] = useState("all");
     const [discountFilter, setDiscountFilter] = useState(false);
     const [hotProductsFilter, setHotProductsFilter] = useState(false);
 
-    // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const productsPerPage = 20;
 
-    // Zustand stores
     const {
         categories,
         products,
@@ -47,13 +43,11 @@ const ProductsPage = () => {
 
     const { isLoadingKey } = useLoadingStore();
 
-    // Load initial data
     useEffect(() => {
         getCategories();
         getAllProducts();
     }, [getCategories, getAllProducts]);
 
-    // Handle category filter change
     useEffect(() => {
         if (categoryFilter === "all") {
             getAllProducts();
@@ -62,14 +56,12 @@ const ProductsPage = () => {
         }
     }, [categoryFilter, getProductsByCategory, getAllProducts]);
 
-    // Clear error when component unmounts
     useEffect(() => {
         return () => {
             clearError();
         };
     }, [clearError]);
 
-    // Reset to first page when filters change
     useEffect(() => {
         setCurrentPage(1);
     }, [
@@ -82,7 +74,6 @@ const ProductsPage = () => {
         hotProductsFilter,
     ]);
 
-    // Prepare categories for filter
     const filterCategories = [
         { id: "all", name: "Semua Kategori" },
         ...categories.map((cat) => ({
@@ -91,7 +82,6 @@ const ProductsPage = () => {
         })),
     ];
 
-    // Transform product data to match ProductCard props structure
     const transformProduct = (product) => ({
         id: product.id,
         name: product.name,
@@ -111,7 +101,6 @@ const ProductsPage = () => {
         inStock: product.stock > 0,
     });
 
-    // Calculate average rating for products
     const calculateAverageRating = (reviews) => {
         if (!reviews || reviews.length === 0) return 0;
         const totalRating = reviews.reduce(
@@ -121,10 +110,8 @@ const ProductsPage = () => {
         return totalRating / reviews.length;
     };
 
-    // Filter and sort products
     const filteredProducts = products
         .filter((product) => {
-            // Search filter
             const searchMatch =
                 product.name
                     .toLowerCase()
@@ -133,12 +120,10 @@ const ProductsPage = () => {
                     ?.toLowerCase()
                     .includes(searchQuery.toLowerCase());
 
-            // Price filter
             const productPrice = product.discount_price || product.price;
             const priceMatch =
                 productPrice >= priceRange[0] && productPrice <= priceRange[1];
 
-            // Stock filter
             let stockMatch = true;
             if (stockFilter === "inStock") {
                 stockMatch = product.stock > 0;
@@ -146,11 +131,9 @@ const ProductsPage = () => {
                 stockMatch = product.stock === 0;
             }
 
-            // Discount filter
             const discountMatch =
                 !discountFilter || product.discount_price !== null;
 
-            // Hot products filter
             const hotMatch = !hotProductsFilter || product.is_hot;
 
             return (
@@ -191,14 +174,12 @@ const ProductsPage = () => {
             }
         });
 
-    // Pagination calculations
     const totalProducts = filteredProducts.length;
     const totalPages = Math.ceil(totalProducts / productsPerPage);
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
     const currentProducts = filteredProducts.slice(startIndex, endIndex);
 
-    // Pagination helpers
     const goToPage = (page) => {
         if (page >= 1 && page <= totalPages) {
             setCurrentPage(page);
@@ -218,9 +199,8 @@ const ProductsPage = () => {
         }
     };
 
-    // Generate page numbers for pagination
     const getPageNumbers = () => {
-        const delta = 2; // Number of pages to show on each side of current page
+        const delta = 2;
         const range = [];
         const rangeWithDots = [];
 
@@ -249,7 +229,6 @@ const ProductsPage = () => {
         return rangeWithDots;
     };
 
-    // Event handlers
     const handlePriceChange = (value) => {
         setPriceRange(value);
     };
@@ -269,7 +248,6 @@ const ProductsPage = () => {
         setCurrentPage(1);
     };
 
-    // Get active filter count for badge
     const getActiveFilterCount = () => {
         let count = 0;
         if (categoryFilter !== "all") count++;
@@ -280,7 +258,6 @@ const ProductsPage = () => {
         return count;
     };
 
-    // Loading state
     if (
         isLoadingKey("categories") ||
         isLoadingKey("products-by-category") ||
@@ -289,7 +266,6 @@ const ProductsPage = () => {
         return <ProductsPageSkeleton />;
     }
 
-    // Error state
     if (error) {
         return (
             <div className="container-custom py-8">

@@ -29,47 +29,39 @@ const AccountPage: React.FC = () => {
     );
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
 
-    // Handler untuk edit alamat
     const handleEditAddress = (address: Address) => {
         setSelectedAddress(address);
         setActiveTab("editAddress");
     };
 
-    // Handler untuk tambah alamat
     const handleAddAddress = () => {
         setActiveTab("addAddress");
     };
 
-    // Handler untuk kembali dari edit/add address
     const handleBackToAddresses = () => {
         setSelectedAddress(null);
         setActiveTab("addresses");
     };
 
-    // Handler untuk view order detail
     const handleViewOrderDetail = (orderId: string) => {
         setSelectedOrderId(orderId);
         setActiveTab("orderDetail");
     };
 
-    // Handler untuk kembali dari order detail
     const handleBackToOrders = () => {
         setSelectedOrderId(null);
         setActiveTab("orders");
     };
 
-    // Handler untuk logout
     const handleLogout = async () => {
         try {
             await logout();
-            // Redirect ke home page setelah logout berhasil
             window.location.href = "/";
         } catch (error) {
             console.error("Error logging out:", error);
         }
     };
 
-    // Menu navigasi
     const menuItems = [
         {
             id: "profile",
@@ -98,7 +90,6 @@ const AccountPage: React.FC = () => {
         },
     ];
 
-    // Loading state jika user belum tersedia
     if (!user) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -114,7 +105,6 @@ const AccountPage: React.FC = () => {
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Sidebar Navigation - Hide when viewing order detail */}
                     {activeTab !== "orderDetail" && (
                         <div className="lg:w-1/4">
                             <div className="bg-white rounded-lg shadow-sm overflow-hidden">

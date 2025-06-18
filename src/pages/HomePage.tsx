@@ -26,7 +26,6 @@ const HomePage = () => {
     const [hotProducts, setHotProducts] = useState([]);
     const [latestProducts, setLatestProducts] = useState([]);
 
-    // Fetch Hot Products
     useEffect(() => {
         const fetchHot = async () => {
             try {
@@ -43,7 +42,6 @@ const HomePage = () => {
         fetchHot();
     }, [getHotProducts]);
 
-    // Fetch Latest Products
     useEffect(() => {
         const fetchLatest = async () => {
             try {
@@ -60,7 +58,6 @@ const HomePage = () => {
         fetchLatest();
     }, [getLatestProducts]);
 
-    // Fetch Categories
     useEffect(() => {
         const fetchAllCategories = async () => {
             try {
@@ -73,7 +70,6 @@ const HomePage = () => {
         fetchAllCategories();
     }, [getCategories]);
 
-    // Clear errors on mount
     useEffect(() => {
         clearError();
     }, [clearError]);
@@ -96,7 +92,6 @@ const HomePage = () => {
         stock: product.stock || 0,
     });
 
-    // Error Display Component
     const ErrorDisplay = ({
         message,
         onRetry,

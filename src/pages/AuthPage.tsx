@@ -13,7 +13,6 @@ const AuthPage = () => {
     const [isRegistering, setIsRegistering] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
 
-    // Redirect authenticated users away from auth page
     useEffect(() => {
         if (isInitialized && user) {
             if (user.role === "ADMIN") {
@@ -24,14 +23,12 @@ const AuthPage = () => {
         }
     }, [user, isInitialized, navigate]);
 
-    // Set initial tab based on URL query
     useEffect(() => {
         const params = new URLSearchParams(location.search);
         const tab = params.get("tab");
         setIsRegistering(tab === "register");
     }, [location.search]);
 
-    // Listen for auth state changes - but only for registration flow
     useEffect(() => {
         initialize();
 
@@ -48,7 +45,6 @@ const AuthPage = () => {
         };
     }, [initialize, isRegistering]);
 
-    // Don't render anything while checking auth state
     if (!isInitialized) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -60,7 +56,6 @@ const AuthPage = () => {
         );
     }
 
-    // Show registration success message
     if (isRegistered) {
         return (
             <div className="container-custom py-16 min-h-[calc(100vh-400px)]">

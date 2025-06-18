@@ -7,11 +7,9 @@ const AdminHeader = () => {
     const navigate = useNavigate();
     const { logout } = useAuthStore();
 
-    // Handler untuk logout
     const handleLogout = async () => {
         try {
             await logout();
-            // Redirect ke home page setelah logout berhasil
             navigate("/");
         } catch (error) {
             console.error("Error logging out:", error);
@@ -21,7 +19,6 @@ const AdminHeader = () => {
     return (
         <header className="h-16 border-b bg-white px-6 flex items-center justify-end">
             <div className="flex items-center gap-4">
-                {/* Logout Button */}
                 <Button
                     onClick={handleLogout}
                     variant="outline"

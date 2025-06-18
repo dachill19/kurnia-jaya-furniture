@@ -20,9 +20,8 @@ import {
     Eye,
     DollarSign,
     Calendar,
-    ArrowUpRight,
-    ArrowDownRight,
     RefreshCw,
+    Loader2,
 } from "lucide-react";
 import {
     BarChart,
@@ -47,7 +46,6 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    // Store states
     const {
         orders,
         stats: orderStats,
@@ -66,7 +64,7 @@ const Dashboard = () => {
     const {
         products,
         categories,
-        getAllProducts, // Change from fetchProducts to getAllProducts to match AdminProductsPage
+        getAllProducts,
         error: productError,
     } = useProductStore();
 
@@ -78,7 +76,6 @@ const Dashboard = () => {
 
     const { isLoadingKey } = useLoadingStore();
 
-    // Load all data on component mount
     useEffect(() => {
         const loadDashboardData = async () => {
             try {
@@ -87,7 +84,7 @@ const Dashboard = () => {
                     fetchOrderStats(),
                     fetchUsers(),
                     fetchUserStats(),
-                    getAllProducts(), // Use getAllProducts instead of fetchProducts
+                    getAllProducts(),
                     refreshPaymentData(),
                 ]);
             } catch (error) {
@@ -101,11 +98,10 @@ const Dashboard = () => {
         fetchOrderStats,
         fetchUsers,
         fetchUserStats,
-        getAllProducts, // Updated dependency
+        getAllProducts,
         refreshPaymentData,
     ]);
 
-    // Refresh all data
     const handleRefresh = async () => {
         setIsRefreshing(true);
         try {
@@ -114,7 +110,7 @@ const Dashboard = () => {
                 fetchOrderStats(),
                 fetchUsers(),
                 fetchUserStats(),
-                getAllProducts(), // Use getAllProducts instead of fetchProducts
+                getAllProducts(),
                 refreshPaymentData(),
             ]);
         } catch (error) {
@@ -124,7 +120,6 @@ const Dashboard = () => {
         }
     };
 
-    // Calculate today's revenue from payments (same as AdminPaymentsPage)
     const getTodayRevenue = () => {
         const today = new Date();
         const startOfDay = new Date(
@@ -156,7 +151,6 @@ const Dashboard = () => {
         );
     };
 
-    // Calculate today's orders count
     const getTodayOrdersCount = () => {
         const today = new Date();
         const startOfDay = new Date(
@@ -179,7 +173,6 @@ const Dashboard = () => {
         }).length;
     };
 
-    // Calculate revenue data for the last 6 months
     const getRevenueData = () => {
         const months = [];
         const currentDate = new Date();
@@ -201,7 +194,6 @@ const Dashboard = () => {
                 0
             );
 
-            // Use payments data instead of orders for revenue calculation
             const monthPayments = payments.filter((payment) => {
                 const paymentDate = new Date(payment.created_at);
                 return (
@@ -225,7 +217,6 @@ const Dashboard = () => {
         return months;
     };
 
-    // Calculate customer growth data
     const getCustomerData = () => {
         const months = [];
         const currentDate = new Date();
@@ -261,22 +252,20 @@ const Dashboard = () => {
         return months;
     };
 
-    // Get low stock products
     const getLowStockProducts = () => {
         return products
-            .filter((product) => product.stock <= 10) // Consider stock <= 10 as low
+            .filter((product) => product.stock <= 10)
             .sort((a, b) => a.stock - b.stock)
             .slice(0, 6)
             .map((product) => ({
                 id: product.id,
                 name: product.name,
                 stock: product.stock,
-                minStock: 10, // Define minimum stock threshold
+                minStock: 5,
                 category: product.category?.name || "Tanpa Kategori",
             }));
     };
 
-    // Get recent orders (last 5)
     const getRecentOrders = () => {
         return orders.slice(0, 5).map((order) => ({
             id: order.id,
@@ -289,46 +278,48 @@ const Dashboard = () => {
         }));
     };
 
-    // Calculate percentage changes (mock calculation for demo)
-    const calculateChange = (current: number, previous: number) => {
-        if (previous === 0) return "+100%";
-        const change = ((current - previous) / previous) * 100;
-        return `${change >= 0 ? "+" : ""}${change.toFixed(1)}%`;
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat("id-ID", {
+            style: "currency",
+            currency: "IDR",
+            minimumFractionDigits: 0,
+        }).format(amount);
     };
 
-    // Get today's revenue and orders count
     const todayRevenue = getTodayRevenue();
     const todayOrdersCount = getTodayOrdersCount();
 
-    // Stats data - Make sure to handle the products array properly
-    const stats = [
+    const isLoading =
+        isLoadingKey("admin-orders-fetch") ||
+        isLoadingKey("fetch-users") ||
+        isLoadingKey("all-products") ||
+        isLoadingKey("fetch-products") ||
+        isRefreshing;
+
+    const statsCards = [
         {
             title: "Total Pengguna",
             value: userStats?.totalUsers?.toLocaleString("id-ID") || "0",
             icon: Users,
-            change: "+12%", // You could calculate this based on previous period
-            trend: "up" as const,
+            color: "text-blue-600",
         },
         {
             title: "Total Produk",
-            value: (products?.length || 0).toLocaleString("id-ID"), // Ensure products is an array and handle null/undefined
+            value: (products?.length || 0).toLocaleString("id-ID"),
             icon: Package,
-            change: "+8%",
-            trend: "up" as const,
+            color: "text-green-600",
         },
         {
             title: "Pesanan Hari Ini",
             value: todayOrdersCount.toLocaleString("id-ID"),
             icon: ShoppingCart,
-            change: "+23%",
-            trend: "up" as const,
+            color: "text-orange-600",
         },
         {
             title: "Pendapatan Hari Ini",
-            value: `Rp ${todayRevenue.toLocaleString("id-ID")}`,
+            value: formatCurrency(todayRevenue),
             icon: DollarSign,
-            change: paymentStats?.weeklyGrowth || "+15%",
-            trend: "up" as const,
+            color: "text-purple-600",
         },
     ];
 
@@ -337,7 +328,7 @@ const Dashboard = () => {
     const lowStockProducts = getLowStockProducts();
     const recentOrders = getRecentOrders();
 
-    const getStatusColor = (status: string) => {
+    const getStatusColor = (status) => {
         switch (status) {
             case "pending":
                 return "bg-yellow-100 text-yellow-800";
@@ -356,7 +347,7 @@ const Dashboard = () => {
         }
     };
 
-    const getStatusText = (status: string) => {
+    const getStatusText = (status) => {
         switch (status) {
             case "pending":
                 return "Menunggu";
@@ -375,7 +366,7 @@ const Dashboard = () => {
         }
     };
 
-    const getStockStatus = (stock: number, minStock: number) => {
+    const getStockStatus = (stock, minStock) => {
         if (stock === 0)
             return { label: "Habis", color: "bg-red-100 text-red-800" };
         if (stock <= minStock / 2)
@@ -384,52 +375,6 @@ const Dashboard = () => {
             return { label: "Rendah", color: "bg-yellow-100 text-yellow-800" };
         return { label: "Normal", color: "bg-green-100 text-green-800" };
     };
-
-    // Loading skeleton - Update loading check to include product loading
-    if (
-        isLoadingKey("admin-orders-fetch") ||
-        isLoadingKey("fetch-users") ||
-        isLoadingKey("all-products") || // Check for products loading state
-        isLoadingKey("fetch-products")
-    ) {
-        return (
-            <div className="space-y-6">
-                <div className="flex items-center justify-between">
-                    <Skeleton className="h-8 w-48" />
-                    <Skeleton className="h-6 w-64" />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[1, 2, 3, 4].map((i) => (
-                        <Card key={i}>
-                            <CardContent className="p-4">
-                                <Skeleton className="h-20 w-full" />
-                            </CardContent>
-                        </Card>
-                    ))}
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
-                        <CardHeader>
-                            <Skeleton className="h-6 w-48" />
-                        </CardHeader>
-                        <CardContent>
-                            <Skeleton className="h-64 w-full" />
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <Skeleton className="h-6 w-48" />
-                        </CardHeader>
-                        <CardContent>
-                            <Skeleton className="h-64 w-full" />
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="space-y-6">
@@ -465,42 +410,29 @@ const Dashboard = () => {
                 </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {stats.map((stat, index) => (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {statsCards.map((stat, index) => (
                     <Card
                         key={index}
-                        className="hover:shadow-md transition-shadow"
+                        className="border-none shadow-sm hover:shadow-md transition-shadow"
                     >
                         <CardContent className="p-4">
                             <div className="flex items-center justify-between">
-                                <div className="space-y-1">
-                                    <p className="text-sm font-medium text-gray-600">
+                                <div>
+                                    <p className="text-sm text-gray-600">
                                         {stat.title}
                                     </p>
-                                    <p className="text-xl font-bold">
-                                        {stat.value}
-                                    </p>
-                                    <div className="flex items-center gap-1">
-                                        {stat.trend === "up" ? (
-                                            <ArrowUpRight className="h-3 w-3 text-green-500" />
+                                    <p className="text-xl font-bold text-gray-900">
+                                        {isLoading ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
                                         ) : (
-                                            <ArrowDownRight className="h-3 w-3 text-red-500" />
+                                            stat.value
                                         )}
-                                        <span
-                                            className={`text-xs font-medium ${
-                                                stat.trend === "up"
-                                                    ? "text-green-500"
-                                                    : "text-red-500"
-                                            }`}
-                                        >
-                                            {stat.change}
-                                        </span>
-                                    </div>
+                                    </p>
                                 </div>
-                                <div className="h-10 w-10 bg-kj-red/10 rounded-full flex items-center justify-center">
-                                    <stat.icon className="h-5 w-5 text-kj-red" />
-                                </div>
+                                <stat.icon
+                                    className={`h-8 w-8 ${stat.color}`}
+                                />
                             </div>
                         </CardContent>
                     </Card>
@@ -510,7 +442,7 @@ const Dashboard = () => {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Revenue Chart */}
-                <Card>
+                <Card className="border-none shadow-sm">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <TrendingUp className="h-5 w-5" />
@@ -532,7 +464,7 @@ const Dashboard = () => {
                                         }
                                     />
                                     <Tooltip
-                                        formatter={(value: any) => [
+                                        formatter={(value) => [
                                             `Rp ${(
                                                 Number(value) / 1000000
                                             ).toFixed(1)}M`,
@@ -547,7 +479,7 @@ const Dashboard = () => {
                 </Card>
 
                 {/* Customer Chart */}
-                <Card>
+                <Card className="border-none shadow-sm">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Users className="h-5 w-5" />
@@ -565,7 +497,7 @@ const Dashboard = () => {
                                     <XAxis dataKey="month" />
                                     <YAxis />
                                     <Tooltip
-                                        formatter={(value: any) => [
+                                        formatter={(value) => [
                                             Number(value),
                                             "Pelanggan",
                                         ]}
@@ -585,7 +517,7 @@ const Dashboard = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Low Stock Alert */}
-                <Card>
+                <Card className="border-none shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="flex items-center gap-2">
@@ -653,7 +585,7 @@ const Dashboard = () => {
                 </Card>
 
                 {/* Recent Orders */}
-                <Card>
+                <Card className="border-none shadow-sm">
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="flex items-center gap-2">

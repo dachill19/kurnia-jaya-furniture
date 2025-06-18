@@ -37,7 +37,6 @@ const Header = () => {
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Loading states
     const isCartLoading = isLoadingKey("cart-fetch");
     const isAuthLoading =
         isLoadingKey("fetch-profile") || isLoadingKey("auth-initialize");
@@ -46,7 +45,6 @@ const Header = () => {
         getCategories();
     }, []);
 
-    // Fetch cart when user changes
     useEffect(() => {
         if (user) {
             fetchCart();
@@ -57,14 +55,12 @@ const Header = () => {
         setIsMenuOpen(!isMenuOpen);
     };
 
-    // Check if current path matches the navigation item
     const isActive = (path) => {
         if (path === "/" && location.pathname === "/") return true;
         if (path !== "/" && location.pathname.startsWith(path)) return true;
         return false;
     };
 
-    // Check authentication state on component mount and auth state changes
     useEffect(() => {
         fetchProfile();
 
@@ -74,7 +70,6 @@ const Header = () => {
             if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
                 await fetchProfile();
             } else if (event === "SIGNED_OUT") {
-                // User will be set to null in the logout function
             }
         });
 
@@ -83,7 +78,6 @@ const Header = () => {
 
     return (
         <header className="bg-white shadow-md relative">
-            {/* Top Bar */}
             <div className="bg-gradient-to-r from-kj-brown to-kj-red text-white py-3">
                 <div className="container-custom items-center hidden md:flex space-x-6 text-sm">
                     <a
@@ -107,10 +101,8 @@ const Header = () => {
                 </div>
             </div>
 
-            {/* Main Header */}
             <div className="container-custom py-5">
                 <div className="flex items-center justify-between">
-                    {/* Logo - Made larger */}
                     <Link to="/" className="flex items-center group">
                         <img
                             src={logo}
@@ -119,7 +111,6 @@ const Header = () => {
                         />
                     </Link>
 
-                    {/* Navigation (desktop) */}
                     <nav className="hidden md:flex justify-center items-center">
                         <ul className="flex space-x-12">
                             <li>
@@ -242,7 +233,6 @@ const Header = () => {
                         </ul>
                     </nav>
 
-                    {/* Nav Actions (desktop) */}
                     <div className="hidden md:flex items-center space-x-6">
                         <Link
                             to="/cart"
@@ -323,7 +313,6 @@ const Header = () => {
                         )}
                     </div>
 
-                    {/* Mobile Menu Button */}
                     <div className="flex md:hidden items-center space-x-3">
                         <Link to="/cart" className="relative p-1 group">
                             <div className="relative">
@@ -358,7 +347,6 @@ const Header = () => {
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
                 {isMenuOpen && (
                     <div className="md:hidden bg-white absolute left-0 right-0 z-50 shadow-lg border-t animate-in slide-in-from-top-4 duration-300">
                         <div className="container-custom py-4">

@@ -20,12 +20,10 @@ const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
         );
     }
 
-    // ADMIN trying to access non-admin route
     if (user?.role === "ADMIN" && requiredRole !== "ADMIN") {
         return <Navigate to="/admin" replace />;
     }
 
-    // Any non-admin (including not logged in) trying to access ADMIN route
     if (requiredRole === "ADMIN" && user?.role !== "ADMIN") {
         return <Navigate to="/" replace />;
     }

@@ -63,7 +63,6 @@ const AdminProductsPage = () => {
         }
     }, [productError, adminError, toast, clearError]);
 
-    // Get unique categories from products
     const categories = Array.from(
         new Set(
             products
@@ -73,7 +72,6 @@ const AdminProductsPage = () => {
     ).sort();
 
     const filteredProducts = products.filter((product) => {
-        // Category filter
         if (
             categoryFilter !== "ALL" &&
             product.category?.name !== categoryFilter
@@ -81,7 +79,6 @@ const AdminProductsPage = () => {
             return false;
         }
 
-        // Search filter
         if (searchTerm) {
             const searchLower = searchTerm.toLowerCase();
             return (
@@ -101,22 +98,20 @@ const AdminProductsPage = () => {
                 title: "Success",
                 description: `${name} has been deleted.`,
             });
-            // Refresh top selling product after deletion
             getTopSellingProduct();
         }
     };
 
     const getStatusBadge = (stock: number) => {
         if (stock === 0) {
-            return "bg-gray-200 text-gray-700"; // untuk stok habis
+            return "bg-gray-200 text-gray-700";
         } else if (stock <= 5) {
-            return "bg-red-100 text-red-700"; // stok rendah
+            return "bg-red-100 text-red-700";
         } else {
-            return "bg-green-100 text-green-700"; // stok tersedia
+            return "bg-green-100 text-green-700";
         }
     };
 
-    // Stats calculation with updated logic
     const stats = {
         totalProducts: products.length,
         lowStock: products.filter((p) => p.stock <= 5).length,

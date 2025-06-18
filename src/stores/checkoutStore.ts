@@ -11,7 +11,7 @@ export interface OrderItem {
 }
 
 export interface ShippingData {
-    address_id: string; // Reference to address table
+    address_id: string;
     estimated_delivery: string;
 }
 
@@ -73,7 +73,40 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
             set({ isProcessing: true, error: null });
             startLoading("checkout-create-order");
 
-            // 1. Create order record
+            const stockCheckPromises = orderData.order_items.map(
+                async (item) => {
+                    const { data: product, error } = await supabase
+                        .from("product")
+                        .select("id, stock")
+                        .eq("id", item.product_id)
+                        .single();
+
+                    if (error) {
+                        throw new Error(
+                            `Failed to check stock for product ${item.product_id}: ${error.message}`
+                        );
+                    }
+
+                    if (!product || product.stock < item.quantity) {
+                        throw new Error(
+                            `Insufficient stock for product ${
+                                item.product_id
+                            }. Available: ${product?.stock || 0}, Required: ${
+                                item.quantity
+                            }`
+                        );
+                    }
+
+                    return {
+                        product_id: item.product_id,
+                        currentStock: product.stock,
+                        requiredQty: item.quantity,
+                    };
+                }
+            );
+
+            const stockValidation = await Promise.all(stockCheckPromises);
+
             const { data: newOrder, error: orderError } = await supabase
                 .from("order")
                 .insert({
@@ -90,26 +123,23 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
                 );
             }
 
-            // 2. Create shipping record with address_id reference
             const { error: shippingError } = await supabase
                 .from("shipping")
                 .insert({
                     order_id: newOrder.id,
-                    address_id: orderData.shipping_data.address_id, // Reference to address table
+                    address_id: orderData.shipping_data.address_id,
                     estimated_delivery:
                         orderData.shipping_data.estimated_delivery,
                     status: "PENDING",
                 });
 
             if (shippingError) {
-                // Rollback: delete the created order
                 await supabase.from("order").delete().eq("id", newOrder.id);
                 throw new Error(
                     `Failed to create shipping record: ${shippingError.message}`
                 );
             }
 
-            // 3. Insert order items
             const orderItemsWithOrderId = orderData.order_items.map((item) => ({
                 order_id: newOrder.id,
                 product_id: item.product_id,
@@ -122,7 +152,6 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
                 .insert(orderItemsWithOrderId);
 
             if (itemsError) {
-                // Rollback: delete order and shipping
                 await supabase
                     .from("shipping")
                     .delete()
@@ -133,7 +162,6 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
                 );
             }
 
-            // 4. Create payment record
             const { error: paymentError } = await supabase
                 .from("payment")
                 .insert({
@@ -146,7 +174,6 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
                 });
 
             if (paymentError) {
-                // Rollback: delete order, shipping, and order items
                 await supabase
                     .from("order_item")
                     .delete()
@@ -161,7 +188,6 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
                 );
             }
 
-            // 5. Create order status history record
             const { error: statusHistoryError } = await supabase
                 .from("order_status_history")
                 .insert({
@@ -171,7 +197,6 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
                 });
 
             if (statusHistoryError) {
-                // Rollback: delete order, shipping, order items, and payment
                 await supabase
                     .from("payment")
                     .delete()
@@ -190,7 +215,64 @@ export const useCheckoutStore = create<CheckoutState>()((set, get) => ({
                 );
             }
 
-            // Clear cart after successful order creation
+            const stockUpdatePromises = stockValidation.map(async (item) => {
+                const newStock = item.currentStock - item.requiredQty;
+
+                const { error: stockError } = await supabase
+                    .from("product")
+                    .update({
+                        stock: newStock,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq("id", item.product_id);
+
+                if (stockError) {
+                    throw new Error(
+                        `Failed to update stock for product ${item.product_id}: ${stockError.message}`
+                    );
+                }
+
+                return { product_id: item.product_id, newStock };
+            });
+
+            try {
+                await Promise.all(stockUpdatePromises);
+            } catch (stockUpdateError) {
+                console.error(
+                    "Stock update failed, rolling back:",
+                    stockUpdateError
+                );
+
+                await Promise.all(
+                    stockValidation.map(async (item) => {
+                        await supabase
+                            .from("product")
+                            .update({ stock: item.currentStock })
+                            .eq("id", item.product_id);
+                    })
+                );
+
+                await supabase
+                    .from("order_status_history")
+                    .delete()
+                    .eq("order_id", newOrder.id);
+                await supabase
+                    .from("payment")
+                    .delete()
+                    .eq("order_id", newOrder.id);
+                await supabase
+                    .from("order_item")
+                    .delete()
+                    .eq("order_id", newOrder.id);
+                await supabase
+                    .from("shipping")
+                    .delete()
+                    .eq("order_id", newOrder.id);
+                await supabase.from("order").delete().eq("id", newOrder.id);
+
+                throw stockUpdateError;
+            }
+
             await clearCart();
 
             set({

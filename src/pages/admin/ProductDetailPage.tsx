@@ -49,7 +49,6 @@ const AdminProductDetailPage = () => {
     const handleDelete = async () => {
         if (!productDetail || !productId) return;
 
-        // Perbaikan: Menggunakan string template literals dengan benar
         if (
             window.confirm(
                 `Are you sure you want to delete ${productDetail.name}?`

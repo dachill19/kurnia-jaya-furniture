@@ -22,13 +22,11 @@ const CategoryPage = () => {
 
     const [categoryProducts, setCategoryProducts] = useState([]);
 
-    // Cari kategori berdasarkan nama dari URL
     const decodedCategoryName = decodeURIComponent(categoryName || "");
     const category = categories.find(
         (cat) => cat.name.toLowerCase() === decodedCategoryName.toLowerCase()
     );
 
-    // Fetch Categories
     useEffect(() => {
         const fetchAllCategories = async () => {
             try {
@@ -41,7 +39,6 @@ const CategoryPage = () => {
         fetchAllCategories();
     }, [getCategories]);
 
-    // Fetch Products by Category
     useEffect(() => {
         const fetchCategoryProducts = async () => {
             if (category?.id) {
@@ -58,7 +55,6 @@ const CategoryPage = () => {
         fetchCategoryProducts();
     }, [category?.id, getProductsByCategory]);
 
-    // Clear errors on mount
     useEffect(() => {
         clearError();
     }, [clearError]);
@@ -81,7 +77,6 @@ const CategoryPage = () => {
         stock: product.stock || 0,
     });
 
-    // Error Display Component
     const ErrorDisplay = ({
         message,
         onRetry,
@@ -100,12 +95,10 @@ const CategoryPage = () => {
         </div>
     );
 
-    // Loading state - menggunakan skeleton
     if (isLoadingKey("categories")) {
         return <CategoryPageSkeleton />;
     }
 
-    // Kategori tidak ditemukan
     if (categories.length > 0 && !category) {
         return (
             <div className="container-custom py-16 text-center">
@@ -119,7 +112,6 @@ const CategoryPage = () => {
         );
     }
 
-    // Error handling
     if (error) {
         return (
             <div className="container-custom py-16 text-center">

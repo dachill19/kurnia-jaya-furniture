@@ -5,8 +5,6 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-// utils/supabaseErrorTranslator.ts
-
 export const translateSupabaseError = (message: string): string => {
     const translations: Record<string, string> = {
         // Auth

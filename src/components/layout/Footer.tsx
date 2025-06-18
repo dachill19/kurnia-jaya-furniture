@@ -23,9 +23,7 @@ const Footer = () => {
     return (
         <footer className="bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950 pt-16 pb-8">
             <div className="container-custom">
-                {/* Footer Top */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-                    {/* Column 1: About */}
                     <div>
                         <h3 className="text-xl font-serif font-bold text-kj-brown dark:text-white mb-6 relative after:absolute after:bottom-0 after:left-0 after:w-16 after:h-0.5 after:bg-kj-red after:-mb-2">
                             Kurnia Jaya Furniture
@@ -63,7 +61,6 @@ const Footer = () => {
                         </div>
                     </div>
 
-                    {/* Column 2: Categories */}
                     <div>
                         <h3 className="text-xl font-serif font-bold text-kj-brown dark:text-white mb-6 relative after:absolute after:bottom-0 after:left-0 after:w-16 after:h-0.5 after:bg-kj-red after:-mb-2">
                             Kategori
@@ -88,7 +85,6 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    {/* Column 3: Links */}
                     <div>
                         <h3 className="text-xl font-serif font-bold text-kj-brown dark:text-white mb-6 relative after:absolute after:bottom-0 after:left-0 after:w-16 after:h-0.5 after:bg-kj-red after:-mb-2">
                             Layanan Pelanggan
@@ -124,7 +120,6 @@ const Footer = () => {
                         </ul>
                     </div>
 
-                    {/* Column 4: Contact */}
                     <div>
                         <h3 className="text-xl font-serif font-bold text-kj-brown dark:text-white mb-6 relative after:absolute after:bottom-0 after:left-0 after:w-16 after:h-0.5 after:bg-kj-red after:-mb-2">
                             Hubungi Kami
@@ -187,10 +182,8 @@ const Footer = () => {
                     </div>
                 </div>
 
-                {/* Divider */}
                 <div className="border-t border-gray-200 dark:border-gray-800 my-8"></div>
 
-                {/* Footer Bottom */}
                 <div className="flex flex-col md:flex-row justify-between items-center">
                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 md:mb-0">
                         &copy; {new Date().getFullYear()} Kurnia Jaya Furniture.

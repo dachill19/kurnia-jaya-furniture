@@ -91,7 +91,6 @@ type ProductStore = {
     getHotProducts: () => Promise<void>;
     getLatestProducts: () => Promise<void>;
     getTopSellingProduct: () => Promise<void>;
-    // Add missing methods
     fetchProducts: () => Promise<void>;
     fetchCategories: () => Promise<void>;
     clearError: () => void;
@@ -349,7 +348,6 @@ export const useProductStore = create<ProductStore>()(
                 try {
                     set({ error: null });
 
-                    // Query to get top-selling product based on order_item
                     const { data, error } = await supabase
                         .from("order_item")
                         .select(
@@ -360,8 +358,8 @@ export const useProductStore = create<ProductStore>()(
                 order!inner(id, status)
                 `
                         )
-                        .eq("order.status", "DELIVERED") // Use DELIVERED instead of completed
-                        .returns<OrderItemForTopSelling[]>(); // Explicitly type the query result
+                        .eq("order.status", "DELIVERED")
+                        .returns<OrderItemForTopSelling[]>();
 
                     if (error) throw error;
 
@@ -370,7 +368,6 @@ export const useProductStore = create<ProductStore>()(
                         return;
                     }
 
-                    // Group by product_id and calculate total quantity
                     const productSales: { [key: string]: TopSellingProduct } =
                         {};
 
@@ -391,7 +388,6 @@ export const useProductStore = create<ProductStore>()(
                         }
                     });
 
-                    // Find the product with the highest sales
                     const topSelling = Object.values(productSales).reduce(
                         (max, current) =>
                             current.totalQuantity > (max?.totalQuantity || 0)
@@ -413,7 +409,6 @@ export const useProductStore = create<ProductStore>()(
                 }
             },
 
-            // Add the missing methods as aliases to existing ones
             fetchProducts: async function () {
                 return this.getAllProducts();
             },

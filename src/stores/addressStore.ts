@@ -100,7 +100,6 @@ export const useAddressStore = create<AddressState>()(
                     const { user } = useAuthStore.getState();
                     if (!user) return;
 
-                    // If this is set as default, unset other default addresses first
                     if (addressData.is_default) {
                         await supabase
                             .from("address")
@@ -138,7 +137,6 @@ export const useAddressStore = create<AddressState>()(
 
                     const { id, ...updateData } = addressData;
 
-                    // If this is set as default, unset other default addresses first
                     if (updateData.is_default) {
                         await supabase
                             .from("address")
@@ -205,13 +203,11 @@ export const useAddressStore = create<AddressState>()(
                     const { user } = useAuthStore.getState();
                     if (!user) return;
 
-                    // First, unset all default addresses
                     await supabase
                         .from("address")
                         .update({ is_default: false })
                         .eq("user_id", user.id);
 
-                    // Then set the selected address as default
                     const { error } = await supabase
                         .from("address")
                         .update({ is_default: true })

@@ -36,7 +36,6 @@ const AdminOrderDetailPage = () => {
             fetchOrderDetail(orderId);
         }
 
-        // Cleanup when component unmounts
         return () => {
             clearCurrentOrder();
             clearError();
@@ -94,16 +93,13 @@ const AdminOrderDetailPage = () => {
     const getTimeline = () => {
         if (!currentOrder) return [];
 
-        // Get actual status history from order_status_history
         const statusHistory = currentOrder.order_status_history || [];
 
-        // Create a map of status to date from history
         const statusDateMap = statusHistory.reduce((acc, history) => {
             acc[history.status] = history.created_at;
             return acc;
         }, {} as Record<string, string>);
 
-        // Define the expected order flow
         const expectedStatuses = [
             { status: "PENDING", label: "Pesanan Dibuat" },
             { status: "CONFIRMED", label: "Pesanan Dikonfirmasi" },
@@ -124,7 +120,6 @@ const AdminOrderDetailPage = () => {
             };
         });
 
-        // Handle cancelled status separately
         if (statusDateMap["CANCELLED"]) {
             timeline.push({
                 status: "Pesanan Dibatalkan",
@@ -141,13 +136,11 @@ const AdminOrderDetailPage = () => {
         if (!currentOrder) return;
 
         try {
-            // Update the status
             await updateOrderStatus({
                 orderId: currentOrder.id,
                 newStatus: newStatus,
             });
 
-            // Fetch fresh data after successful update
             await fetchOrderDetail(currentOrder.id);
         } catch (error) {
             console.error("Error updating order status:", error);
@@ -260,7 +253,6 @@ const AdminOrderDetailPage = () => {
                         <CardContent>
                             <div className="space-y-4">
                                 {currentOrder.order_item?.map((item, index) => {
-                                    // Pindahkan deklarasi mainImage ke dalam loop untuk setiap item
                                     const mainImage =
                                         item.product?.product_image?.find(
                                             (img) => img.is_main

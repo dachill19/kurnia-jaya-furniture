@@ -11,7 +11,7 @@ export interface CartItem {
     discount_price: number | null;
     image: string;
     quantity: number;
-    stock: number; // Added stock field
+    stock: number;
 }
 
 interface CartState {
@@ -44,14 +44,12 @@ export const useCartStore = create<CartState>()(
             totalItems: 0,
             totalPrice: 0,
 
-            // Helper function to get display price (discount_price if available, otherwise regular price)
             getDisplayPrice: (item: CartItem) => {
                 return item.discount_price && item.discount_price > 0
                     ? item.discount_price
                     : item.price;
             },
 
-            // Helper function to validate quantity against stock
             validateQuantity: (stock: number, requestedQuantity: number) => {
                 if (requestedQuantity <= 0) {
                     return {
@@ -108,7 +106,7 @@ export const useCartStore = create<CartState>()(
                         name: item.product.name,
                         price: item.product.price,
                         discount_price: item.product.discount_price,
-                        stock: item.product.stock || 0, // Added stock mapping
+                        stock: item.product.stock || 0,
                         image:
                             item.product.product_image?.find(
                                 (img: any) => img.is_main
@@ -118,7 +116,6 @@ export const useCartStore = create<CartState>()(
                         quantity: item.quantity,
                     }));
 
-                    // Calculate total using display prices (with discount consideration)
                     const { getDisplayPrice } = get();
                     const totalPrice = cart.reduce((acc, item) => {
                         const displayPrice = getDisplayPrice(item);
@@ -154,7 +151,6 @@ export const useCartStore = create<CartState>()(
                             message: "User tidak terautentikasi",
                         };
 
-                    // Validate quantity against stock
                     const { validateQuantity } = get();
                     const validation = validateQuantity(item.stock, quantity);
                     if (!validation.isValid) {
@@ -225,7 +221,6 @@ export const useCartStore = create<CartState>()(
                         return { success: true };
                     }
 
-                    // Find the item in cart to get stock info
                     const { cart, validateQuantity } = get();
                     const cartItem = cart.find((item) => item.id === productId);
 

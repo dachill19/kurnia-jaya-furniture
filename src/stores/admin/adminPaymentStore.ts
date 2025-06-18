@@ -384,20 +384,44 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
     exportPaymentsCSV: () => {
         const { payments } = get();
 
-        const csvContent = `ID Pembayaran,ID Pesanan,Pelanggan,Email,Jumlah,Metode,Status,ID Transaksi,Tanggal Dibuat,Tanggal Update
-${payments
-    .map(
-        (payment) =>
-            `${payment.id},${payment.order?.id || ""},${
-                payment.order?.user?.name || ""
-            },${payment.order?.user?.email || ""},${payment.amount},${
-                payment.method
-            },${payment.status},${payment.transaction_id || ""},${
-                payment.created_at
-            },${payment.updated_at}`
-    )
-    .join("\n")}`;
+        // Create CSV headers
+        const headers = [
+            "ID Pembayaran",
+            "ID Pesanan",
+            "Pelanggan",
+            "Email",
+            "Jumlah",
+            "Metode",
+            "Status",
+            "ID Transaksi",
+            "Tanggal Dibuat",
+            "Tanggal Update",
+        ];
 
+        // Create CSV content
+        const csvContent = [
+            headers.join(","),
+            ...payments.map((payment) =>
+                [
+                    payment.id,
+                    payment.order?.id || "",
+                    payment.order?.user?.name || "",
+                    payment.order?.user?.email || "",
+                    payment.amount,
+                    payment.method,
+                    payment.status,
+                    payment.transaction_id || "",
+                    new Date(payment.created_at).toLocaleDateString("id-ID"),
+                    payment.updated_at
+                        ? new Date(payment.updated_at).toLocaleDateString(
+                              "id-ID"
+                          )
+                        : "Belum diupdate",
+                ].join(",")
+            ),
+        ].join("\n");
+
+        // Create and download file
         const blob = new Blob([csvContent], {
             type: "text/csv;charset=utf-8;",
         });
@@ -407,7 +431,9 @@ ${payments
         a.download = `laporan-pembayaran-${
             new Date().toISOString().split("T")[0]
         }.csv`;
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
     },
 

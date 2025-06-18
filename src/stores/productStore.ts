@@ -68,6 +68,9 @@ type ProductStore = {
     getProductById: (productId: string) => Promise<void>;
     getHotProducts: () => Promise<void>;
     getLatestProducts: () => Promise<void>;
+    // Add missing methods
+    fetchProducts: () => Promise<void>;
+    fetchCategories: () => Promise<void>;
     clearError: () => void;
 };
 
@@ -310,6 +313,15 @@ export const useProductStore = create<ProductStore>()(
                 } finally {
                     stopLoading("latest-products");
                 }
+            },
+
+            // Add the missing methods as aliases to existing ones
+            fetchProducts: async function() {
+                return this.getAllProducts();
+            },
+
+            fetchCategories: async function() {
+                return this.getCategories();
             },
         }),
         {

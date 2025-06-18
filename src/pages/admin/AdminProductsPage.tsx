@@ -29,18 +29,28 @@ const AdminProductsPage = () => {
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("ALL");
-    const { products, getAllProducts, error: productError } = useProductStore();
+
+    const {
+        products,
+        topSellingProduct,
+        getAllProducts,
+        getTopSellingProduct,
+        error: productError,
+    } = useProductStore();
+
     const {
         deleteProduct,
         error: adminError,
         clearError,
     } = useAdminProductStore();
+
     const { isLoadingKey } = useLoadingStore();
     const { toast } = useToast();
 
     useEffect(() => {
         getAllProducts();
-    }, [getAllProducts]);
+        getTopSellingProduct();
+    }, [getAllProducts, getTopSellingProduct]);
 
     useEffect(() => {
         if (productError || adminError) {
@@ -91,6 +101,8 @@ const AdminProductsPage = () => {
                 title: "Success",
                 description: `${name} has been deleted.`,
             });
+            // Refresh top selling product after deletion
+            getTopSellingProduct();
         }
     };
 
@@ -104,22 +116,11 @@ const AdminProductsPage = () => {
         }
     };
 
-    // Stats calculation with type safety
+    // Stats calculation with updated logic
     const stats = {
         totalProducts: products.length,
         lowStock: products.filter((p) => p.stock <= 5).length,
-        topSelling:
-            products.length > 0
-                ? products.reduce((max, p) => {
-                      const maxReviews = max?.reviews?.length || 0;
-                      const pReviews = p.reviews?.length || 0;
-                      return pReviews > maxReviews ? p : max;
-                  }, products[0])
-                : null,
-        totalReviews: products.reduce(
-            (sum, p) => sum + (p.reviews?.length || 0),
-            0
-        ),
+        topSelling: topSellingProduct,
     };
 
     const productStats = [
@@ -137,16 +138,10 @@ const AdminProductsPage = () => {
         },
         {
             title: "Produk Terlaris",
-            value: stats.topSelling?.reviews?.length || 0,
-            trend: stats.topSelling?.name || "N/A",
+            value: stats.topSelling?.totalQuantity || 0,
+            trend: stats.topSelling?.product?.name || "N/A",
             icon: TrendingUp,
             color: "text-green-600",
-        },
-        {
-            title: "Total Reviews",
-            value: stats.totalReviews,
-            icon: Eye,
-            color: "text-purple-600",
         },
     ];
 
@@ -167,7 +162,7 @@ const AdminProductsPage = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {productStats.map((stat, index) => (
                     <Card
                         key={index}
@@ -182,9 +177,11 @@ const AdminProductsPage = () => {
                                     <p className="text-xl font-bold text-gray-900">
                                         {stat.value}
                                     </p>
-                                    <p className={`text-xs ${stat.color}`}>
-                                        {stat.trend}
-                                    </p>
+                                    {stat.trend && (
+                                        <p className={`text-xs ${stat.color}`}>
+                                            {stat.trend}
+                                        </p>
+                                    )}
                                 </div>
                                 <stat.icon
                                     className={`h-8 w-8 ${stat.color}`}

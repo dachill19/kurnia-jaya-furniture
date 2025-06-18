@@ -32,7 +32,7 @@ type Review = {
     rating: number;
     comment: string;
     created_at: string;
-    updated_at: string; // Added to fix TypeScript error
+    updated_at: string;
     review_image?: ReviewImage[];
     user?: {
         id: string;
@@ -57,10 +57,32 @@ type Product = {
     reviews?: Review[];
 };
 
+type TopSellingProduct = {
+    product: {
+        id: string;
+        name: string;
+    };
+    totalQuantity: number;
+};
+
+interface OrderItemForTopSelling {
+    product_id: string;
+    quantity: number;
+    product: {
+        id: string;
+        name: string;
+    };
+    order: {
+        id: string;
+        status: string;
+    };
+}
+
 type ProductStore = {
     categories: Category[];
     products: Product[];
     productDetail: Product | null;
+    topSellingProduct: TopSellingProduct | null;
     error: string | null;
     getCategories: () => Promise<void>;
     getAllProducts: () => Promise<void>;
@@ -68,6 +90,7 @@ type ProductStore = {
     getProductById: (productId: string) => Promise<void>;
     getHotProducts: () => Promise<void>;
     getLatestProducts: () => Promise<void>;
+    getTopSellingProduct: () => Promise<void>;
     // Add missing methods
     fetchProducts: () => Promise<void>;
     fetchCategories: () => Promise<void>;
@@ -76,10 +99,11 @@ type ProductStore = {
 
 export const useProductStore = create<ProductStore>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             categories: [],
             products: [],
             productDetail: null,
+            topSellingProduct: null,
             error: null,
 
             clearError: () => set({ error: null }),
@@ -197,12 +221,12 @@ export const useProductStore = create<ProductStore>()(
             getProductById: async (productId: string) => {
                 set({ error: null });
                 useLoadingStore.getState().startLoading("product-detail");
-                
+
                 try {
                     const { data, error } = await supabase
-                    .from("product")
-                    .select(
-                        `
+                        .from("product")
+                        .select(
+                            `
                         *,
                         category(id, name),
                         product_image(id, image_url, is_main, created_at),
@@ -217,22 +241,24 @@ export const useProductStore = create<ProductStore>()(
                         user!review_user_id_fkey(id, name, email)
                         )
                     `
-                    )
-                    .eq("id", productId)
-                    .single();
+                        )
+                        .eq("id", productId)
+                        .single();
 
                     if (error) {
-                    if (error.code === "PGRST116") {
-                        set({ error: "Produk tidak ditemukan" });
-                    } else {
-                        set({ error: error.message });
-                    }
-                    return;
+                        if (error.code === "PGRST116") {
+                            set({ error: "Produk tidak ditemukan" });
+                        } else {
+                            set({ error: error.message });
+                        }
+                        return;
                     }
 
                     set({ productDetail: data });
                 } catch (error: any) {
-                    set({ error: error.message || "Gagal mengambil detail produk" });
+                    set({
+                        error: error.message || "Gagal mengambil detail produk",
+                    });
                 } finally {
                     useLoadingStore.getState().stopLoading("product-detail");
                 }
@@ -315,12 +341,84 @@ export const useProductStore = create<ProductStore>()(
                 }
             },
 
+            getTopSellingProduct: async () => {
+                const { startLoading, stopLoading } =
+                    useLoadingStore.getState();
+                startLoading("top-selling-product");
+
+                try {
+                    set({ error: null });
+
+                    // Query to get top-selling product based on order_item
+                    const { data, error } = await supabase
+                        .from("order_item")
+                        .select(
+                            `
+                product_id,
+                quantity,
+                product(id, name),
+                order!inner(id, status)
+                `
+                        )
+                        .eq("order.status", "DELIVERED") // Use DELIVERED instead of completed
+                        .returns<OrderItemForTopSelling[]>(); // Explicitly type the query result
+
+                    if (error) throw error;
+
+                    if (!data || data.length === 0) {
+                        set({ topSellingProduct: null });
+                        return;
+                    }
+
+                    // Group by product_id and calculate total quantity
+                    const productSales: { [key: string]: TopSellingProduct } =
+                        {};
+
+                    data.forEach((item) => {
+                        if (item.product && item.product_id) {
+                            if (productSales[item.product_id]) {
+                                productSales[item.product_id].totalQuantity +=
+                                    item.quantity;
+                            } else {
+                                productSales[item.product_id] = {
+                                    product: {
+                                        id: item.product.id,
+                                        name: item.product.name,
+                                    },
+                                    totalQuantity: item.quantity,
+                                };
+                            }
+                        }
+                    });
+
+                    // Find the product with the highest sales
+                    const topSelling = Object.values(productSales).reduce(
+                        (max, current) =>
+                            current.totalQuantity > (max?.totalQuantity || 0)
+                                ? current
+                                : max,
+                        null as TopSellingProduct | null
+                    );
+
+                    set({ topSellingProduct: topSelling });
+                } catch (error: any) {
+                    console.error("Error fetching top selling product:", error);
+                    set({
+                        error:
+                            error.message ||
+                            "Failed to fetch top selling product",
+                    });
+                } finally {
+                    stopLoading("top-selling-product");
+                }
+            },
+
             // Add the missing methods as aliases to existing ones
-            fetchProducts: async function() {
+            fetchProducts: async function () {
                 return this.getAllProducts();
             },
 
-            fetchCategories: async function() {
+            fetchCategories: async function () {
                 return this.getCategories();
             },
         }),

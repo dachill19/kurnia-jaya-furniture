@@ -95,9 +95,13 @@ const AdminProductsPage = () => {
     };
 
     const getStatusBadge = (stock: number) => {
-        return stock <= 10
-            ? "bg-red-100 text-red-700"
-            : "bg-green-100 text-green-700";
+        if (stock === 0) {
+            return "bg-gray-200 text-gray-700"; // untuk stok habis
+        } else if (stock <= 5) {
+            return "bg-red-100 text-red-700"; // stok rendah
+        } else {
+            return "bg-green-100 text-green-700"; // stok tersedia
+        }
     };
 
     // Stats calculation with type safety
@@ -321,7 +325,9 @@ const AdminProductsPage = () => {
                                                         product.stock
                                                     )}
                                                 >
-                                                    {product.stock <= 10
+                                                    {product.stock === 0
+                                                        ? "Stok Habis"
+                                                        : product.stock <= 5
                                                         ? "Stok Rendah"
                                                         : "Tersedia"}
                                                 </Badge>

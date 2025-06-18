@@ -141,10 +141,14 @@ const AdminOrderDetailPage = () => {
         if (!currentOrder) return;
 
         try {
+            // Update the status
             await updateOrderStatus({
                 orderId: currentOrder.id,
                 newStatus: newStatus,
             });
+
+            // Fetch fresh data after successful update
+            await fetchOrderDetail(currentOrder.id);
         } catch (error) {
             console.error("Error updating order status:", error);
         }
@@ -369,23 +373,23 @@ const AdminOrderDetailPage = () => {
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="flex items-center gap-2">
-                                    <Mail className="h-4 w-4 text-gray-400" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500">
-                                            Email
-                                        </p>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">
+                                        Email
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Mail className="h-4 w-4 text-gray-400" />
                                         <p className="text-sm">
                                             {currentOrder.user?.email || "N/A"}
                                         </p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                    <Phone className="h-4 w-4 text-gray-400" />
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-500">
-                                            Telepon
-                                        </p>
+                                <div>
+                                    <p className="text-sm font-medium text-gray-500">
+                                        Telepon
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <Phone className="h-4 w-4 text-gray-400" />
                                         <p className="text-sm">
                                             {currentOrder.user?.phone || "N/A"}
                                         </p>
@@ -486,9 +490,10 @@ const AdminOrderDetailPage = () => {
                                     <Badge
                                         className={
                                             currentOrder.payment.status ===
-                                                "PAID" ||
-                                            currentOrder.payment.status ===
-                                                "SUCCESS"
+                                            "FAILED"
+                                                ? "bg-red-100 text-red-700"
+                                                : currentOrder.payment
+                                                      .status === "SUCCESS"
                                                 ? "bg-green-100 text-green-700"
                                                 : "bg-yellow-100 text-yellow-700"
                                         }
@@ -589,7 +594,14 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Konfirmasi Pesanan
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Konfirmasi Pesanan"
+                                    )}
                                 </Button>
                             )}
                             {currentOrder.status === "CONFIRMED" && (
@@ -600,7 +612,14 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Mulai Proses
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Mulai Proses"
+                                    )}
                                 </Button>
                             )}
                             {currentOrder.status === "PROCESSING" && (
@@ -611,7 +630,14 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Kirim Pesanan
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Kirim Pesanan"
+                                    )}
                                 </Button>
                             )}
                             {currentOrder.status === "SHIPPED" && (
@@ -622,12 +648,16 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Tandai Diterima
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Tandai Diterima"
+                                    )}
                                 </Button>
                             )}
-                            <Button variant="outline" className="w-full">
-                                Cetak Invoice
-                            </Button>
                             <Button variant="outline" className="w-full">
                                 Hubungi Pelanggan
                             </Button>
@@ -641,7 +671,14 @@ const AdminOrderDetailPage = () => {
                                     }
                                     disabled={isLoading}
                                 >
-                                    Batalkan Pesanan
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                            Memproses...
+                                        </>
+                                    ) : (
+                                        "Batalkan Pesanan"
+                                    )}
                                 </Button>
                             )}
                         </CardContent>

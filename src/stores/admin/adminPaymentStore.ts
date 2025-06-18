@@ -25,7 +25,7 @@ export interface Payment {
     order_id: string;
     amount: number;
     method: string;
-    status: "PENDING" | "SUCCESS" | "FAILED" | "REFUNDED";
+    status: "PENDING" | "SUCCESS" | "FAILED";
     transaction_id?: string;
     created_at: string;
     updated_at: string;
@@ -38,8 +38,8 @@ export interface PaymentStats {
     pendingCount: number;
     successAmount: number;
     successGrowth: string;
-    refundAmount: number;
-    refundCount: number;
+    failedAmount: number;
+    failedCount: number;
     monthlyTotal: number;
     weeklyGrowth: string;
 }
@@ -63,16 +63,10 @@ interface PaymentState {
     fetchAllPayments: () => Promise<void>;
     fetchPaymentDetail: (paymentId: string) => Promise<void>;
     fetchPaymentStats: () => Promise<void>;
-    updatePaymentStatus: (updateData: PaymentStatusUpdate) => Promise<void>;
-    processRefund: (
-        paymentId: string,
-        amount?: number,
-        notes?: string
-    ) => Promise<void>;
     setSearchTerm: (term: string) => void;
-    setStatusFilter: (status: Payment["status"] | "ALL") => void;
     clearError: () => void;
     clearCurrentPayment: () => void;
+    refreshData: () => Promise<void>;
 
     // Computed
     getFilteredPayments: () => Payment[];
@@ -294,8 +288,8 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
                 allPayments?.filter((p) => p.status === "PENDING") || [];
             const successPayments =
                 monthlyPayments?.filter((p) => p.status === "SUCCESS") || [];
-            const refundPayments =
-                allPayments?.filter((p) => p.status === "REFUNDED") || [];
+            const failedPayments =
+                allPayments?.filter((p) => p.status === "FAILED") || [];
             const lastWeekSuccessPayments =
                 lastWeekPayments?.filter((p) => p.status === "SUCCESS") || [];
 
@@ -329,11 +323,11 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
                 pendingCount: pendingPayments.length,
                 successAmount: monthlySuccessTotal,
                 successGrowth: `+${weeklyGrowthPercent}% dari minggu lalu`,
-                refundAmount: refundPayments.reduce(
+                failedAmount: failedPayments.reduce(
                     (sum, p) => sum + (p.amount || 0),
                     0
                 ),
-                refundCount: refundPayments.length,
+                failedCount: failedPayments.length,
                 monthlyTotal: monthlySuccessTotal,
                 weeklyGrowth: `${weeklyGrowthPercent}%`,
             };
@@ -351,151 +345,8 @@ export const useAdminPaymentStore = create<PaymentState>()((set, get) => ({
         }
     },
 
-    updatePaymentStatus: async (updateData: PaymentStatusUpdate) => {
-        const { startLoading, stopLoading } = useLoadingStore.getState();
-        const { user } = useAuthStore.getState();
-
-        if (!user) {
-            set({ error: "User not authenticated" });
-            return;
-        }
-
-        try {
-            set({ isLoading: true, error: null });
-            startLoading("admin-payment-status-update");
-
-            const updatePayload: any = {
-                status: updateData.newStatus,
-                updated_at: new Date().toISOString(),
-            };
-
-            // Note: Based on your schema, there's no 'notes' field in payment table
-            // If you need to store notes, you might need to add this field or store it elsewhere
-
-            const { error } = await supabase
-                .from("payment")
-                .update(updatePayload)
-                .eq("id", updateData.paymentId);
-
-            if (error) {
-                throw new Error(
-                    `Failed to update payment status: ${error.message}`
-                );
-            }
-
-            // Update local state
-            const { payments, currentPayment } = get();
-
-            const updatedPayments = payments.map((payment) =>
-                payment.id === updateData.paymentId
-                    ? {
-                          ...payment,
-                          status: updateData.newStatus,
-                          updated_at: new Date().toISOString(),
-                      }
-                    : payment
-            );
-
-            const updatedCurrentPayment =
-                currentPayment?.id === updateData.paymentId
-                    ? {
-                          ...currentPayment,
-                          status: updateData.newStatus,
-                          updated_at: new Date().toISOString(),
-                      }
-                    : currentPayment;
-
-            set({
-                payments: updatedPayments,
-                currentPayment: updatedCurrentPayment,
-                isLoading: false,
-            });
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : "Failed to update payment status";
-            console.error("Admin update payment status error:", error);
-            set({ error: errorMessage, isLoading: false });
-        } finally {
-            stopLoading("admin-payment-status-update");
-        }
-    },
-
-    processRefund: async (
-        paymentId: string,
-        amount?: number,
-        notes?: string
-    ) => {
-        const { startLoading, stopLoading } = useLoadingStore.getState();
-        const { user } = useAuthStore.getState();
-
-        if (!user) {
-            set({ error: "User not authenticated" });
-            return;
-        }
-
-        try {
-            set({ isLoading: true, error: null });
-            startLoading("admin-payment-refund");
-
-            const { error } = await supabase
-                .from("payment")
-                .update({
-                    status: "REFUNDED",
-                    updated_at: new Date().toISOString(),
-                })
-                .eq("id", paymentId);
-
-            if (error) {
-                throw new Error(`Failed to process refund: ${error.message}`);
-            }
-
-            // Update local state
-            const { payments, currentPayment } = get();
-
-            const updatedPayments = payments.map((payment) =>
-                payment.id === paymentId
-                    ? {
-                          ...payment,
-                          status: "REFUNDED" as const,
-                          updated_at: new Date().toISOString(),
-                      }
-                    : payment
-            );
-
-            const updatedCurrentPayment =
-                currentPayment?.id === paymentId
-                    ? {
-                          ...currentPayment,
-                          status: "REFUNDED" as const,
-                          updated_at: new Date().toISOString(),
-                      }
-                    : currentPayment;
-
-            set({
-                payments: updatedPayments,
-                currentPayment: updatedCurrentPayment,
-                isLoading: false,
-            });
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error
-                    ? error.message
-                    : "Failed to process refund";
-            console.error("Admin process refund error:", error);
-            set({ error: errorMessage, isLoading: false });
-        } finally {
-            stopLoading("admin-payment-refund");
-        }
-    },
-
     setSearchTerm: (term: string) => {
         set({ searchTerm: term });
-    },
-
-    setStatusFilter: (status: Payment["status"] | "ALL") => {
-        set({ statusFilter: status });
     },
 
     getFilteredPayments: () => {
@@ -566,5 +417,12 @@ ${payments
 
     clearCurrentPayment: () => {
         set({ currentPayment: null });
+    },
+
+    refreshData: async () => {
+        await Promise.all([
+            get().fetchAllPayments(),
+            get().fetchPaymentStats(),
+        ]);
     },
 }));

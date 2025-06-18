@@ -13,6 +13,9 @@ import {
     Star,
     Copy,
     Trash,
+    Loader,
+    PackageCheck,
+    XCircle,
 } from "lucide-react";
 import { useOrderStore } from "@/stores/orderStore";
 import { useReviewStore } from "@/stores/reviewStore";
@@ -213,36 +216,44 @@ const OrderDetailTab: React.FC<OrderDetailTabProps> = ({ orderId, onBack }) => {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case "PENDING":
+                return <Clock className="text-yellow-700" size={20} />;
+
             case "CONFIRMED":
-                return <Clock className="text-yellow-500" size={20} />;
+                return <CheckCircle className="text-blue-700" size={20} />;
+
             case "PROCESSING":
-                return <Clock className="text-orange-500" size={20} />;
+                return <Loader className="text-purple-700" size={20} />;
+
             case "SHIPPED":
-                return <Truck className="text-blue-500" size={20} />;
+                return <Truck className="text-indigo-700" size={20} />;
+
             case "DELIVERED":
-                return <CheckCircle className="text-green-500" size={20} />;
+                return <PackageCheck className="text-green-700" size={20} />;
+
             case "CANCELLED":
-                return <AlertCircle className="text-red-500" size={20} />;
+                return <XCircle className="text-red-700" size={20} />;
+
             default:
-                return <Clock size={20} />;
+                return <Clock className="text-gray-700" size={20} />;
         }
     };
 
     const getStatusColor = (status: string) => {
         switch (status) {
             case "PENDING":
+                return "bg-yellow-100 text-yellow-700 border-yellow-700";
             case "CONFIRMED":
-                return "bg-yellow-50 text-yellow-800 border-yellow-200";
+                return "bg-blue-100 text-blue-700 border-blue-700";
             case "PROCESSING":
-                return "bg-orange-50 text-orange-800 border-orange-200";
+                return "bg-purple-100 text-purple-700 border-purple-700";
             case "SHIPPED":
-                return "bg-blue-50 text-blue-800 border-blue-200";
+                return "bg-indigo-100 text-indigo-700 border-indigo-700";
             case "DELIVERED":
-                return "bg-green-50 text-green-800 border-green-200";
+                return "bg-green-100 text-green-700 border-green-700";
             case "CANCELLED":
-                return "bg-red-50 text-red-800 border-red-200";
+                return "bg-red-100 text-red-700 border-red-700";
             default:
-                return "bg-gray-50 text-gray-800 border-gray-200";
+                return "bg-gray-100 text-gray-700 border-gray-700";
         }
     };
 

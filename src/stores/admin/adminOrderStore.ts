@@ -146,6 +146,7 @@ interface OrderState {
     setStatusFilter: (status: Order["status"] | "ALL") => void;
     clearError: () => void;
     clearCurrentOrder: () => void;
+    refreshData: () => Promise<void>;
 
     // Computed
     getFilteredOrders: () => Order[];
@@ -609,5 +610,9 @@ export const useAdminOrderStore = create<OrderState>()((set, get) => ({
 
     clearCurrentOrder: () => {
         set({ currentOrder: null });
+    },
+
+    refreshData: async () => {
+        await Promise.all([get().fetchAllOrders(), get().fetchOrderStats()]);
     },
 }));

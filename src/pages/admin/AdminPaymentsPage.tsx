@@ -2,18 +2,14 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     CreditCard,
-    Banknote,
     Download,
     Search,
-    Filter,
     RefreshCw,
     DollarSign,
-    TrendingUp,
     AlertCircle,
     CheckCircle,
     Loader2,
@@ -27,22 +23,18 @@ const AdminPaymentsPage = () => {
         isLoading,
         error,
         searchTerm,
-        statusFilter,
-        fetchAllPayments,
-        fetchPaymentStats,
         setSearchTerm,
-        setStatusFilter,
         getFilteredPayments,
         exportPaymentsCSV,
         clearError,
+        refreshData,
     } = useAdminPaymentStore();
 
     const [activeTab, setActiveTab] = useState("all");
 
     useEffect(() => {
-        fetchAllPayments();
-        fetchPaymentStats();
-    }, [fetchAllPayments, fetchPaymentStats]);
+        refreshData();
+    }, [refreshData]);
 
     const filteredPayments = getFilteredPayments();
 
@@ -67,15 +59,13 @@ const AdminPaymentsPage = () => {
     const getStatusBadgeColor = (status) => {
         switch (status) {
             case "SUCCESS":
-                return "bg-green-100 text-green-800";
+                return "bg-green-100 text-green-700";
             case "PENDING":
-                return "bg-yellow-100 text-yellow-800";
+                return "bg-yellow-100 text-yellow-700";
             case "FAILED":
-                return "bg-red-100 text-red-800";
-            case "REFUNDED":
-                return "bg-blue-100 text-blue-800";
+                return "bg-red-100 text-red-700";
             default:
-                return "bg-gray-100 text-gray-800";
+                return "bg-gray-100 text-gray-700";
         }
     };
 
@@ -114,38 +104,40 @@ const AdminPaymentsPage = () => {
         return filtered;
     };
 
-    const paymentStats = stats
-        ? [
-              {
-                  title: "Total Pembayaran Hari Ini",
-                  value: formatCurrency(stats.todayTotal),
-                  icon: DollarSign,
-                  trend: stats.weeklyGrowth,
-                  color: "text-green-600",
-              },
-              {
-                  title: "Pembayaran Pending",
-                  value: formatCurrency(stats.pendingAmount),
-                  icon: AlertCircle,
-                  trend: `${stats.pendingCount} transaksi`,
-                  color: "text-yellow-600",
-              },
-              {
-                  title: "Pembayaran Berhasil",
-                  value: formatCurrency(stats.successAmount),
-                  icon: CheckCircle,
-                  trend: stats.successGrowth,
-                  color: "text-green-600",
-              },
-              {
-                  title: "Total Refund",
-                  value: formatCurrency(stats.refundAmount),
-                  icon: RefreshCw,
-                  trend: `${stats.refundCount} refund`,
-                  color: "text-red-600",
-              },
-          ]
-        : [];
+    const handleRefresh = () => {
+        refreshData();
+    };
+
+    const paymentStats = [
+        {
+            title: "Total Pembayaran Hari Ini",
+            value: stats ? formatCurrency(stats.todayTotal) : "Rp 0",
+            icon: DollarSign,
+            trend: stats ? stats.weeklyGrowth : "0%",
+            color: "text-green-600",
+        },
+        {
+            title: "Pembayaran Pending",
+            value: stats ? formatCurrency(stats.pendingAmount) : "Rp 0",
+            icon: AlertCircle,
+            trend: stats ? `${stats.pendingCount} transaksi` : "0 transaksi",
+            color: "text-yellow-600",
+        },
+        {
+            title: "Pembayaran Berhasil",
+            value: stats ? formatCurrency(stats.successAmount) : "Rp 0",
+            icon: CheckCircle,
+            trend: stats ? stats.successGrowth : "0%",
+            color: "text-green-600",
+        },
+        {
+            title: "Pembayaran Gagal",
+            value: stats ? formatCurrency(stats.failedAmount) : "Rp 0",
+            icon: RefreshCw,
+            trend: stats ? `${stats.failedCount} transaksi` : "0 transaksi",
+            color: "text-red-600",
+        },
+    ];
 
     if (error) {
         return (
@@ -179,18 +171,16 @@ const AdminPaymentsPage = () => {
                 </h2>
                 <div className="flex gap-2">
                     <Button
-                        onClick={() => {
-                            fetchAllPayments();
-                            fetchPaymentStats();
-                        }}
+                        onClick={handleRefresh}
                         variant="outline"
+                        className="flex-1 sm:flex-none"
                         disabled={isLoading}
                     >
-                        {isLoading ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : (
-                            <RefreshCw className="h-4 w-4 mr-2" />
-                        )}
+                        <RefreshCw
+                            className={`h-4 w-4 mr-2 ${
+                                isLoading ? "animate-spin" : ""
+                            }`}
+                        />
                         Refresh
                     </Button>
                     <Button
@@ -218,7 +208,11 @@ const AdminPaymentsPage = () => {
                                         {stat.title}
                                     </p>
                                     <p className="text-xl font-bold text-gray-900">
-                                        {stat.value}
+                                        {isLoading ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : (
+                                            stat.value
+                                        )}
                                     </p>
                                     <p className={`text-xs ${stat.color}`}>
                                         {stat.trend}
@@ -269,9 +263,9 @@ const AdminPaymentsPage = () => {
 
                         <CardContent>
                             {isLoading ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
-                                    <span className="ml-2 text-gray-600">
+                                <div className="flex items-center justify-center py-12">
+                                    <Loader2 className="h-8 w-8 animate-spin" />
+                                    <span className="ml-2">
                                         Memuat data pembayaran...
                                     </span>
                                 </div>

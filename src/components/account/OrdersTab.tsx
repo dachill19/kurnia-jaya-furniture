@@ -9,6 +9,9 @@ import {
     Star,
     AlertCircle,
     Trash,
+    Loader,
+    PackageCheck,
+    XCircle,
 } from "lucide-react";
 import { useOrderStore } from "@/stores/orderStore";
 import { useReviewStore } from "@/stores/reviewStore";
@@ -111,18 +114,25 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ onViewOrderDetail }) => {
     const getStatusIcon = (status: string) => {
         switch (status) {
             case "PENDING":
+                return <Clock className="text-yellow-700" size={18} />;
+
             case "CONFIRMED":
-                return <Clock className="text-yellow-500" size={18} />;
+                return <CheckCircle className="text-blue-700" size={18} />;
+
             case "PROCESSING":
-                return <Clock className="text-orange-500" size={18} />;
+                return <Loader className="text-purple-700" size={18} />;
+
             case "SHIPPED":
-                return <Truck className="text-blue-500" size={18} />;
+                return <Truck className="text-indigo-700" size={18} />;
+
             case "DELIVERED":
-                return <CheckCircle className="text-green-500" size={18} />;
+                return <PackageCheck className="text-green-700" size={18} />;
+
             case "CANCELLED":
-                return <AlertCircle className="text-red-500" size={18} />;
+                return <XCircle className="text-red-700" size={18} />;
+
             default:
-                return <Clock size={18} />;
+                return <Clock className="text-gray-700" size={18} />;
         }
     };
 

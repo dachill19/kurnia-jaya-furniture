@@ -21,6 +21,7 @@ import {
     AlertCircle,
     UserPlus,
     Activity,
+    Loader2,
 } from "lucide-react";
 import { useUserStore } from "@/stores/admin/adminUserStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -178,11 +179,11 @@ const AdminUsersPage = () => {
                                         {stat.title}
                                     </p>
                                     <p className="text-xl font-bold text-gray-900">
-                                        {isLoading
-                                            ? "..."
-                                            : stat.value.toLocaleString(
-                                                  "id-ID"
-                                              )}
+                                        {isLoading ? (
+                                            <Loader2 className="h-5 w-5 animate-spin" />
+                                        ) : (
+                                            stat.value.toLocaleString("id-ID")
+                                        )}
                                     </p>
                                 </div>
                                 <stat.icon
@@ -215,11 +216,11 @@ const AdminUsersPage = () => {
                 </CardHeader>
                 <CardContent>
                     {isLoading ? (
-                        <div className="flex items-center justify-center h-32">
-                            <div className="flex items-center gap-2 text-gray-500">
-                                <RefreshCw className="h-4 w-4 animate-spin" />
-                                <span>Memuat data pengguna...</span>
-                            </div>
+                        <div className="flex items-center justify-center py-12">
+                            <Loader2 className="h-8 w-8 animate-spin" />
+                            <span className="ml-2">
+                                Memuat data pengguna...
+                            </span>
                         </div>
                     ) : filteredUsers.length === 0 ? (
                         <div className="flex items-center justify-center h-32">

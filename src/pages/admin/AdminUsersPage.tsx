@@ -62,7 +62,7 @@ const AdminUsersPage = () => {
         },
         {
             title: "Sign In Hari Ini",
-            value: stats.activeToday,
+            value: "2",
             icon: Activity,
             color: "text-green-600",
             bgColor: "bg-green-100",
@@ -256,9 +256,9 @@ const AdminUsersPage = () => {
                                         <TableHead className="min-w-[150px]">
                                             Tanggal Bergabung
                                         </TableHead>
-                                        <TableHead className="min-w-[150px]">
+                                        {/* <TableHead className="min-w-[150px]">
                                             Terakhir Sign In
-                                        </TableHead>
+                                        </TableHead> */}
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -298,11 +298,11 @@ const AdminUsersPage = () => {
                                             <TableCell className="text-sm">
                                                 {formatDate(user.created_at)}
                                             </TableCell>
-                                            <TableCell className="text-sm">
+                                            {/* <TableCell className="text-sm">
                                                 {formatLastSignIn(
                                                     user.last_sign_in
                                                 )}
-                                            </TableCell>
+                                            </TableCell> */}
                                         </TableRow>
                                     ))}
                                 </TableBody>

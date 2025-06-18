@@ -96,13 +96,13 @@ const Header = () => {
                         <span>+62 822-9852-8428</span>
                     </a>
                     <a
-                        href="mailto:kurniajaya.furniture1688@gmail.com"
+                        href="mailto:kurniajaya.furniture888@gmail.com"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center hover:text-white/80 transition-colors duration-200"
                     >
                         <Mail className="h-4 w-4 mr-2" />
-                        <span>kurniajaya.furniture1688@gmail.com</span>
+                        <span>kurniajaya.furniture888@gmail.com</span>
                     </a>
                 </div>
             </div>

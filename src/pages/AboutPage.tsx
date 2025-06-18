@@ -10,7 +10,7 @@ const AboutPage = () => {
                 </h1>
                 <p className="text-gray-600 max-w-2xl mx-auto">
                     Kurnia Jaya Furniture - Menyediakan furnitur berkualitas
-                    dengan desain modern dan harga terjangkau sejak 2005.
+                    dengan desain modern dan harga terjangkau sejak 2010.
                 </p>
             </div>
 
@@ -57,7 +57,7 @@ const AboutPage = () => {
             </section>
 
             {/* Our Values Section */}
-            <section className="mb-16 bg-gray-50 p-8 rounded-lg">
+            <section className="mb-16 bg-gray-50 rounded-lg">
                 <h2 className="text-2xl font-serif font-bold text-kj-brown mb-6 text-center">
                     Nilai-Nilai Kami
                 </h2>
@@ -139,7 +139,7 @@ const AboutPage = () => {
                                     <span>
                                         <strong>Email:</strong>
                                         <br />
-                                        kurniajaya.furniture1688@gmail.com
+                                        kurniajaya.furniture888@gmail.com
                                     </span>
                                 </li>
                                 <li className="flex items-center">
@@ -205,7 +205,7 @@ const AboutPage = () => {
                         bagian dari perjalanan kami"
                     </blockquote>
                     <p className="font-semibold text-kj-brown">
-                        Frengky Cina, Pendiri & CEO
+                        Frenky Jau, Pendiri & CEO
                     </p>
                 </div>
             </section>

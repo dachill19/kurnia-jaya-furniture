@@ -73,7 +73,7 @@ const AdminOrderDetailPage = () => {
             case "SHIPPED":
                 return "Dikirim";
             case "DELIVERED":
-                return "Diterima";
+                return "Selesai";
             case "CANCELLED":
                 return "Dibatalkan";
             default:
@@ -109,7 +109,7 @@ const AdminOrderDetailPage = () => {
             { status: "CONFIRMED", label: "Pesanan Dikonfirmasi" },
             { status: "PROCESSING", label: "Sedang Diproses" },
             { status: "SHIPPED", label: "Pesanan Dikirim" },
-            { status: "DELIVERED", label: "Pesanan Diterima" },
+            { status: "DELIVERED", label: "Pesanan Selesai" },
         ];
 
         const timeline = expectedStatuses.map(({ status, label }) => {
@@ -654,7 +654,7 @@ const AdminOrderDetailPage = () => {
                                             Memproses...
                                         </>
                                     ) : (
-                                        "Tandai Diterima"
+                                        "Tandai Selesai"
                                     )}
                                 </Button>
                             )}

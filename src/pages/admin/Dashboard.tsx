@@ -91,7 +91,7 @@ const Dashboard = () => {
                     refreshPaymentData(),
                 ]);
             } catch (error) {
-                console.error('Error loading dashboard data:', error);
+                console.error("Error loading dashboard data:", error);
             }
         };
 
@@ -118,7 +118,7 @@ const Dashboard = () => {
                 refreshPaymentData(),
             ]);
         } catch (error) {
-            console.error('Error refreshing dashboard data:', error);
+            console.error("Error refreshing dashboard data:", error);
         } finally {
             setIsRefreshing(false);
         }
@@ -127,26 +127,53 @@ const Dashboard = () => {
     // Calculate today's revenue from payments (same as AdminPaymentsPage)
     const getTodayRevenue = () => {
         const today = new Date();
-        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+        const startOfDay = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+        );
+        const endOfDay = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate(),
+            23,
+            59,
+            59
+        );
 
-        const todayPayments = payments.filter(payment => {
+        const todayPayments = payments.filter((payment) => {
             const paymentDate = new Date(payment.created_at);
-            return paymentDate >= startOfDay && 
-                   paymentDate <= endOfDay && 
-                   payment.status === 'SUCCESS';
+            return (
+                paymentDate >= startOfDay &&
+                paymentDate <= endOfDay &&
+                payment.status === "SUCCESS"
+            );
         });
 
-        return todayPayments.reduce((total, payment) => total + payment.amount, 0);
+        return todayPayments.reduce(
+            (total, payment) => total + payment.amount,
+            0
+        );
     };
 
     // Calculate today's orders count
     const getTodayOrdersCount = () => {
         const today = new Date();
-        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+        const startOfDay = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+        );
+        const endOfDay = new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate(),
+            23,
+            59,
+            59
+        );
 
-        return orders.filter(order => {
+        return orders.filter((order) => {
             const orderDate = new Date(order.created_at);
             return orderDate >= startOfDay && orderDate <= endOfDay;
         }).length;
@@ -156,32 +183,45 @@ const Dashboard = () => {
     const getRevenueData = () => {
         const months = [];
         const currentDate = new Date();
-        
+
         for (let i = 5; i >= 0; i--) {
-            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-            const monthName = date.toLocaleDateString("id-ID", { month: "short" });
-            
+            const date = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() - i,
+                1
+            );
+            const monthName = date.toLocaleDateString("id-ID", {
+                month: "short",
+            });
+
             const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-            
+            const monthEnd = new Date(
+                date.getFullYear(),
+                date.getMonth() + 1,
+                0
+            );
+
             // Use payments data instead of orders for revenue calculation
-            const monthPayments = payments.filter(payment => {
+            const monthPayments = payments.filter((payment) => {
                 const paymentDate = new Date(payment.created_at);
                 return (
                     paymentDate >= monthStart &&
                     paymentDate <= monthEnd &&
-                    payment.status === 'SUCCESS'
+                    payment.status === "SUCCESS"
                 );
             });
-            
-            const revenue = monthPayments.reduce((sum, payment) => sum + payment.amount, 0);
-            
+
+            const revenue = monthPayments.reduce(
+                (sum, payment) => sum + payment.amount,
+                0
+            );
+
             months.push({
                 month: monthName,
                 revenue: revenue,
             });
         }
-        
+
         return months;
     };
 
@@ -189,63 +229,71 @@ const Dashboard = () => {
     const getCustomerData = () => {
         const months = [];
         const currentDate = new Date();
-        
+
         for (let i = 5; i >= 0; i--) {
-            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
-            const monthName = date.toLocaleDateString("id-ID", { month: "short" });
-            
+            const date = new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth() - i,
+                1
+            );
+            const monthName = date.toLocaleDateString("id-ID", {
+                month: "short",
+            });
+
             const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
-            const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-            
-            const newCustomers = users.filter(user => {
+            const monthEnd = new Date(
+                date.getFullYear(),
+                date.getMonth() + 1,
+                0
+            );
+
+            const newCustomers = users.filter((user) => {
                 const userDate = new Date(user.created_at);
                 return userDate >= monthStart && userDate <= monthEnd;
             });
-            
+
             months.push({
                 month: monthName,
                 customers: newCustomers.length,
             });
         }
-        
+
         return months;
     };
 
     // Get low stock products
     const getLowStockProducts = () => {
         return products
-            .filter(product => product.stock <= 10) // Consider stock <= 10 as low
+            .filter((product) => product.stock <= 10) // Consider stock <= 10 as low
             .sort((a, b) => a.stock - b.stock)
             .slice(0, 6)
-            .map(product => ({
+            .map((product) => ({
                 id: product.id,
                 name: product.name,
                 stock: product.stock,
                 minStock: 10, // Define minimum stock threshold
-                category: product.category?.name || 'Tanpa Kategori',
+                category: product.category?.name || "Tanpa Kategori",
             }));
     };
 
     // Get recent orders (last 5)
     const getRecentOrders = () => {
-        return orders
-            .slice(0, 5)
-            .map(order => ({
-                id: order.id,
-                customer: order.user?.name || order.user?.email || 'Unknown',
-                product: order.order_item?.[0]?.product?.name || 'Multiple Items',
-                total: `Rp ${order.total_amount.toLocaleString('id-ID')}`,
-                status: order.status.toLowerCase(),
-                date: order.created_at,
-                itemCount: order.order_item?.length || 0,
-            }));
+        return orders.slice(0, 5).map((order) => ({
+            id: order.id,
+            customer: order.user?.name || order.user?.email || "Unknown",
+            product: order.order_item?.[0]?.product?.name || "Multiple Items",
+            total: `Rp ${order.total_amount.toLocaleString("id-ID")}`,
+            status: order.status.toLowerCase(),
+            date: order.created_at,
+            itemCount: order.order_item?.length || 0,
+        }));
     };
 
     // Calculate percentage changes (mock calculation for demo)
     const calculateChange = (current: number, previous: number) => {
         if (previous === 0) return "+100%";
         const change = ((current - previous) / previous) * 100;
-        return `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
+        return `${change >= 0 ? "+" : ""}${change.toFixed(1)}%`;
     };
 
     // Get today's revenue and orders count
@@ -256,28 +304,28 @@ const Dashboard = () => {
     const stats = [
         {
             title: "Total Pengguna",
-            value: userStats?.totalUsers?.toLocaleString('id-ID') || "0",
+            value: userStats?.totalUsers?.toLocaleString("id-ID") || "0",
             icon: Users,
             change: "+12%", // You could calculate this based on previous period
             trend: "up" as const,
         },
         {
             title: "Total Produk",
-            value: (products?.length || 0).toLocaleString('id-ID'), // Ensure products is an array and handle null/undefined
+            value: (products?.length || 0).toLocaleString("id-ID"), // Ensure products is an array and handle null/undefined
             icon: Package,
             change: "+8%",
             trend: "up" as const,
         },
         {
             title: "Pesanan Hari Ini",
-            value: todayOrdersCount.toLocaleString('id-ID'),
+            value: todayOrdersCount.toLocaleString("id-ID"),
             icon: ShoppingCart,
             change: "+23%",
             trend: "up" as const,
         },
         {
             title: "Pendapatan Hari Ini",
-            value: `Rp ${todayRevenue.toLocaleString('id-ID')}`,
+            value: `Rp ${todayRevenue.toLocaleString("id-ID")}`,
             icon: DollarSign,
             change: paymentStats?.weeklyGrowth || "+15%",
             trend: "up" as const,
@@ -338,17 +386,19 @@ const Dashboard = () => {
     };
 
     // Loading skeleton - Update loading check to include product loading
-    if (isLoadingKey('admin-orders-fetch') || 
-        isLoadingKey('fetch-users') || 
-        isLoadingKey('all-products') || // Check for products loading state
-        isLoadingKey('fetch-products')) {
+    if (
+        isLoadingKey("admin-orders-fetch") ||
+        isLoadingKey("fetch-users") ||
+        isLoadingKey("all-products") || // Check for products loading state
+        isLoadingKey("fetch-products")
+    ) {
         return (
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <Skeleton className="h-8 w-48" />
                     <Skeleton className="h-6 w-64" />
                 </div>
-                
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {[1, 2, 3, 4].map((i) => (
                         <Card key={i}>
@@ -358,7 +408,7 @@ const Dashboard = () => {
                         </Card>
                     ))}
                 </div>
-                
+
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                         <CardHeader>
@@ -384,20 +434,25 @@ const Dashboard = () => {
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-gray-800">
+                    Dashboard
+                </h1>
 
                 <div className="flex items-center gap-4">
                     <Button
                         onClick={handleRefresh}
                         disabled={isRefreshing}
                         variant="outline"
-                        size="sm"
                         className="flex items-center gap-2"
                     >
-                        <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        <RefreshCw
+                            className={`h-4 w-4 ${
+                                isRefreshing ? "animate-spin" : ""
+                            }`}
+                        />
                         Refresh
                     </Button>
-                    
+
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Calendar className="h-4 w-4" />
                         {new Date().toLocaleDateString("id-ID", {
@@ -553,7 +608,9 @@ const Dashboard = () => {
                         {lowStockProducts.length === 0 ? (
                             <div className="text-center py-4 text-gray-500">
                                 <Package className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                                <p className="text-sm">Semua produk memiliki stok yang cukup</p>
+                                <p className="text-sm">
+                                    Semua produk memiliki stok yang cukup
+                                </p>
                             </div>
                         ) : (
                             lowStockProducts.map((product) => {
@@ -574,7 +631,8 @@ const Dashboard = () => {
                                                     {product.name}
                                                 </p>
                                                 <p className="text-xs text-gray-500">
-                                                    {product.category} • Stok: {product.stock}
+                                                    {product.category} • Stok:{" "}
+                                                    {product.stock}
                                                 </p>
                                             </div>
                                             <Badge
@@ -645,10 +703,11 @@ const Dashboard = () => {
                                             {order.customer}
                                         </p>
                                         <p className="text-xs text-gray-500 truncate">
-                                            {order.itemCount > 1 
-                                                ? `${order.product} +${order.itemCount - 1} item lain`
-                                                : order.product
-                                            }
+                                            {order.itemCount > 1
+                                                ? `${order.product} +${
+                                                      order.itemCount - 1
+                                                  } item lain`
+                                                : order.product}
                                         </p>
                                     </div>
                                     <div className="text-right">

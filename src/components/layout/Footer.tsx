@@ -105,15 +105,6 @@ const Footer = () => {
                             </li>
                             <li className="transform hover:translate-x-1 transition-transform">
                                 <Link
-                                    to="/track-order"
-                                    className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
-                                >
-                                    <span className="mr-2">›</span>
-                                    Lacak Pesanan
-                                </Link>
-                            </li>
-                            <li className="transform hover:translate-x-1 transition-transform">
-                                <Link
                                     to="/payment"
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red flex items-center"
                                 >
@@ -174,12 +165,12 @@ const Footer = () => {
                                     className="text-kj-red mr-3 flex-shrink-0"
                                 />
                                 <a
-                                    href="mailto:kurniajaya.furniture1688@gmail.com"
+                                    href="mailto:kurniajaya.furniture888@gmail.com"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-gray-600 dark:text-gray-300 hover:text-kj-red dark:hover:text-kj-red"
                                 >
-                                    kurniajaya.furniture1688
+                                    kurniajaya.furniture888
                                 </a>
                             </li>
                         </ul>

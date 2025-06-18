@@ -87,7 +87,7 @@ const AdminOrdersPage = () => {
             case "SHIPPED":
                 return "Dikirim";
             case "DELIVERED":
-                return "Diterima";
+                return "Selesai";
             case "CANCELLED":
                 return "Dibatalkan";
             default:

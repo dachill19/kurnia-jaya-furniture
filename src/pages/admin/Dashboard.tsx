@@ -41,6 +41,7 @@ import { useAdminOrderStore } from "@/stores/admin/adminOrderStore";
 import { useUserStore } from "@/stores/admin/adminUserStore";
 import { useProductStore } from "@/stores/productStore";
 import { useLoadingStore } from "@/stores/loadingStore";
+import { useAdminPaymentStore } from "@/stores/admin/adminPaymentStore";
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -69,6 +70,12 @@ const Dashboard = () => {
         fetchCategories,
     } = useProductStore();
 
+    const {
+        payments,
+        stats: paymentStats,
+        refreshData: refreshPaymentData,
+    } = useAdminPaymentStore();
+
     const { isLoadingKey } = useLoadingStore();
 
     // Load all data on component mount
@@ -81,6 +88,7 @@ const Dashboard = () => {
                 fetchUserStats(),
                 fetchProducts(),
                 fetchCategories(),
+                refreshPaymentData(),
             ]);
         };
 
@@ -92,6 +100,7 @@ const Dashboard = () => {
         fetchUserStats,
         fetchProducts,
         fetchCategories,
+        refreshPaymentData,
     ]);
 
     // Refresh all data
@@ -105,10 +114,39 @@ const Dashboard = () => {
                 fetchUserStats(),
                 fetchProducts(),
                 fetchCategories(),
+                refreshPaymentData(),
             ]);
         } finally {
             setIsRefreshing(false);
         }
+    };
+
+    // Calculate today's revenue from payments (same as AdminPaymentsPage)
+    const getTodayRevenue = () => {
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+
+        const todayPayments = payments.filter(payment => {
+            const paymentDate = new Date(payment.created_at);
+            return paymentDate >= startOfDay && 
+                   paymentDate <= endOfDay && 
+                   payment.status === 'SUCCESS';
+        });
+
+        return todayPayments.reduce((total, payment) => total + payment.amount, 0);
+    };
+
+    // Calculate today's orders count
+    const getTodayOrdersCount = () => {
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59);
+
+        return orders.filter(order => {
+            const orderDate = new Date(order.created_at);
+            return orderDate >= startOfDay && orderDate <= endOfDay;
+        }).length;
     };
 
     // Calculate revenue data for the last 6 months
@@ -123,13 +161,17 @@ const Dashboard = () => {
             const monthStart = new Date(date.getFullYear(), date.getMonth(), 1);
             const monthEnd = new Date(date.getFullYear(), date.getMonth() + 1, 0);
             
-            const monthOrders = orders.filter(order => {
-                const orderDate = new Date(order.created_at);
-                return orderDate >= monthStart && orderDate <= monthEnd && 
-                       ['DELIVERED', 'SHIPPED'].includes(order.status);
+            // Use payments data instead of orders for revenue calculation
+            const monthPayments = payments.filter(payment => {
+                const paymentDate = new Date(payment.created_at);
+                return (
+                    paymentDate >= monthStart &&
+                    paymentDate <= monthEnd &&
+                    payment.status === 'SUCCESS'
+                );
             });
             
-            const revenue = monthOrders.reduce((sum, order) => sum + order.total_amount, 0);
+            const revenue = monthPayments.reduce((sum, payment) => sum + payment.amount, 0);
             
             months.push({
                 month: monthName,
@@ -203,6 +245,10 @@ const Dashboard = () => {
         return `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
     };
 
+    // Get today's revenue and orders count
+    const todayRevenue = getTodayRevenue();
+    const todayOrdersCount = getTodayOrdersCount();
+
     // Stats data
     const stats = [
         {
@@ -221,16 +267,16 @@ const Dashboard = () => {
         },
         {
             title: "Pesanan Hari Ini",
-            value: orderStats?.todayOrders?.toLocaleString('id-ID') || "0",
+            value: todayOrdersCount.toLocaleString('id-ID'),
             icon: ShoppingCart,
             change: "+23%",
             trend: "up" as const,
         },
         {
             title: "Pendapatan Hari Ini",
-            value: `Rp ${(orderStats?.todayRevenue || 0).toLocaleString('id-ID')}`,
+            value: `Rp ${todayRevenue.toLocaleString('id-ID')}`,
             icon: DollarSign,
-            change: "+15%",
+            change: paymentStats?.weeklyGrowth || "+15%",
             trend: "up" as const,
         },
     ];

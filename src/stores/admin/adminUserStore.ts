@@ -201,7 +201,7 @@ export const useUserStore = create<UserStore>((set, get) => ({
             ...users.map((user) =>
                 [
                     user.id,
-                    user.name || "",
+                    user.name,
                     user.email,
                     user.phone || "",
                     user.role,

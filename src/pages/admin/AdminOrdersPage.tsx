@@ -29,6 +29,7 @@ import {
     AlertCircle,
     Loader2,
     RefreshCw,
+    Download,
 } from "lucide-react";
 import { useAdminOrderStore } from "@/stores/admin/adminOrderStore";
 
@@ -195,8 +196,8 @@ const AdminOrdersPage = () => {
                         />
                         Refresh
                     </Button>
-                    <Button variant="outline" className="w-full sm:w-auto">
-                        <Package className="h-4 w-4 mr-2" />
+                    <Button className="bg-kj-red hover:bg-kj-red/90 flex-1 sm:flex-none">
+                        <Download className="h-4 w-4 mr-2" />
                         Export Pesanan
                     </Button>
                 </div>

@@ -77,6 +77,6 @@ Kurnia Jaya Furniture adalah platform online marketplace yang dikembangkan khusu
 
 **Dibuat dengan ❤️ oleh Tim Kurnia Jaya Furniture**
 
-[🌐 Website](https://kurniajayafurniture.com) • [📧 Email](mailto:kurniajayafurniture888@gmail.com) • [💬 Support](https://github.com/dachill19/kurnia-jaya-furniture/discussions)
+[🌐 Website](https://kurniajayafurniture.com) • [📧 Email](mailto:kurniajayafurniture888@gmail.com)
 
 </div>
